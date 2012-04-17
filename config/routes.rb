@@ -5,4 +5,6 @@ Rails.application.routes.draw do
       resources :states
     end
      match '/checkout' => 'checkout#edit', :state => 'one_page', :as => :checkout
-end
+       resources :users , :except => [:new,:edit]
+   end
+   
