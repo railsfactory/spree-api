@@ -14,7 +14,7 @@ def create
    @user = build_resource(params[:user])
     logger.debug(@user)
     if resource.save
-      @role=Role.find_by_id(1)
+      @role=Role.find_by_id(2)
        @user.roles<< @role
     render :json =>@user
     else
@@ -25,7 +25,7 @@ def create
        @user = build_resource(params[:user])
     logger.debug(@user)
     if resource.save
-      @role=Role.find_by_id(1)
+      @role=Role.find_by_id(2)
        @user.roles<< @role
       set_flash_message(:notice, :signed_up)
       sign_in_and_redirect(:user, @user)
