@@ -1,8 +1,8 @@
 Admin::UsersController.class_eval do
 before_filter :check_json_authenticity, :only => :index
   before_filter :load_roles, :only => [:edit, :new, :update, :create]
-  create.after :save_user_roles
-  update.before :save_user_roles
+  #~ create.after :save_user_roles
+  #~ update.before :save_user_roles
   before_filter :load_roles, :only => [:edit, :new, :update, :create, :generate_api_key, :clear_api_key]
   before_filter :check_http_authorization
   before_filter :load_resource
@@ -47,6 +47,7 @@ before_filter :check_json_authenticity, :only => :index
   def create
     if !params[:format].nil? && params[:format] == "json"
     begin
+    invoke_callbacks(:create, :before)
     if @object.save
       invoke_callbacks(:create, :after)
      render :json => @object.to_json, :status => 201
@@ -79,6 +80,7 @@ before_filter :check_json_authenticity, :only => :index
   def update
     if !params[:format].nil? && params[:format] == "json"
     begin
+        invoke_callbacks(:update, :before)
       if @object.update_attributes(params[object_name])
            invoke_callbacks(:update, :after)
           render :json => @object.to_json, :status => 201
