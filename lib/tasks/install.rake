@@ -11,7 +11,7 @@ namespace :one_page_checkout do
     Rake::Task['one_page_checkout:install:migrations'].invoke
     Rake::Task['one_page_checkout:install:assets'].invoke
   end
-  
+  end
   namespace :install do
     desc "Copies all migrations (NOTE: This will be obsolete with Rails 3.1)"
     task :migrations do
