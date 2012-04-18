@@ -5,5 +5,8 @@ Rails.application.routes.draw do
       resources :states
     end
     match '/checkout' => 'checkout#edit', :state => 'one_page', :as => :checkout
-      resources :users , :except => [:new,:edit]
+      #resources :users , :except => [:new,:edit]
+       devise_scope :user do
+    match '/users' => 'user_registrations#create',:via=>:post
+    end
 end
