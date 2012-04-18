@@ -5,6 +5,13 @@ namespace :spree_custom_api do
     Rake::Task['spree_custom_api:install:assets'].invoke
   end
 
+namespace :one_page_checkout do
+  desc "Copies all migrations and assets (NOTE: This will be obsolete with Rails 3.1)"
+  task :install do
+    Rake::Task['one_page_checkout:install:migrations'].invoke
+    Rake::Task['one_page_checkout:install:assets'].invoke
+  end
+  
   namespace :install do
     desc "Copies all migrations (NOTE: This will be obsolete with Rails 3.1)"
     task :migrations do

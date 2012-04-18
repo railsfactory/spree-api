@@ -60,12 +60,10 @@ def update
 
 	 end
     end
-    public
     def before_one_page
-          #~ @order.bill_address ||= Address.new(:country => default_country)
-          #~ @order.ship_address ||= Address.new(:country => default_country)
-           @order.bill_address ||= Address.default
-            @order.ship_address ||= Address.default
+      @order.bill_address ||= Address.default
+      @order.ship_address ||= Address.default
+    
           @order.shipping_method ||= (@order.rate_hash.first && @order.rate_hash.first[:shipping_method])
           @order.payments.destroy_all if request.put?
         end
@@ -80,6 +78,7 @@ def update
           end
           params[:order]
         end
+      
     def error_response_method(error)
     @error = {}
     @error["code"]=error["status_code"]

@@ -12,7 +12,8 @@ Order.class_eval do
     end
 end
   end
-state_machines.clear
+
+        state_machines.clear
         state_machines[:state] = StateMachine::Machine.new(Order, :initial => 'cart', :use_transactions => false) do 
           event :next do 
             transition :from => 'cart', :to => 'one_page'
@@ -44,5 +45,4 @@ state_machines.clear
           after_transition :to => 'complete', :do => :finalize! 
           after_transition :to => 'canceled', :do => :after_cancel
         end 
-
 	end
