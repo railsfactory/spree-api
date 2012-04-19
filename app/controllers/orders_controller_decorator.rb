@@ -1,9 +1,9 @@
 OrdersController.class_eval do
-$e1={"status_code"=>"500","status_message"=>"Your request parameters are incorrect."}
-$e2={"status_code"=>"500","status_message"=>"Record not found"}
-$e3={"status_code"=>"500","status_message"=>"Payment failed check the details entered"}
-$e4={"status_code"=>"200","status_message"=>"destroyed"}
-$e5={"status_code"=>"202","status_message"=>"Undefined method request check the url"}
+$e1={"status_code"=>"2038","status_message"=>"parameter errors"}
+$e2={"status_code"=>"2037","status_message"=>"Record not found"}
+$e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
+$e4={"status_code"=>"2035","status_message"=>"destroyed"}
+$e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
   #before_filter :access_denied, :except => [:index, :show,:create,:update,:destroy]
   before_filter :check_http_authorization
   before_filter :load_resource
@@ -159,7 +159,9 @@ else
         model_class.includes(eager_load_associations).find(params[:id])
       end
       rescue Exception => e
-    render :text => "Resource not found (#{e.message})", :status => 500
+       error = error_response_method($e2)
+      render :json => error
+    #render :text => "Resource not found (#{e.message})", :status => 500
   end
   end
     end
@@ -202,7 +204,9 @@ else
     #~ end
       if current_user.authentication_token!=params[:authentication_token]
       # if request.headers['HTTP_AUTHORIZATION'].blank?
-        render :text => "Access Denied\n", :status => 401
+        #render :text => "Access Denied\n", :status => 401
+         error = error_response_method($e13)
+      render :json => error
       end if current_user
       end
   end

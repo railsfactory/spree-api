@@ -14,8 +14,8 @@ def create
    @user = build_resource(params[:user])
     logger.debug(@user)
     if resource.save
-      @role=Role.find_by_id(2)
-       @user.roles<< @role
+      #~ @role=Role.find_by_id(2)
+       #~ @user.roles<< @role
     render :json =>@user
     else
       error=error_response_method($e6)
@@ -25,8 +25,8 @@ def create
        @user = build_resource(params[:user])
     logger.debug(@user)
     if resource.save
-      @role=Role.find_by_id(2)
-       @user.roles<< @role
+      #~ @role=Role.find_by_id(2)
+       #~ @user.roles<< @role
       set_flash_message(:notice, :signed_up)
       sign_in_and_redirect(:user, @user)
     else
@@ -58,6 +58,15 @@ def create
 
 	#~ end
 end
+def check_permissions
+    authorize!(:create, resource)
+  end
+
+  def associate_user
+    return unless current_user and current_order
+    current_order.associate_user!(current_user)
+    session[:guest_token] = nil
+  end
 def save_user_role
    return unless params[:user]
 

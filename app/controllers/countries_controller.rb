@@ -30,7 +30,9 @@ class CountriesController <Spree::BaseController
       render :json => error
     end
     rescue Exception=>e
-     render :text => "#{e.message}", :status => 500
+     #render :text => "#{e.message}", :status => 500
+      error = error_response_method($e11)
+      render :json => error
       end
   end
 
@@ -44,7 +46,9 @@ class CountriesController <Spree::BaseController
       #respond_with(@object.errors, :status => 422)
     end
      rescue Exception=>e
-     render :text => "#{e.message}", :status => 500
+      error = error_response_method($e11)
+      render :json => error
+     #render :text => "#{e.message}", :status => 500
       end
 
     end
@@ -54,7 +58,9 @@ class CountriesController <Spree::BaseController
   end
 
   def access_denied
-    render :text => 'access_denied', :status => 401
+    #render :text => 'access_denied', :status => 401
+     error = error_response_method($e12)
+      render :json => error
   end
 
   # Generic action to handle firing of state events on an object
@@ -133,7 +139,9 @@ class CountriesController <Spree::BaseController
         model_class.includes(eager_load_associations).find(params[:id])
       end
       rescue Exception => e
-    render :text => "Resource not found (#{e.message})", :status => 500
+       error = error_response_method($e2)
+      render :json => error
+    #render :text => "Resource not found (#{e.message})", :status => 500
       end
     end
     
@@ -145,7 +153,9 @@ class CountriesController <Spree::BaseController
       model_class.new(params[object_name])
       end
       rescue Exception=> e
-      render :text => " #{e.message}", :status => 500
+       error = error_response_method($e11)
+      render :json => error
+      #render :text => " #{e.message}", :status => 500
       end
     end
     
@@ -208,7 +218,9 @@ class CountriesController <Spree::BaseController
     #~ end
       if current_user.authentication_token!=params[:authentication_token]
       # if request.headers['HTTP_AUTHORIZATION'].blank?
-        render :text => "Access Denied\n", :status => 401
+        #render :text => "Access Denied\n", :status => 401
+         error = error_response_method($e13)
+      render :json => error
     end if current_user
   end
 end

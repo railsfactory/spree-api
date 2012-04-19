@@ -3,12 +3,12 @@ CheckoutController.class_eval do
 
   before_filter :load_order
   rescue_from Spree::GatewayError, :with => :rescue_from_spree_gateway_error
-  $e1={"status_code"=>"500","status_message"=>"Your request parameters are incorrect."}
-$e2={"status_code"=>"500","status_message"=>"Record not found"}
-$e3={"status_code"=>"500","status_message"=>"Payment failed check the details entered"}
-$e4={"status_code"=>"200","status_message"=>"destroyed"}
-$e5={"status_code"=>"404","status_message"=>"Undefined method request check the url"}
-$e6={"status_code"=>"200","status_message"=>"No items to checkout "}
+$e1={"status_code"=>"2038","status_message"=>"parameter errors"}
+$e2={"status_code"=>"2037","status_message"=>"Record not found"}
+$e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
+$e4={"status_code"=>"2035","status_message"=>"destroyed"}
+$e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
+$e7={"status_code"=>"2031","status_message"=>"No items to checkout "}
 def update
 	 if !params[:format].nil? && params[:format] == "json"
     begin
@@ -92,7 +92,7 @@ def update
   if !params[:format].nil? && params[:format] == "json"
     @order = current_order
     #redirect_to cart_path and return unless @order and @order.checkout_allowed?
-    render :json => error_response_method($e6) and return unless @order and @order.checkout_allowed?
+    render :json => error_response_method($e7) and return unless @order and @order.checkout_allowed?
     redirect_to cart_path and return if @order.completed?
     @order.state = params[:state] if params[:state]
     state_callback(:before)

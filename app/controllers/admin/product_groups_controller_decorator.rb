@@ -39,7 +39,9 @@ Admin::ProductGroupsController.class_eval do
       render :json => error
     end
     rescue Exception=>e
-     render :text => "#{e.message}", :status => 500
+      error = error_response_method($e11)
+      render :json => error
+    # render :text => "#{e.message}", :status => 500
    end
    else
      p"i came in"
@@ -71,7 +73,9 @@ Admin::ProductGroupsController.class_eval do
       render :json => error
     end
      rescue Exception=>e
-     render :text => "#{e.message}", :status => 500
+     #render :text => "#{e.message}", :status => 500
+       error = error_response_method($e11)
+      render :json => error
    end
    else
       invoke_callbacks(:update, :before)
@@ -136,7 +140,9 @@ end
 
   def access_denied
     if !params[:format].nil? && params[:format] == "json"
-    render :text => 'access_denied', :status => 401
+    #render :text => 'access_denied', :status => 401
+      error = error_response_method($e12)
+      render :json => error
   end
   end
 
@@ -241,7 +247,9 @@ end
         model_class.includes(eager_load_associations).find(params[:id])
       end
       rescue Exception => e
-    render :text => "Resource not found (#{e.message})", :status => 500
+    #render :text => "Resource not found (#{e.message})", :status => 500
+      error = error_response_method($e2)
+      render :json => error
   end
   else
     ProductGroup.find_by_permalink(params[:id])
@@ -257,7 +265,9 @@ end
       model_class.new(params[object_name])
       end
       rescue Exception=> e
-      render :text => " #{e.message}", :status => 500
+      #render :text => " #{e.message}", :status => 500
+        error = error_response_method($e11)
+      render :json => error
     end
     end
     
@@ -384,7 +394,9 @@ def location_after_save
     p current_user
     p params[:authentication_token]
      if current_user.authentication_token!=params[:authentication_token]
-        render :text => "Access Denied\n", :status => 401
+        #render :text => "Access Denied\n", :status => 401
+          error = error_response_method($e13)
+      render :json => error
     end if current_user
   end
 end

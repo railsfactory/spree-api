@@ -1,9 +1,9 @@
   Admin::TaxonomiesController.class_eval do
-    $e1={"status_code"=>"500","status_message"=>"Your request parameters are incorrect."}
-$e2={"status_code"=>"500","status_message"=>"Record not found"}
-$e3={"status_code"=>"500","status_message"=>"Payment failed check the details entered"}
-$e4={"status_code"=>"200","status_message"=>"destroyed"}
-$e5={"status_code"=>"202","status_message"=>"Undefined method request check the url"}
+$e1={"status_code"=>"2038","status_message"=>"parameter errors"}
+$e2={"status_code"=>"2037","status_message"=>"Record not found"}
+$e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
+$e4={"status_code"=>"2035","status_message"=>"destroyed"}
+$e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
       require 'spree_core/action_callbacks'
   before_filter :check_http_authorization
   before_filter :load_resource
@@ -42,7 +42,9 @@ $e5={"status_code"=>"202","status_message"=>"Undefined method request check the 
       render :json => error
     end
     rescue Exception=>e
-     render :text => "#{e.message}", :status => 500
+     #render :text => "#{e.message}", :status => 500
+      error = error_response_method($e11)
+      render :json => error
    end
    else
      invoke_callbacks(:create, :before)
@@ -74,7 +76,9 @@ $e5={"status_code"=>"202","status_message"=>"Undefined method request check the 
       render :json => error
     end
      rescue Exception=>e
-     render :text => "#{e.message}", :status => 500
+     #render :text => "#{e.message}", :status => 500
+      error = error_response_method($e11)
+      render :json => error
    end
    else
       invoke_callbacks(:update, :before)
@@ -135,7 +139,9 @@ end
 
   def access_denied
     if !params[:format].nil? && params[:format] == "json"
-    render :text => 'access_denied', :status => 401
+    #render :text => 'access_denied', :status => 401
+     error = error_response_method($e12)
+      render :json => error
   end
   end
 
@@ -235,7 +241,9 @@ end
         model_class.includes(eager_load_associations).find(params[:id])
       end
       rescue Exception => e
-    render :text => "Resource not found (#{e.message})", :status => 500
+    #render :text => "Resource not found (#{e.message})", :status => 500
+     error = error_response_method($e2)
+      render :json => error
   end
   else
     
@@ -256,7 +264,9 @@ end
       model_class.new(params[object_name])
       end
       rescue Exception=> e
-      render :text => " #{e.message}", :status => 500
+      #render :text => " #{e.message}", :status => 500
+       error = error_response_method($e11)
+      render :json => error
     end
 
     end
@@ -382,7 +392,9 @@ def location_after_save
   def check_http_authorization
            if !params[:format].nil? && params[:format] == "json"
       if current_user.authentication_token!=params[:authentication_token]
-        render :text => "Access Denied\n", :status => 401
+        #render :text => "Access Denied\n", :status => 401
+         error = error_response_method($e13)
+      render :json => error
     end if current_user
   end
 end

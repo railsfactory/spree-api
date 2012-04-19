@@ -40,7 +40,9 @@ Admin::PaymentMethodsController.class_eval do
       render :json => error
     end
     rescue Exception=>e
-     render :text => "#{e.message}", :status => 500
+    # render :text => "#{e.message}", :status => 500
+      error = error_response_method($e11)
+      render :json => error
    end
    else
         @payment_method = params[:payment_method][:type].constantize.new(params[:payment_method])
@@ -75,7 +77,9 @@ Admin::PaymentMethodsController.class_eval do
       #respond_with(@object.errors, :status => 422)
     end
      rescue Exception=>e
-     render :text => "#{e.message}", :status => 500
+     #render :text => "#{e.message}", :status => 500
+       error = error_response_method($e11)
+      render :json => error
    end
    else
    invoke_callbacks(:update, :before)
@@ -134,7 +138,9 @@ end
 
   def access_denied
     if !params[:format].nil? && params[:format] == "json"
-    render :text => 'access_denied', :status => 401
+    #render :text => 'access_denied', :status => 401
+    error = error_response_method($e12)
+      render :json => error
   end
   end
 
@@ -223,7 +229,9 @@ end
         model_class.includes(eager_load_associations).find(params[:id])
       end
       rescue Exception => e
-    render :text => "Resource not found (#{e.message})", :status => 500
+        error = error_response_method($e2)
+      render :json => error
+    #render :text => "Resource not found (#{e.message})", :status => 500
   end
   else
        if parent_data.present?
@@ -242,7 +250,9 @@ end
       model_class.new(params[object_name])
       end
       rescue Exception=> e
-      render :text => " #{e.message}", :status => 500
+        error = error_response_method($e11)
+      render :json => error
+      #render :text => " #{e.message}", :status => 500
       end
     end
     
@@ -325,7 +335,9 @@ end
     #~ end
       if current_user.authentication_token!=params[:authentication_token]
       # if request.headers['HTTP_AUTHORIZATION'].blank?
-        render :text => "Access Denied\n", :status => 401
+        #render :text => "Access Denied\n", :status => 401
+        error = error_response_method($e13)
+      render :json => error
       end if current_user
       end
   end

@@ -2,7 +2,7 @@
 before_filter :load_order
   before_filter :load_shipment, :only => [:destroy, :edit, :update, :fire]
   before_filter :load_shipping_methods, :except => [:country_changed, :index]
-  $e7={"status_code"=>"200","status_message"=>"sorry! backordered items cant be shipped Once stock updated this action could be done"}
+  $e7={"status_code"=>"2031","status_message"=>"sorry! backordered items cant be shipped Once stock updated this action could be done"}
 def index
    #if !params[:format].nil? && params[:format] == "json"
      @shipments = @order.shipments

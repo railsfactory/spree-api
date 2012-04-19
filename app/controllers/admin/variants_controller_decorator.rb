@@ -42,7 +42,9 @@ $e5={"status_code"=>"202","status_message"=>"Undefined method request check the 
     p "i am in api method"
     if !params[:format].nil? && params[:format] == "json"
     begin
+     invoke_callbacks(:create, :before)
     if @object.save
+         invoke_callbacks(:create, :after)
      # render :text => "Resource created\n", :status => 201, :location => object_url
      render :json => @object.to_json, :status => 201
       else
@@ -51,7 +53,9 @@ $e5={"status_code"=>"202","status_message"=>"Undefined method request check the 
       render :json => error
     end
     rescue Exception=>e
-     render :text => "#{e.message}", :status => 500
+     #render :text => "#{e.message}", :status => 500
+      error = error_response_method($e11)
+      render :json => error
    end
    else
      invoke_callbacks(:create, :before)
@@ -76,7 +80,9 @@ $e5={"status_code"=>"202","status_message"=>"Undefined method request check the 
   def update
     if !params[:format].nil? && params[:format] == "json"
     begin
+          invoke_callbacks(:update, :before)
       if @object.update_attributes(params[object_name])
+          invoke_callbacks(:update, :after)
           render :json => @object.to_json, :status => 201
     else
       error = error_response_method($e1)
@@ -84,7 +90,9 @@ $e5={"status_code"=>"202","status_message"=>"Undefined method request check the 
       #respond_with(@object.errors, :status => 422)
     end
      rescue Exception=>e
-     render :text => "#{e.message}", :status => 500
+      error = error_response_method($e11)
+      render :json => error
+     #render :text => "#{e.message}", :status => 500
    end
    else
      p "i came inside"
@@ -138,22 +146,23 @@ else
     end
 end
   def admin_token_passed_in_headers
-    p "111111111111111111111111111111111111111111111111111111111"
-     if !params[:format].nil? && params[:format] == "json"
+       if !params[:format].nil? && params[:format] == "json"
     request.headers['HTTP_AUTHORIZATION'].present?
     end
   end
 
   def access_denied
-    p "222222222222222222222222222222222222222222222222222222222222"
+  
     if !params[:format].nil? && params[:format] == "json"
-    render :text => 'access_denied', :status => 401
+    #render :text => 'access_denied', :status => 401
+     error = error_response_method($e12)
+      render :json => error
   end
   end
 
   # Generic action to handle firing of state events on an object
   def event
-    p "333333333333333333333333333333333333333333333333333333333333"
+    
     if !params[:format].nil? && params[:format] == "json"
     valid_events = model_class.state_machine.events.map(&:name)
     valid_events_for_object = @object ? @object.state_transitions.map(&:event) : []
@@ -196,25 +205,21 @@ end
   protected
   
     def model_class
-      p "4444444444444444444444444444444444444444444444444444444444444444"
-      #if !params[:format].nil? && params[:format] == "json"
+    
       controller_name.classify.constantize
-      #end
+    
     end
     
     def object_name
-      p "555555555555555555555555555555555555555555555555555555555555555555555"
-      #if !params[:format].nil? && params[:format] == "json"
+     
       controller_name.singularize
-      #end
+
     end
     
     def load_resource
-      #if !params[:format].nil? && params[:format] == "json"
-      p "666666666666666666666666666666666666666666666666666666666666666666666"
-      p "i am entering here"
+     
       if member_action?
-        p "1111111111111111111111111111111111111"
+       
         @object ||= load_resource_instance
         instance_variable_set("@#{object_name}", @object)
         p @object
@@ -222,25 +227,24 @@ end
         @collection ||= collection
         instance_variable_set("@#{controller_name}", @collection)
       end
-     # end
+    
     end
     
     def load_resource_instance
-      p "777777777777777777777777777777777777777777777777777777777777777777777777"
-     #if !params[:format].nil? && params[:format] == "json"
+   
       if new_actions.include?(params[:action].to_sym)
       build_resource
       elsif params[:id]
         find_resource
       end
-      #end
+      
     end
      def parent_data
-       p "88888888888888888888888888888888888888888888888888888888888888888888888"
+     
     self.class.parent_data
   end
     def parent
-      p "99999999999999999999999999999999999999999999999999999999999999999999999"
+    
      if !params[:format].nil? && params[:format] == "json"
       nil
       else
@@ -254,7 +258,7 @@ end
     end
 
     def find_resource
-      p "111100000000000000000000000000001111111111111111111111111000000000000000"
+     
       if !params[:format].nil? && params[:format] == "json"
       begin
         if parent.present?
@@ -263,12 +267,12 @@ end
         model_class.includes(eager_load_associations).find(params[:id])
       end
       rescue Exception => e
-    render :text => "Resource not found (#{e.message})", :status => 500
+       error = error_response_method($e2)
+      render :json => error
+    #render :text => "Resource not found (#{e.message})", :status => 500
   end
   else
-    p "i am inn"
-    #~ edit_admin_product_url(@product)
-     #Product.find_by_permalink(params[:id])
+   
   if parent_data.present?
       parent.send(controller_name).find(params[:id])
       p parent
@@ -276,14 +280,12 @@ end
       model_class.find(params[:id])
       p model_class
     end
-    #edit_admin_product_url(@product)
+   
   end
     end
-      #~ def location_after_save
-    #~ edit_admin_product_url(@product)
-  #~ end
+    
     def build_resource
-  # if !params[:format].nil? && params[:format] == "json"
+
       begin
       if parent.present?
       parent.send(controller_name).build(params[object_name])
@@ -291,14 +293,15 @@ end
       model_class.new(params[object_name])
       end
       rescue Exception=> e
-      render :text => " #{e.message}", :status => 500
+       error = error_response_method($e11)
+      render :json => error
+      #render :text => " #{e.message}", :status => 500
     end
     #end
     end
     
     def collection
-      p "343434343434343434343434343434343434343434343434343434343434343434343"
-       if !params[:format].nil? && params[:format] == "json"
+           if !params[:format].nil? && params[:format] == "json"
           return @search unless @search.nil?      
       params[:search] = {} if params[:search].blank?
       params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
@@ -320,15 +323,13 @@ end
     end
 
     def collection_serialization_options
-      p"^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-     if !params[:format].nil? && params[:format] == "json"
+        if !params[:format].nil? && params[:format] == "json"
       {}
       end
     end
 
     def object_serialization_options
-      p "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-       if !params[:format].nil? && params[:format] == "json"
+           if !params[:format].nil? && params[:format] == "json"
       {}
       end
     end
@@ -406,35 +407,33 @@ def location_after_save
   end
 
     def collection_actions
-       #if !params[:format].nil? && params[:format] == "json"
+     
       [:index]
-      #end
+    
     end
 
     def member_action?
-       #if !params[:format].nil? && params[:format] == "json"
+      
       !collection_actions.include? params[:action].to_sym
-      #end
+      
     end
 
     def new_actions
-      #if !params[:format].nil? && params[:format] == "json"
+     
       [:new, :create]
-    #end
+   
     end
 
   private
   def check_http_authorization
-    p "i am checking authentication_token"
+
          if !params[:format].nil? && params[:format] == "json"
-    #~ if request.headers['HTTP_AUTHORIZATION'].blank?
-      #~ render :text => "Access Denied\n", :status => 401
-    #~ end
-    p current_user.authentication_token
-    p current_user
+  
+   
       if current_user.authentication_token!=params[:authentication_token]
-      # if request.headers['HTTP_AUTHORIZATION'].blank?
-        render :text => "Access Denied\n", :status => 401
+     error = error_response_method($e13)
+      render :json => error
+        #render :text => "Access Denied\n", :status => 401
     end if current_user
   end
 end

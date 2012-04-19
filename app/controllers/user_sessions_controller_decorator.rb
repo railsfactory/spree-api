@@ -1,6 +1,6 @@
 UserSessionsController.class_eval do 
-  $e8={"status_code"=>"500","status_message"=>"Username/Password is incorrect"}
-  $e9={"status_code"=>"200","status_message"=>"logged out sucessfully"}
+  $e8={"status_code"=>"2032","status_message"=>"Username/Password is incorrect"}
+  $e9={"status_code"=>"2033","status_message"=>"logged out sucessfully"}
  include SpreeBase
   helper :users, 'spree/base'
 
