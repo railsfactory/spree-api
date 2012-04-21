@@ -1,4 +1,6 @@
 Admin::ProductGroupsController.class_eval do
+    include ApiHelper
+   before_filter :set_current_user
   require 'spree_core/action_callbacks'
   before_filter :check_http_authorization
   before_filter :load_resource
