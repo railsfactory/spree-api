@@ -53,10 +53,6 @@ def create
     end
   end
    def destroy
-     #~ user=User.find_by_id(current_user.id) if current_user&& if !params[:format].nil? && params[:format] == "json"
-     #p user.authentication_token
-     current_user.authentication_token=nil if current_user && (!params[:format].nil?) && (params[:format] == "json")
-     current_user.save if current_user && (!params[:format].nil?) && (params[:format] == "json")
     session.clear
    # super
     if !params[:format].nil? && params[:format] == "json"
