@@ -1,6 +1,4 @@
 CheckoutController.class_eval do
-    include ApiHelper
-   before_filter :set_current_user
    ssl_required
 
   before_filter :load_order

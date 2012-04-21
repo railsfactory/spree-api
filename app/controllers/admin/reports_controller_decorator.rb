@@ -1,7 +1,4 @@
   Admin::ReportsController.class_eval do
-		  include ApiHelper
-   before_filter :set_current_user
-	   before_filter :check_http_authorization
 	def best_selling_products
 	  return_data=Hash.new
 	  prod_array=Array.new
@@ -132,15 +129,5 @@ def month_order_count
 	  return_data[:orders] = prod_array
 	  render :json => return_data.to_json, :status => 201
 	end
-	def check_http_authorization
-    p "22222222222222222222222222222222222222222222"
-    p "i am authentication_token" 
-         if !params[:format].nil? && params[:format] == "json"
-      if current_user.authentication_token!=params[:authentication_token]
-        #render :text => "Access Denied\n", :status => 401
-        error = error_response_method($e12)
-      render :json => error
-    end if current_user
-  end
-end
+	
 end
