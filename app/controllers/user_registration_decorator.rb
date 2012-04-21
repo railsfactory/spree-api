@@ -1,4 +1,6 @@
  UserRegistrationsController.class_eval do
+     #~ include ApiHelper
+   #~ before_filter :set_current_user
     include SpreeBase
   helper :users, 'spree/base'
 

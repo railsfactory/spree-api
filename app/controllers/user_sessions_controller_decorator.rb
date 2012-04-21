@@ -1,4 +1,6 @@
 UserSessionsController.class_eval do 
+    #~ include ApiHelper
+   #~ before_filter :set_current_user
   $e8={"status_code"=>"2032","status_message"=>"Username/Password is incorrect"}
   $e9={"status_code"=>"2033","status_message"=>"logged out sucessfully"}
  include SpreeBase
@@ -51,14 +53,16 @@ def create
     end
   end
    def destroy
+     current_user.authentication_token=nil if current_user && (!params[:format].nil? && params[:format] == "json")
+     current_user.save if current_user && (!params[:format].nil? && params[:format] == "json")
     session.clear
-      #session[:authentication_token]=nil
    # super
     if !params[:format].nil? && params[:format] == "json"
      error=error_response_method($e9)
         render:json=>error
         else
         super
-end        
+    
+  end
   end
   end

@@ -1,4 +1,6 @@
 Admin::MailMethodsController.class_eval do 
+    #include ApiHelper
+   #before_filter :set_current_user
 $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
 $e2={"status_code"=>"2037","status_message"=>"Record not found"}
 $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
@@ -6,6 +8,8 @@ $e4={"status_code"=>"2035","status_message"=>"destroyed"}
 $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
 $e11={"status_code"=>"2040","status_message"=>"something went wrong check parameters"}
      require 'spree_core/action_callbacks'
+    include ApiHelper
+     #~ before_filter :set_current_user
   before_filter :check_http_authorization
   before_filter :load_resource
   skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
@@ -390,6 +394,8 @@ def location_after_save
 
   private
   def check_http_authorization
+    p "22222222222222222222222222222222222222222222"
+    p "i am authentication_token" 
          if !params[:format].nil? && params[:format] == "json"
       if current_user.authentication_token!=params[:authentication_token]
         #render :text => "Access Denied\n", :status => 401
