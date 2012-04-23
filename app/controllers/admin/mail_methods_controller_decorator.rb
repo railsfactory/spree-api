@@ -1,5 +1,5 @@
 Admin::MailMethodsController.class_eval do 
-    include ApiHelper
+    #include ApiHelper
    #before_filter :set_current_user
 $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
 $e2={"status_code"=>"2037","status_message"=>"Record not found"}
@@ -8,7 +8,7 @@ $e4={"status_code"=>"2035","status_message"=>"destroyed"}
 $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
 $e11={"status_code"=>"2040","status_message"=>"something went wrong check parameters"}
      require 'spree_core/action_callbacks'
-    include ApiHelper
+    #include ApiHelper
      #~ before_filter :set_current_user
   before_filter :check_http_authorization
   before_filter :load_resource
