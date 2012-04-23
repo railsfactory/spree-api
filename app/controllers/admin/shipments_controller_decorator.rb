@@ -1,6 +1,4 @@
   Admin::ShipmentsController.class_eval do
-      include ApiHelper
-   before_filter :set_current_user
 before_filter :load_order
   before_filter :load_shipment, :only => [:destroy, :edit, :update, :fire]
   before_filter :load_shipping_methods, :except => [:country_changed, :index]

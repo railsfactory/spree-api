@@ -1,6 +1,4 @@
  UsersController.class_eval do
-     include ApiHelper
-   #~ before_filter :set_current_user
     $e6={"status_code"=>"2034","status_message"=>"sorry email already taken"}
  prepend_before_filter :load_object, :only => [:show, :edit, :update]
   prepend_before_filter :authorize_actions, :only => :new

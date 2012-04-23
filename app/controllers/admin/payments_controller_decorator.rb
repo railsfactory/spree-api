@@ -1,6 +1,4 @@
 Admin::PaymentsController.class_eval do
-	  include ApiHelper
-   before_filter :set_current_user
 	 before_filter :load_order, :only => [:create, :new, :index, :fire]
   before_filter :load_payment, :except => [:create, :new, :index]
   before_filter :load_data

@@ -1,6 +1,4 @@
 class CountriesController <Spree::BaseController
-    include ApiHelper
-   #before_filter :set_current_user
   before_filter :access_denied, :except => [:index, :show,:create,:update,:delete]
   before_filter :check_http_authorization
   before_filter :load_resource
