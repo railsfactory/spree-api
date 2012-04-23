@@ -1,5 +1,5 @@
 Admin::MailMethodsController.class_eval do 
-    #include ApiHelper
+    include ApiHelper
    #before_filter :set_current_user
 $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
 $e2={"status_code"=>"2037","status_message"=>"Record not found"}
@@ -394,16 +394,30 @@ def location_after_save
 
   private
   def check_http_authorization
-    p "22222222222222222222222222222222222222222222"
-    p "i am authentication_token" 
-         if !params[:format].nil? && params[:format] == "json"
-      if current_user.authentication_token!=params[:authentication_token]
+    #~ p "22222222222222222222222222222222222222222222"
+    #~ p "i am authentication_token" 
+         #~ if !params[:format].nil? && params[:format] == "json"
+      #~ if current_user.authentication_token!=params[:authentication_token]
+        #~ #render :text => "Access Denied\n", :status => 401
+        #~ error = error_response_method($e12)
+      #~ render :json => error
+    #~ end if current_user
+  #~ end
+#~ end
+ if !params[:format].nil? && params[:format] == "json"
+           user=User.find_by_authentication_token(params[:authentication_token])
+        if user.present?
+          current_user=user
+          else 
+      #if current_user.authentication_token!=params[:authentication_token]
         #render :text => "Access Denied\n", :status => 401
-        error = error_response_method($e12)
+        error = error_response_method($e13)
       render :json => error
-    end if current_user
+    #end if current_user
   end
 end
+end
+  end
 
   
 end

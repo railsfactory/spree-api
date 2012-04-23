@@ -1,5 +1,5 @@
 UserSessionsController.class_eval do 
-    #~ include ApiHelper
+     include ApiHelper
    #~ before_filter :set_current_user
   $e8={"status_code"=>"2032","status_message"=>"Username/Password is incorrect"}
   $e9={"status_code"=>"2033","status_message"=>"logged out sucessfully"}

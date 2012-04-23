@@ -1,5 +1,5 @@
 OrdersController.class_eval do
-    #~ include ApiHelper
+    include ApiHelper
    #~ before_filter :set_current_user
 $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
 $e2={"status_code"=>"2037","status_message"=>"Record not found"}
