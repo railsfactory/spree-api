@@ -10,6 +10,10 @@ Admin::ProductGroupsController.class_eval do
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
  # respond_to :html
   respond_to :js, :except => [:show, :index]
+  def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||= Ability.new(user)
+  end
  def new
     respond_with(@object) do |format|
       format.html { render :layout => !request.xhr? }

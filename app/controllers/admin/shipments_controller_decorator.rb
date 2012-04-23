@@ -3,6 +3,10 @@ before_filter :load_order
   before_filter :load_shipment, :only => [:destroy, :edit, :update, :fire]
   before_filter :load_shipping_methods, :except => [:country_changed, :index]
   $e7={"status_code"=>"2031","status_message"=>"sorry! backordered items cant be shipped Once stock updated this action could be done"}
+  def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||= Ability.new(user)
+  end
 def index
    #if !params[:format].nil? && params[:format] == "json"
      @shipments = @order.shipments

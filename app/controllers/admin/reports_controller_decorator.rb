@@ -1,4 +1,8 @@
   Admin::ReportsController.class_eval do
+		def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||= Ability.new(user)
+  end
 	def best_selling_products
 	  return_data=Hash.new
 	  prod_array=Array.new

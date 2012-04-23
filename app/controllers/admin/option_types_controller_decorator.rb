@@ -14,6 +14,10 @@ $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
  # respond_to :html
   respond_to :js, :except => [:show, :index]
+  def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||= Ability.new(user)
+  end
  def new
     respond_with(@object) do |format|
       format.html { render :layout => !request.xhr? }
@@ -401,9 +405,7 @@ def location_after_save
   def check_http_authorization
     p "i am authorizing"
          if !params[:format].nil? && params[:format] == "json"
-    p current_user.authentication_token
-    p current_user
-    p params[:authentication_token]
+
      if current_user.authentication_token!=params[:authentication_token]
         #render :text => "Access Denied\n", :status => 401
           error = error_response_method($e13)

@@ -14,7 +14,10 @@ $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the
   respond_to :json
 
   rescue_from ActionController::UnknownAction, :with => :render_404
-
+def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||= Ability.new(user)
+  end
    def index
     if !params[:format].nil? && params[:format] == "json"
       puts "now the cursor in if condition"

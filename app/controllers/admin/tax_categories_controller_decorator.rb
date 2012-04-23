@@ -22,6 +22,11 @@ require 'spree_core/action_callbacks'
     #~ end
   #~ end
   
+def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||= Ability.new(user)
+   end
+
    def index
      if !params[:format].nil? && params[:format] == "json"
 					respond_with(@collection) do |format|

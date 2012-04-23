@@ -9,6 +9,10 @@ $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details e
 $e4={"status_code"=>"2035","status_message"=>"destroyed"}
 $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
 $e7={"status_code"=>"2031","status_message"=>"No items to checkout "}
+def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||= Ability.new(user)
+  end
 def update
 	 if !params[:format].nil? && params[:format] == "json"
     begin

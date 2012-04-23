@@ -6,7 +6,10 @@ class CountriesController <Spree::BaseController
   authorize_resource
   
   respond_to :json
-
+def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||= Ability.new(user)
+  end
    def index
     respond_with(@collection) do |format|
       format.json { render :json => @collection.to_json(collection_serialization_options) }

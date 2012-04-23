@@ -4,6 +4,11 @@ $e2={"status_code"=>"2037","status_message"=>"Record not found"}
 $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
 $e4={"status_code"=>"2035","status_message"=>"destroyed"}
 $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
+
+def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||= Ability.new(user)
+  end
   private
     def parent
       if params[:order_id]

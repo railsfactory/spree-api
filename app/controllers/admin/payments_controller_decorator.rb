@@ -2,6 +2,10 @@ Admin::PaymentsController.class_eval do
 	 before_filter :load_order, :only => [:create, :new, :index, :fire]
   before_filter :load_payment, :except => [:create, :new, :index]
   before_filter :load_data
+	def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||= Ability.new(user)
+  end
 	def index
 		  @payments = @order.payments
 		  if !params[:format].nil? && params[:format] == "json"

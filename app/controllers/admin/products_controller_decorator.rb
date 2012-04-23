@@ -20,6 +20,10 @@ $e13={"status_code"=>"2042","status_message"=>"authentication token is not valid
   before_filter :check_json_authenticity, :only => :index
   before_filter :load_data, :except => :index
   update.before :update_before
+  def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||= Ability.new(user)
+  end
  def new
     respond_with(@object) do |format|
       format.html { render :layout => !request.xhr? }

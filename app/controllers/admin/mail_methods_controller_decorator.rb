@@ -9,12 +9,28 @@ $e11={"status_code"=>"2040","status_message"=>"something went wrong check parame
   before_filter :check_http_authorization
   before_filter :load_resource
   skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
-  authorize_resource
+  authorize_resource 
+  #~ before_filter :authorize_resource123
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
  # respond_to :html
   respond_to :js, :except => [:show, :index]
+  
+def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||= Ability.new(user)
+  end
+  
+  def authorize_resource123
+    p "i am here authe"
+     if !params[:format].nil? && params[:format] == "json"
+       if !current_user.present?
+       user=User.find_by_authentication_token(params[:authentication_token])
+       current_user=user
+       end
+       end
+    end
    def index
      if !params[:format].nil? && params[:format] == "json"
 					respond_with(@collection) do |format|
@@ -390,6 +406,7 @@ def location_after_save
 
   private
   def check_http_authorization
+    p "1`11111111111111111111111111111111111111111111!!!!"
          if !params[:format].nil? && params[:format] == "json"
       if current_user.authentication_token!=params[:authentication_token]
         #render :text => "Access Denied\n", :status => 401
