@@ -395,9 +395,6 @@ def location_after_save
   def check_http_authorization
     p "i am authorizing"
          if !params[:format].nil? && params[:format] == "json"
-    p current_user.authentication_token
-    p current_user
-    p params[:authentication_token]
      if current_user.authentication_token!=params[:authentication_token]
         #render :text => "Access Denied\n", :status => 401
           error = error_response_method($e13)
