@@ -1,4 +1,5 @@
 OrdersController.class_eval do
+  #load_and_authorize_resource
 $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
 $e2={"status_code"=>"2037","status_message"=>"Record not found"}
 $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
@@ -6,14 +7,42 @@ $e4={"status_code"=>"2035","status_message"=>"destroyed"}
 $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
   #before_filter :access_denied, :except => [:index, :show,:create,:update,:destroy]
   before_filter :check_http_authorization
+  before_filter :check_authorization
   before_filter :load_resource
   skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
   authorize_resource
-  
+   before_filter :set_current_user
   respond_to :json
+  
+
+  #~ def authorize_admin
+    #~ authorize! :admin, Object
+  #~ end
+def set_current_user
+    p "dgredsgfdgdrfgfdgfdgfd"
+  p  User.current = current_user
+  end
+  def check_authorization
+    p "sahdfishcsdgcigsdcgsdckhskchkshckhskhdcksdhc"
+   # p current_user
+   User.current = current_user
+    p User.current
+   p session[:access_token] ||= params[:token]
+   p order = Order.find_by_number(params[:id]) || current_order
+
+    if order
+      p authorize! :edit, order, session[:access_token]
+    else
+      authorize!(:create, Order)
+    end
+  end
 def current_ability
+    if !params[:format].nil? && params[:format] == "json"
     user= current_user || User.find_by_authentication_token(params[:authentication_token])
     @current_ability ||= Ability.new(user)
+    else
+      @current_ability ||= ::Ability.new(current_user)
+      end
   end
   def index
     respond_with(@collection) do |format|

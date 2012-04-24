@@ -1,5 +1,9 @@
 CheckoutController.class_eval do
-   ssl_required
+   #ssl_required
+   
+ before_filter :check_authorization
+#before_filter :authorize_admin
+
 
   before_filter :load_order
   rescue_from Spree::GatewayError, :with => :rescue_from_spree_gateway_error
@@ -9,9 +13,70 @@ $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details e
 $e4={"status_code"=>"2035","status_message"=>"destroyed"}
 $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
 $e7={"status_code"=>"2031","status_message"=>"No items to checkout "}
+
+  before_filter :check_registration, :except => [:registration, :update_registration]
+
+  helper :users
+  def authorize_admin
+    authorize! :admin, Object
+  end
+  def registration
+    @user = User.new
+  end
+
+  def update_registration
+    # hack - temporarily change the state to something other than cart so we can validate the order email address
+    current_order.state = "one_page"
+    if current_order.update_attributes(params[:order])
+      redirect_to checkout_path
+    else
+      @user = User.new
+      render 'registration'
+    end
+  end
+
+    #~ def current_ability
+      #~ puts "current ability method"
+      #~ p current_user
+      #~ @current_ability ||= ::Ability.new(current_user)
+    #~ end
+   
+   def authorize!(*args)
+     puts "entered in to the authorized method"
+      @_authorized = true
+      p current_ability.authorize!(*args)
+    end
+    
+  def check_authorization
+    puts "something"
+    puts session[:access_token]
+    puts current_order
+    authorize!(:edit, current_order, session[:access_token])
+  end
+
+  # Introduces a registration step whenever the +registration_step+ preference is true.
+  def check_registration
+    return unless Spree::Auth::Config[:registration_step]
+    return if current_user or current_order.email
+    store_location
+    redirect_to checkout_registration_path
+  end
+
+  # Overrides the equivalent method defined in spree_core.  This variation of the method will ensure that users
+  # are redirected to the tokenized order url unless authenticated as a registered user.
+  def completion_route
+    return order_path(@order) if current_user
+    token_order_path(@order, @order.token)
+  end
 def current_ability
+   puts "current ability method"
+    if !params[:format].nil? && params[:format] == "json"
     user= current_user || User.find_by_authentication_token(params[:authentication_token])
     @current_ability ||= Ability.new(user)
+    else
+      p "lshjusgjgsajgdfjksagdgjkasgdutgaqsbdjgsaudgsa"
+      p @current_ability ||= ::Ability.new(current_user)
+      end
   end
 def update
 	 if !params[:format].nil? && params[:format] == "json"
