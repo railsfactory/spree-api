@@ -452,9 +452,6 @@ def location_after_save
          if !params[:format].nil? && params[:format] == "json"
     #~ if request.headers['HTTP_AUTHORIZATION'].blank?
       #~ render :text => "Access Denied\n", :status => 401
-    #~ end
-    p current_user.authentication_token
-    p current_user
       if current_user.authentication_token!=params[:authentication_token]
       # if request.headers['HTTP_AUTHORIZATION'].blank?
         #render :text => "Access Denied\n", :status => 401
