@@ -1,7 +1,7 @@
 Admin::ProductGroupsController.class_eval do
   require 'spree_core/action_callbacks'
   before_filter :check_http_authorization
-  before_filter :authenticate_user!
+  #before_filter :authenticate_user!
   before_filter :load_resource
   skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
   authorize_resource
