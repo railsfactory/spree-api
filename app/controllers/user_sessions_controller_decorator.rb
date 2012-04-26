@@ -51,13 +51,16 @@ def create
     end
   end
    def destroy
-    session.clear
       #session[:authentication_token]=nil
    # super
     if !params[:format].nil? && params[:format] == "json"
+     p current_user=User.find_by_authentication_token(params[:authentication_token])
+      p current_user.authentication_token=nil
+      current_user.save
      error=error_response_method($e9)
         render:json=>error
         else
+              session.clear
         super
 end        
   end
