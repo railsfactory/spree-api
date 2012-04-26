@@ -3,7 +3,7 @@ CheckoutController.class_eval do
    
  before_filter :check_authorization
 #before_filter :authorize_admin
-
+ before_filter :check_registration, :except => [:registration, :update_registration]
 
   before_filter :load_order
   rescue_from Spree::GatewayError, :with => :rescue_from_spree_gateway_error
@@ -14,22 +14,31 @@ $e4={"status_code"=>"2035","status_message"=>"destroyed"}
 $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
 $e7={"status_code"=>"2031","status_message"=>"No items to checkout "}
 
-  before_filter :check_registration, :except => [:registration, :update_registration]
+ 
 
   helper :users
-  def authorize_admin
-    authorize! :admin, Object
-  end
+  #~ def authorize_admin
+    #~ authorize! :admin, Object
+  #~ end
   def registration
     @user = User.new
   end
 
   def update_registration
     # hack - temporarily change the state to something other than cart so we can validate the order email address
-    current_order.state = "one_page"
-    if current_order.update_attributes(params[:order])
+    p "iiiiiiiiiiiiiiiiiiiiiiiii wwwwwwwwwwwwwwwwwwwwwwaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaanttttttttttttttttttttttt current order"
+    p current_order
+        p current_user
+   #p current_order.state = "one_page"
+    p "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+    p params[:order]
+    p params[:order][:email]
+    if p current_order.update_attributes(:email => params[:order][:email], :state => "one_page")
+      p "sssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+      p current_order
       redirect_to checkout_path
     else
+      p "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
       @user = User.new
       render 'registration'
     end
@@ -51,12 +60,14 @@ $e7={"status_code"=>"2031","status_message"=>"No items to checkout "}
     puts "something"
     puts session[:access_token]
     puts current_order
-    authorize!(:edit, current_order, session[:access_token])
+    p "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    p authorize!(:edit, current_order, session[:access_token])
   end
 
   # Introduces a registration step whenever the +registration_step+ preference is true.
   def check_registration
     return unless Spree::Auth::Config[:registration_step]
+    p "i am inside you"
     return if current_user or current_order.email
     store_location
     redirect_to checkout_registration_path
@@ -159,12 +170,20 @@ def update
   private
   def load_order
   if !params[:format].nil? && params[:format] == "json"
-    @order = current_order
+      #p current_order=Order.find_by_user_id(current_user.id).last
+      p "i am in load order"
+      if session[:order_id]==nil
+   current_user=User.find_by_authentication_token(params[:authentication_token])
+   current_order = Order.find_all_by_user_id(current_user.id).last
+   
+end
+   p @order = current_order  
     #redirect_to cart_path and return unless @order and @order.checkout_allowed?
     render :json => error_response_method($e7) and return unless @order and @order.checkout_allowed?
     redirect_to cart_path and return if @order.completed?
     @order.state = params[:state] if params[:state]
     state_callback(:before)
+
   end
      else
        @order = current_order
