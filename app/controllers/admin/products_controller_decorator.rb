@@ -21,13 +21,9 @@ $e13={"status_code"=>"2042","status_message"=>"authentication token is not valid
   before_filter :load_data, :except => :index
   update.before :update_before
   def current_ability
-    user= current_user || User.find_by_authentication_token(params[:authentication_token])
-    if user.present?
+   user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    
     @current_ability ||= Ability.new(user)
-    else
-      error = error_response_method($e13)
-      render :json => error
-      end
   end
  def new
     respond_with(@object) do |format|

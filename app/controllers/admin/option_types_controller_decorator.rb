@@ -16,12 +16,8 @@ $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the
   respond_to :js, :except => [:show, :index]
   def current_ability
    user= current_user || User.find_by_authentication_token(params[:authentication_token])
-    if user.present?
+    
     @current_ability ||= Ability.new(user)
-    else
-      error = error_response_method($e13)
-      render :json => error
-      end
   end
  def new
     respond_with(@object) do |format|

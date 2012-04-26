@@ -6,13 +6,9 @@ $e4={"status_code"=>"2035","status_message"=>"destroyed"}
 $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
 
 def current_ability
-   user= current_user || User.find_by_authentication_token(params[:authentication_token])
-    if user.present?
+  user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    
     @current_ability ||= Ability.new(user)
-    else
-      error = error_response_method($e13)
-      render :json => error
-      end
   end
   private
     def parent

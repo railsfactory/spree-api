@@ -38,13 +38,9 @@ def set_current_user
   end
 def current_ability
     if !params[:format].nil? && params[:format] == "json"
-    user= current_user || User.find_by_authentication_token(params[:authentication_token])
-    if user.present?
+   user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    
     @current_ability ||= Ability.new(user)
-    else
-      error = error_response_method($e13)
-      render :json => error
-      end
     else
       @current_ability ||= ::Ability.new(current_user)
       end
