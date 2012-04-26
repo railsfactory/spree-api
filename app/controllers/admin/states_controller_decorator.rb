@@ -201,19 +201,40 @@ def access_denied
   end
 
   def find_resource
-    p "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-    if parent_data.present?
+     if !params[:format].nil? && params[:format] == "json"
+      begin
+        if parent.present?
+          parent.send(controller_name).find(params[:id])
+      else
+        model_class.includes.find(params[:id])
+      end
+      rescue Exception => e
+    #render :text => "Resource not found (#{e.message})", :status => 500
+     error = error_response_method($e2)
+      render :json => error
+  end
+  else
+    
+  if parent_data.present?
       parent.send(controller_name).find(params[:id])
     else
       model_class.find(params[:id])
     end
+   
+  end
   end
 
   def build_resource
-    if parent_data.present?
+      begin
+      if parent.present?
       parent.send(controller_name).build(params[object_name])
-    else
+      else
       model_class.new(params[object_name])
+      end
+      rescue Exception=> e
+      #render :text => " #{e.message}", :status => 500
+       error = error_response_method($e11)
+      render :json => error
     end
   end
 
