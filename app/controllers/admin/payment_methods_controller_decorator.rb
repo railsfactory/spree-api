@@ -25,7 +25,13 @@ Admin::PaymentMethodsController.class_eval do
     end
 
   end
- 
+ def show
+  if !params[:format].nil? && params[:format] == "json"
+    respond_with(@object) do |format|
+      format.json { render :json => @object.to_json(object_serialization_options) }
+    end
+    end
+  end
  
  def create
     p "i am in api method"
