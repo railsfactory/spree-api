@@ -9,6 +9,9 @@ Rails.application.routes.draw do
        devise_scope :user do
     match '/users' => 'user_registrations#create',:via=>:post
   end
+  resources :inventory_units, :except => [:new,:edit] do
+      put :event, :on => :member
+    end
  namespace :admin do
   match '/reports/best_selling_products', :to => 'reports#best_selling_products', :via => :get
 match '/reports/gross_selling_products', :to => 'reports#gross_selling_products', :via => :get
