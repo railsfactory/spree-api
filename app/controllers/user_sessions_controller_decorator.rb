@@ -55,10 +55,15 @@ def create
    # super
     if !params[:format].nil? && params[:format] == "json"
      p current_user=User.find_by_authentication_token(params[:authentication_token])
-      p current_user.authentication_token=nil
+     if current_user.present?
+      current_user.authentication_token=nil
       current_user.save
      error=error_response_method($e9)
         render:json=>error
+        else
+          error=error_response_method($e13)
+        render:json=>error
+        end
         else
               session.clear
         super

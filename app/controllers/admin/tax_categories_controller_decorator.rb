@@ -23,8 +23,13 @@ require 'spree_core/action_callbacks'
   #~ end
   
 def current_ability
-    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+   user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    if user.present?
     @current_ability ||= Ability.new(user)
+    else
+      error = error_response_method($e13)
+      render :json => error
+      end
    end
 
    def index

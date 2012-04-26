@@ -25,30 +25,18 @@ $e7={"status_code"=>"2031","status_message"=>"No items to checkout "}
   end
 
   def update_registration
-    # hack - temporarily change the state to something other than cart so we can validate the order email address
-    p "iiiiiiiiiiiiiiiiiiiiiiiii wwwwwwwwwwwwwwwwwwwwwwaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaanttttttttttttttttttttttt current order"
-    p current_order
-        p current_user
-   #p current_order.state = "one_page"
-    p "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
-    p params[:order]
-    p params[:order][:email]
+ 
     if p current_order.update_attributes(:email => params[:order][:email], :state => "one_page")
-      p "sssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+     
       p current_order
       redirect_to checkout_path
     else
-      p "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    
       @user = User.new
       render 'registration'
     end
   end
 
-    #~ def current_ability
-      #~ puts "current ability method"
-      #~ p current_user
-      #~ @current_ability ||= ::Ability.new(current_user)
-    #~ end
    
    def authorize!(*args)
      puts "entered in to the authorized method"
@@ -57,10 +45,7 @@ $e7={"status_code"=>"2031","status_message"=>"No items to checkout "}
     end
     
   def check_authorization
-    puts "something"
-    puts session[:access_token]
-    puts current_order
-    p "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    
     p authorize!(:edit, current_order, session[:access_token])
   end
 
