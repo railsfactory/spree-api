@@ -91,7 +91,7 @@ def current_ability
     quantity = params[:line_item][:quantity]
       @variant = Variant.find_by_id(params[:line_item][:variant_id])
       if !@variant.nil?
-      @order = current_order(true)
+      @order = Order.find_by_param(params[:id])
       @order.add_variant(@variant, quantity.to_i) if quantity.to_i > 0
       @response = Order.find_by_id(@order.id)
       render :json => @response.to_json, :status => 201
@@ -146,6 +146,7 @@ else
     
     def load_resource
         if !params[:format].nil? && params[:format] == "json"
+          p "122222222222222222222222222222233333333333333333333333333333333333333333333"
       if member_action?
         @object ||= load_resource_instance
         instance_variable_set("@#{object_name}", @object)
@@ -187,9 +188,9 @@ else
         if !params[:format].nil? && params[:format] == "json"
       begin
         if parent.present?
-          parent.send(controller_name).find(params[:id])
+          p parent.send(controller_name).find(params[:id])
       else
-        model_class.includes(eager_load_associations).find(params[:id])
+      p  model_class.includes(eager_load_associations).find(params[:id])
       end
       rescue Exception => e
        error = error_response_method($e2)
@@ -232,12 +233,9 @@ else
   private
   def check_http_authorization
       if !params[:format].nil? && params[:format] == "json"
-    #~ if request.headers['HTTP_AUTHORIZATION'].blank?
-      #~ render :text => "Access Denied\n", :status => 401
-    #~ end
+   
       if current_user.authentication_token!=params[:authentication_token]
-      # if request.headers['HTTP_AUTHORIZATION'].blank?
-        #render :text => "Access Denied\n", :status => 401
+     
          error = error_response_method($e13)
       render :json => error
       end if current_user
