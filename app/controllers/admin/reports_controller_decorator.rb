@@ -134,5 +134,13 @@ def month_order_count
 	  return_data[:orders] = prod_array
 	  render :json => return_data.to_json, :status => 201
 	end
-	
+	 def error_response_method(error)
+    if !params[:format].nil? && params[:format] == "json"
+    @error = {}
+    @error["code"]=error["status_code"]
+    @error["message"]=error["status_message"]
+    #@error["Code"] = error["error_code"]
+    return @error
+    end
+  end
 end
