@@ -124,7 +124,7 @@ def current_ability
     end
    def destroy
 if !params[:format].nil? && params[:format] == "json"
-@object=TaxRate.find_by_id(params[:id])
+@object=MailMethod.find_by_id(params[:id])
 if !@object.nil?
 @object.destroy
 if @object.destroy

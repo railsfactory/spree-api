@@ -20,21 +20,66 @@ def current_ability
     @current_ability ||= Ability.new(user)
     
   end
-   def index
-    if !params[:format].nil? && params[:format] == "json"
-      puts "now the cursor in if condition"
-      respond_with(@collection) do |format|
-        
-        format.json { render :json => @collection.to_json(collection_serialization_options) }
+   def retrieve_products
+      base_scope = get_base_scope
+      @products_scope = @product_group.apply_on(base_scope)
+      curr_page = manage_pagination && keywords ? 1 : page
+
+      @products = @products_scope.paginate({
+          :include  => [:images, :master],
+          :per_page => per_page,
+          :page     => curr_page
+        })
       end
-      else
-          @searcher = Spree::Config.searcher_class.new(params)
+      
+      
+   def index
+
+    if !params[:format].nil? && params[:format] == "json"
+      product_details = Hash.new
+      @searcher = Spree::Config.searcher_class.new(params)
+      @products = @searcher.retrieve_products
+      product_details[:products] = Array.new
+      @products.each do |r|
+         product_detail=Hash.new
+         product_detail[:product_id]=r.id
+         product_detail[:name]=r.name
+         product_detail[:description]=r.description
+         product_detail[:created_at]=r.created_at
+         product_detail[:updated_at]=r.updated_at
+         product_detail[:permalink]=r.permalink
+         product_detail[:available_on]=r.available_on
+         product_detail[:tax_category_id]=r.tax_category_id
+         product_detail[:shipping_category_id]=r.shipping_category_id
+         product_detail[:deleted_at]=r.deleted_at
+         product_detail[:meta_description]=r.meta_description
+         product_detail[:meta_keywords]=r.meta_keywords
+         product_detail[:count_on_hand]=r.count_on_hand
+         @image=r.images
+         product_detail[:images]= Array.new
+         @image.each do |image|
+           product_image = Hash.new
+           product_image[:image_type]=image.attachment.content_type
+           product_image[:url]='http://spreeapi.railsfactory.com' + image.attachment.url(:original)
+           product_detail[:images].push product_image
+         end
+        product_details[:products].push product_detail
+     end
+ 
+ 
+     respond_with(product_details) do |format|
+        
+        format.json { render :json =>product_details}
+     end
+  else
+    @searcher = Spree::Config.searcher_class.new(params)
     @products = @searcher.retrieve_products
     @new_sales=Product.where("available_on=?",Date.today-5.days)
     @coming_soon=Product.where("available_on > ? and deleted_at is NULL",Date.today)
     respond_with(@products)
-    end
   end
+end
+
   def show
     if !params[:format].nil? && params[:format] == "json"
       puts "now the cursor in if condition"
@@ -138,11 +183,11 @@ end
   end
     end
     
-    def collection_serialization_options
-        if !params[:format].nil? && params[:format] == "json"
-      {}
-      end
-    end
+    #~ def collection_serialization_options
+        #~ if !params[:format].nil? && params[:format] == "json"
+      #~ {}
+      #~ end
+    #~ end
 
     def eager_load_associations
         if !params[:format].nil? && params[:format] == "json"
