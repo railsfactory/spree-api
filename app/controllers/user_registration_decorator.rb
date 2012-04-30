@@ -6,8 +6,8 @@
   after_filter :associate_user, :only => :create
   before_filter :check_permissions, :only => [:edit, :update]
   skip_before_filter :require_no_authentication
-    $e6={"status_code"=>"500","status_message"=>"sorry email already taken"}
-    $e18={"status_code"=>"500","status_message"=>"password miss match"}
+    $e6={"status_code"=>"2034","status_message"=>"sorry email already taken"}
+    $e18={"status_code"=>"2046","status_message"=>"password miss match"}
  #~ prepend_before_filter :load_object, :only => [:show, :edit, :update]
   #~ prepend_before_filter :authorize_actions, :only => :new
 def create
