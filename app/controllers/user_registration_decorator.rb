@@ -7,7 +7,7 @@
   before_filter :check_permissions, :only => [:edit, :update]
   skip_before_filter :require_no_authentication
     $e6={"status_code"=>"500","status_message"=>"sorry email already taken"}
-    $e14={"status_code"=>"500","status_message"=>"password miss match"}
+    $e18={"status_code"=>"500","status_message"=>"password miss match"}
  #~ prepend_before_filter :load_object, :only => [:show, :edit, :update]
   #~ prepend_before_filter :authorize_actions, :only => :new
 def create
@@ -22,7 +22,7 @@ def create
       render:json=>error
     end
     else
-      error=error_response_method($e14)
+      error=error_response_method($e18)
       render:json=>error
     end
     else
