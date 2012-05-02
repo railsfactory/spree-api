@@ -46,13 +46,10 @@ def create
     @error = {}
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
-    #@error["Code"] = error["error_code"]
     return @error
     end
   end
    def destroy
-      #session[:authentication_token]=nil
-   # super
     if !params[:format].nil? && params[:format] == "json"
      p current_user=User.find_by_authentication_token(params[:authentication_token])
      if current_user.present?

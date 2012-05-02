@@ -8,12 +8,12 @@
   skip_before_filter :require_no_authentication
     $e6={"status_code"=>"2034","status_message"=>"sorry email already taken"}
     $e18={"status_code"=>"2046","status_message"=>"password miss match"}
- #~ prepend_before_filter :load_object, :only => [:show, :edit, :update]
-  #~ prepend_before_filter :authorize_actions, :only => :new
+    $e19={"status_code"=>"2049","status_message"=>"please enter valid email"}
 def create
   if !params[:format].nil? && params[:format] == "json"
-    if params[:user][:email]!=nil
-    if params[:user][:password]==params[:user][:password_confirmation]
+    p params.inspect
+    if params[:user][:email]!=nil&&params[:user][:email]!=""
+    if params[:user][:password]==params[:user][:password_confirmation] && params[:user][:password]!=""&&params[:user][:password_confirmation]!=""
     @user=User.new(params[:user])
     if @user.save
     render :json =>@user
@@ -26,7 +26,7 @@ def create
       render:json=>error
     end
     else
-       error=error_response_method($e1)
+       error=error_response_method($e19)
       render:json=>error
       end
     else
@@ -61,7 +61,6 @@ def save_user_role
     @error = {}
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
-    #@error["Code"] = error["error_code"]
     return @error
   end
 end
