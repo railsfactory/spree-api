@@ -8,12 +8,13 @@ Rails.application.routes.draw do
       #resources :users , :except => [:new,:edit]
        devise_scope :user do
     match '/users' => 'user_registrations#create',:via=>:post
-    match '/user/sign_in'=>'users#create',:via=>:post
+    match '/user/log_in'=>'users#create',:via=>:post
   end
   resources :inventory_units, :except => [:new,:edit] do
       put :event, :on => :member
     end
  namespace :admin do
+  resources:variants
   match '/reports/best_selling_products', :to => 'reports#best_selling_products', :via => :get
 match '/reports/gross_selling_products', :to => 'reports#gross_selling_products', :via => :get
 match '/reports/top_spenders', :to => 'reports#top_spenders', :via => :get
