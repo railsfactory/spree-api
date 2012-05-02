@@ -53,7 +53,7 @@ def current_ability
     if !params[:format].nil? && params[:format] == "json"
     begin
     invoke_callbacks(:create, :before)
-    if @object.save
+    if @object.save!
       invoke_callbacks(:create, :after)
      render :json => @object.to_json, :status => 201
       else
