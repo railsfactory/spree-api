@@ -159,8 +159,9 @@ def update
       p "i am in load order"
       if session[:order_id]==nil
    current_user=User.find_by_authentication_token(params[:authentication_token])
+   if current_user.present?
    current_order = Order.find_all_by_user_id(current_user.id).last
-   
+        end
 end
    p @order = current_order  
     #redirect_to cart_path and return unless @order and @order.checkout_allowed?

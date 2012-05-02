@@ -35,12 +35,19 @@ def current_ability
       quantity = params[:line_item][:quantity]
         @variant = Variant.find_by_id(params[:line_item][:variant_id])
          if !@variant.nil?
+           p params[:authentication_token]
+           user=User.find_by_authentication_token(params[:authentication_token])
+           if user.present?
       @order = current_order(true,params[:authentication_token])
       p "ttttttttttttttttttttttttttttttttttttttttttttttttt"
       p @order
       @order.add_variant(@variant, quantity.to_i) if quantity.to_i > 0
       @response = Order.find_by_id(@order.id)
       render :json => @response.to_json, :status => 201
+      else
+         error=error_response_method($e13)
+        render:json=>error
+      end
       else
         error=error_response_method($e2)
         render:json=>error
