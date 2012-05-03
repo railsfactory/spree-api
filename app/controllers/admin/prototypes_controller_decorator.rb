@@ -211,6 +211,7 @@ end
     end
     
     def load_resource
+      p "11111111111111111111111111111111111111111111111111111111111"
       #if !params[:format].nil? && params[:format] == "json"
       if member_action?
         @object ||= load_resource_instance
@@ -223,6 +224,7 @@ end
     end
     
     def load_resource_instance
+      p "22222222222222222222222222222222222222222222222222222222222222222222"
      #if !params[:format].nil? && params[:format] == "json"
       if new_actions.include?(params[:action].to_sym)
       build_resource
@@ -232,22 +234,28 @@ end
       #end
     end
      def parent_data
+       p "333333333333333333333333333333333333333333333333333333333333333333333"
     self.class.parent_data
+    p "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   end
     def parent
-     if !params[:format].nil? && params[:format] == "json"
-      nil
-      else
+      #~ p "444444444444444444444444444444444444444444444444444444444444"
+     #~ if !params[:format].nil? && params[:format] == "json"
+       #~ p "i am inside "
+      #~ nil
+      #~ else
           if parent_data.present?
       @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{parent_data[:model_name]}_id"]).first
       instance_variable_set("@#{parent_data[:model_name]}", @parent)
     else
+      p "i am inside"
       nil
     end
-    end
+    #~ end
     end
 
     def find_resource
+      p "555555555555555555555555555555555555555555555555555"
       if !params[:format].nil? && params[:format] == "json"
       begin
         if parent.present?
@@ -271,6 +279,7 @@ end
     end
      
     def build_resource
+      p "6666666666666666666666666666666666666666666666666"
       begin
       if parent.present?
       parent.send(controller_name).build(params[object_name])
@@ -306,33 +315,39 @@ end
     end
 
     def collection_serialization_options
+      p "```````````````````````````````````````````````````````````````````````"
      if !params[:format].nil? && params[:format] == "json"
       {}
       end
     end
 
     def object_serialization_options
+      p "222222222222222222222222222222222222222222222222222222222222222222222222222222222222222"
        if !params[:format].nil? && params[:format] == "json"
       {}
       end
     end
 
     def eager_load_associations
+      p "111111111111111111111111111111111111111111111111`````````````````````````````````````````````~"
        if !params[:format].nil? && params[:format] == "json"
       nil
       end
     end
 
     def object_errors
+      p "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
        if !params[:format].nil? && params[:format] == "json"
       {:errors => object.errors.full_messages}
       end
     end
 def location_after_save
+  p "22222222222222222222222222222222222000000000000000000000000000000000000000000000000"
     collection_url
   end
 
   def invoke_callbacks(action, callback_type)
+     p "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
     callbacks = self.class.callbacks || {}
     return if callbacks[action].nil?
     case callback_type.to_sym
@@ -345,6 +360,7 @@ def location_after_save
   # URL helpers
 
   def new_object_url(options = {})
+    p "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{"
     if parent_data.present?
       new_polymorphic_url([:admin, parent, model_class], options)
     else
@@ -353,6 +369,7 @@ def location_after_save
   end
 
   def edit_object_url(object, options = {})
+    p "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
     if parent_data.present?
       send "edit_admin_#{parent_data[:model_name]}_#{object_name}_url", parent, object, options
     else
@@ -361,6 +378,7 @@ def location_after_save
   end
 
   def object_url(object = nil, options = {})
+    p "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
      if !params[:format].nil? && params[:format] == "json"
       target = object ? object : @object
       if parent.present? && object_name == "state"
@@ -382,6 +400,7 @@ def location_after_save
       end
     end
      def collection_url(options = {})
+       p "111111111111111111111111111111111111117777777777777777777777777777777777777777777777"
     if parent_data.present?
       polymorphic_url([:admin, parent, model_class], options)
     else
@@ -390,14 +409,17 @@ def location_after_save
   end
 
     def collection_actions
+      p "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
       [:index]
     end
 
     def member_action?
+      p "___________________________________________________________________________________"
       !collection_actions.include? params[:action].to_sym
     end
 
     def new_actions
+      p "(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((("
       [:new, :create]
     end
 
