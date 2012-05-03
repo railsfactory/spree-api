@@ -53,13 +53,34 @@ def current_ability
     if !params[:format].nil? && params[:format] == "json"
     begin
     invoke_callbacks(:create, :before)
-    if @object.save!
+  if @object.email!=nil&&@object.email!=""&&@object.password!=nil&&@object.password!=""&&@object.password_confirmation!=nil&&@object.password_confirmation!=""
+    user=User.find_by_email(@object.email)
+  if !user.present?
+    if @object.password==@object.password_confirmation
+    if @object.save
       invoke_callbacks(:create, :after)
-     render :json => @object.to_json, :status => 201
+      user_response = Hash.new
+      user_response[:user] = Hash.new
+      user_response[:user][:id]=@object.id
+      user_response[:user][:email]=@object.email
+      user_response[:user][:sign_in_count]=@object.sign_in_count
+     render :json => user_response.to_json, :status => 201
       else
+       error = error_response_method($e11)
+      render :json => error
+    end
+    else
+       error = error_response_method($e20)
+      render :json => error
+      end
+    else
        error = error_response_method($e6)
       render :json => error
     end
+    else
+       error = error_response_method($e1)
+      render :json => error
+      end
     rescue Exception=>e
      #render :text => "#{e.message}", :status => 500
       error = error_response_method($e11)
