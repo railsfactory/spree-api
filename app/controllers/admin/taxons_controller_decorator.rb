@@ -44,13 +44,14 @@ def current_ability
   def create
     if !params[:format].nil? && params[:format] == "json"
     begin
+    Taxonomy.find(@object.taxonomy_id) 
     if @object.save
      render :json => @object.to_json, :status => 201
       else
        error = error_response_method($e1)
       render :json => error
     end
-    rescue Exception=>e
+    rescue ActiveRecord::RecordNotFound
      error = error_response_method($e11)
       render :json => error
      #render :text => "#{e.message}", :status => 500
@@ -78,6 +79,8 @@ def current_ability
   def update
     if !params[:format].nil? && params[:format] == "json"
     begin
+    #Taxonomy.find(@object.taxonomy_id) 
+    p @object
       if @object.update_attributes(params[object_name])
           render :json => @object.to_json, :status => 201
     else

@@ -15,6 +15,7 @@ Rails.application.routes.draw do
     end
  namespace :admin do
   resources:variants
+  resources:taxons
   match '/reports/best_selling_products', :to => 'reports#best_selling_products', :via => :get
 match '/reports/gross_selling_products', :to => 'reports#gross_selling_products', :via => :get
 match '/reports/top_spenders', :to => 'reports#top_spenders', :via => :get
