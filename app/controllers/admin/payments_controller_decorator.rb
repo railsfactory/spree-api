@@ -2,7 +2,7 @@ Admin::PaymentsController.class_eval do
 	 before_filter :load_order, :only => [:create, :new, :index, :fire]
   before_filter :load_payment, :except => [:create, :new, :index]
   before_filter :load_data
-	$e15={"status_code"=>"2039","status_message"=>"payments cannot be captured"}
+	$e15={"status_code"=>"2039","status_message"=>"payments cannot be captured check payment id"}
 	def current_ability
    user= current_user || User.find_by_authentication_token(params[:authentication_token])
     
@@ -49,15 +49,35 @@ Admin::PaymentsController.class_eval do
 end
 def load_order
 	 if !params[:format].nil? && params[:format] == "json"
+		 p params
 		  if session[:order_id]==nil
 		 current_user=User.find_by_authentication_token(params[:authentication_token])
-   current_order = Order.find_all_by_user_id(current_user.id).last
-	 if current_order.state !="cart"&&current_order.payments.count != 0 && current_order.payments.first.state !="completed"
+		 if current_user.present?
+   p current_order = Order.find_by_number(params[:order_id])
+	 	 if current_order.present?
+				payment=Payment.find_by_order_id(current_order.id)
+				if payment.present?
+		 #~ if payment.state=="pending"
+			 #~ p payment.state
+	# if current_order.state !="cart"&&current_order.payments.count != 0 && current_order.payments.first.state !="completed"
 	 @order=current_order
 	 else
-		 error = error_response_method($e15)
+		  error = error_response_method($e15)
       render :json => error
-	 end
+			end
+	 else
+		 p "i am here"
+		 error = error_response_method($e24)
+      render :json => error
+			end
+	 else
+		  error = error_response_method($e13)
+      render :json => error
+			end
+	 #~ else
+		 #~ error = error_response_method($e13)
+      #~ render :json => error
+	#end
 	 else
     @order ||= Order.find_by_number! params[:order_id]
   end
