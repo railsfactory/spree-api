@@ -21,6 +21,8 @@ def index
   end
 def fire
   if !params[:format].nil? && params[:format] == "json"
+   current_user=User.find_by_authentication_token(params[:authentication_token])
+		 if current_user.present?
     if @shipment.present?
     if @shipment.send("#{params[:e]}")
       flash.notice = t('shipment_updated')
@@ -40,6 +42,10 @@ def fire
   end
   else
     error=error_response_method($e23)
+        render:json=>error
+      end
+      else
+         error=error_response_method($e13)
         render:json=>error
         end
   else
