@@ -1,6 +1,7 @@
 OrdersController.class_eval do
   #load_and_authorize_resource
 $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
+$e52={"status_code"=>"2052","status_message"=>"quantity cannot be negative"}
 $e2={"status_code"=>"2037","status_message"=>"Record not found"}
 $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
 $e4={"status_code"=>"2035","status_message"=>"destroyed"}
@@ -88,8 +89,10 @@ def current_ability
      if !params[:format].nil? && params[:format] == "json"
      if !params[:line_item].nil?
           if !params[:line_item][:quantity].nil?&&!params[:line_item][:variant_id].nil?
-    quantity = params[:line_item][:quantity]
-      @variant = Variant.find_by_id(params[:line_item][:variant_id])
+    quantity = params[:line_item][:quantity].to_i
+
+    if (quantity <=> 0) >= 0
+@variant = Variant.find_by_id(params[:line_item][:variant_id])
       if !@variant.nil?
       @order = Order.find_by_param(params[:id])
       @order.add_variant(@variant, quantity.to_i) if quantity.to_i > 0
@@ -97,6 +100,10 @@ def current_ability
       render :json => @response.to_json, :status => 201
       else 
          error=error_response_method($e2)
+        render:json=>error
+      end
+      else
+        error=error_response_method($e52)
         render:json=>error
         end
           else
