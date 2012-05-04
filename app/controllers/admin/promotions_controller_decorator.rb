@@ -84,6 +84,8 @@ require 'spree_core/action_callbacks'
   def update
     if !params[:format].nil? && params[:format] == "json"
     begin
+    p params
+    if params[:promotion][:starts_at].to_date>=Date.today && params[:promotion][:expires_at].to_date>Date.today
       if @object.update_attributes(params[object_name])
           render :json => @object.to_json, :status => 201
     else
@@ -91,6 +93,11 @@ require 'spree_core/action_callbacks'
       render :json => error
       #respond_with(@object.errors, :status => 422)
     end
+    else
+      p "222222222222222222222222222222222"
+      error = error_response_method($e26)
+      render :json => error
+      end
      rescue Exception=>e
      #render :text => "#{e.message}", :status => 500
      error = error_response_method($e11)
