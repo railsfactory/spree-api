@@ -77,6 +77,10 @@ def current_ability
    def update
         if !params[:format].nil? && params[:format] == "json"
     begin
+    p @object
+    p "3333333333333333333333333333333333333333#"
+    p params[object_name]
+    p "1111111111111111111111111111111111111111111111111111111111111111111111111111"
       if @object.update_attributes(params[object_name])
           render :json => @object.to_json, :status => 201
     else
@@ -247,27 +251,27 @@ def access_denied
       render :json => error
     end
   end
-def location_after_save
-    admin_country_states_url(@country)
-  end
+#~ def location_after_save
+    #~ admin_country_states_url(@country)
+  #~ end
 
-  def collection
-    super.order(:name)
-  end
   #~ def collection
-    #~ p ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    #~ return parent.send(controller_name) if parent_data.present?
-
-    #~ if model_class.respond_to?(:accessible_by) && !current_ability.has_block?(params[:action], model_class)
-      #~ model_class.accessible_by(current_ability)
-    #~ else
-      #~ model_class.scoped
-    #~ end
+    #~ super.order(:name)
   #~ end
+  def collection
+    p ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    return parent.send(controller_name) if parent_data.present?
 
-  #~ def location_after_save
-    #~ collection_url
-  #~ end
+    if model_class.respond_to?(:accessible_by) && !current_ability.has_block?(params[:action], model_class)
+      model_class.accessible_by(current_ability)
+    else
+      model_class.scoped
+    end
+  end
+
+  def location_after_save
+    collection_url
+  end
 
   def invoke_callbacks(action, callback_type)
     p "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~______________________________________"
