@@ -164,19 +164,33 @@ def update
         end
 end
    p @order = current_order  
-   if @order.checkout_allowed?
-     return
-     else
-       render :json => error_response_method($e7) 
-        @order.state = params[:state] if params[:state]
-    state_callback(:before)
-       end
-    #redirect_to cart_path and return unless @order and @order.checkout_allowed?
-    #~ render :json => error_response_method($e7) and return unless @order and @order.checkout_allowed?
-    #~ redirect_to cart_path and return if @order.completed?
-    #~ @order.state = params[:state] if params[:state]
+   #~ if @order.checkout_allowed?
+     #~ return
+     #~ else
+       #~ render :json => error_response_method($e7) 
+        #~ @order.state = params[:state] if params[:state]
     #~ state_callback(:before)
-
+       #~ end
+    #redirect_to cart_path and return unless @order and @order.checkout_allowed?
+    #p @order.state
+    if !@order.nil? and @order.state != "complete"
+      puts "first if statement"
+      p @order.checkout_allowed?
+    render :json => error_response_method($e7) and return unless @order and @order.checkout_allowed?
+    redirect_to cart_path and return if @order.completed? 
+    @order.state = params[:state] if params[:state]
+    state_callback(:before)
+    elsif !@order.nil? and @order.state == "complete"
+      puts "enter in to the else part"
+    render :json => error_response_method($e7) and return if  @order.checkout_allowed?
+    redirect_to cart_path and return if @order.completed? 
+    @order.state = params[:state] if params[:state]
+    state_callback(:before)
+    else
+      puts "entered in tyo the final else"
+      render :json => error_response_method($e7) and return if  @order.nil?
+      redirect_to cart_path and return if @order.nil? 
+    end
   end
      else
        @order = current_order
