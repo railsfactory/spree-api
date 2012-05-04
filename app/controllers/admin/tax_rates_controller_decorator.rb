@@ -40,6 +40,8 @@ def current_ability
     p "i am in api method"
     if !params[:format].nil? && params[:format] == "json"
     begin
+    tax=TaxCategory.find_by_id(@object.tax_category_id)
+    if  tax.present?
     if @object.save
      # render :text => "Resource created\n", :status => 201, :location => object_url
      render :json => @object.to_json, :status => 201
@@ -48,6 +50,10 @@ def current_ability
        error = error_response_method($e1)
       render :json => error
     end
+    else
+      error = error_response_method($e25)
+      render :json => error
+      end
     rescue Exception=>e
      #render :text => "#{e.message}", :status => 500
       error = error_response_method($e11)
