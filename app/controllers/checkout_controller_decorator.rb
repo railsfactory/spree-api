@@ -90,17 +90,17 @@ def update
       if @order.state == "complete" || @order.completed?
         flash[:notice] = I18n.t(:order_processed_successfully)
         flash[:commerce_tracking] = "nothing special"
-        render :json => @order.to_json, :status => 201,:location => completion_route
+        render :json => @order.to_json, :status => 201
       else
-        render :json => @order.to_json, :status => 201,:location=>checkout_state_path(@order.state)
+        render :json => @order.to_json, :status => 201
       end
     else
       error=error_response_method($e1)
         render:json=>error
     end
     rescue Exception=>e
+    render :json => error_response_method($e7) 
     
-     render :text => "#{e.message}", :status => 500
 	 end
 	 else
     if @order.update_attributes(object_params)
@@ -164,11 +164,18 @@ def update
         end
 end
    p @order = current_order  
-    #redirect_to cart_path and return unless @order and @order.checkout_allowed?
-    render :json => error_response_method($e7) and return unless @order and @order.checkout_allowed?
-    redirect_to cart_path and return if @order.completed?
-    @order.state = params[:state] if params[:state]
+   if @order.checkout_allowed?
+     return
+     else
+       render :json => error_response_method($e7) 
+        @order.state = params[:state] if params[:state]
     state_callback(:before)
+       end
+    #redirect_to cart_path and return unless @order and @order.checkout_allowed?
+    #~ render :json => error_response_method($e7) and return unless @order and @order.checkout_allowed?
+    #~ redirect_to cart_path and return if @order.completed?
+    #~ @order.state = params[:state] if params[:state]
+    #~ state_callback(:before)
 
   end
      else
