@@ -4,6 +4,7 @@ $e2={"status_code"=>"2037","status_message"=>"Record not found"}
 $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
 $e4={"status_code"=>"2035","status_message"=>"destroyed"}
 $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
+$e25={"status_code"=>"2060","status_message"=>"sorry parent record not found"}
   belongs_to :country
   before_filter :load_data
   require 'spree_core/action_callbacks'
@@ -160,12 +161,17 @@ def error_response_method(error)
 
   def load_resource
     p "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{"
+    begin
     if member_action?
       @object ||= load_resource_instance
       instance_variable_set("@#{object_name}", @object)
     else
-      @collection ||= collection
+      @collection ||= collection 
       instance_variable_set("@#{controller_name}", @collection)
+    end
+    rescue Exception=>e
+    error = error_response_method($e25)
+      render :json => error
     end
   end
 
@@ -187,13 +193,17 @@ def access_denied
   end
   def parent_data
     p "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-    self.class.parent_data
+    
+      self.class.parent_data
+      
   end
 
   def parent
     p"4444444444444444444444444444444444444444444444444444444444444444444444444"
     if parent_data.present?
-      @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{parent_data[:model_name]}_id"]).first
+      p "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+      @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{parent_data[:model_name]}_id"]).first rescue
+      
       instance_variable_set("@#{parent_data[:model_name]}", @parent)
     else
       nil
@@ -237,21 +247,27 @@ def access_denied
       render :json => error
     end
   end
+def location_after_save
+    admin_country_states_url(@country)
+  end
 
   def collection
-    p ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    return parent.send(controller_name) if parent_data.present?
-
-    if model_class.respond_to?(:accessible_by) && !current_ability.has_block?(params[:action], model_class)
-      model_class.accessible_by(current_ability)
-    else
-      model_class.scoped
-    end
+    super.order(:name)
   end
+  #~ def collection
+    #~ p ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    #~ return parent.send(controller_name) if parent_data.present?
 
-  def location_after_save
-    collection_url
-  end
+    #~ if model_class.respond_to?(:accessible_by) && !current_ability.has_block?(params[:action], model_class)
+      #~ model_class.accessible_by(current_ability)
+    #~ else
+      #~ model_class.scoped
+    #~ end
+  #~ end
+
+  #~ def location_after_save
+    #~ collection_url
+  #~ end
 
   def invoke_callbacks(action, callback_type)
     p "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~______________________________________"

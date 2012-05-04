@@ -42,10 +42,13 @@ $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the
   def create
     if !params[:format].nil? && params[:format] == "json"
     begin
+    p "111111111111111111111111111111111111111111111111111111111"
+    p @object
+    p "222222222222222222222222222222222222222222222"
     if @object.save
-     render :json => @object.to_json, :status => 201
+     render :json => @object.to_json, :status => 201  
       else
-       error = error_response_method($e1)
+      error = error_response_method($e1)
       render :json => error
     end
     rescue Exception=>e
@@ -212,23 +215,35 @@ end
     
     def load_resource
       #if !params[:format].nil? && params[:format] == "json"
+      begin
       if member_action?
-        @object ||= load_resource_instance
+        p "333333333333333333333"
+        @object ||= load_resource_instance rescue nil
         instance_variable_set("@#{object_name}", @object)
       else
+        p "&&&&&&&&&&&&&&&&&&&&&&&&&&"
         @collection ||= collection
         instance_variable_set("@#{controller_name}", @collection)
       end
+       rescue Exception=>e
+       error = error_response_method($e25)
+      render :json => error
+    end
      # end
     end
     
     def load_resource_instance
      #if !params[:format].nil? && params[:format] == "json"
+     begin 
       if new_actions.include?(params[:action].to_sym)
       build_resource
       elsif params[:id]
-        find_resource
+        find_resource 
       end
+      rescue Exception=>e
+    error = error_response_method($e25)
+      render :json => error
+    end
       #end
     end
      def parent_data
@@ -273,9 +288,12 @@ end
     def build_resource
       begin
       if parent.present?
+        p "222222222222222222"
       parent.send(controller_name).build(params[object_name])
       else
-      model_class.new(params[object_name])
+        p "_________________________"
+        p params[object_name]
+      p model_class.new(params[object_name]) 
       end
       rescue Exception=> e
       error = error_response_method($e11)
@@ -402,6 +420,15 @@ def location_after_save
     end
 
   private
+    def set_habtm_associations
+    #~ begin
+    @prototype.property_ids = params[:property][:id] if params[:property]   rescue nil
+    @prototype.option_type_ids = params[:option_type][:id] if params[:option_type] rescue nil
+    #~ rescue 
+     #~ error = error_response_method($e25)
+      #~ render :json => error
+       #~ end
+  end
   def check_http_authorization
     p "i am authorizing"
          if !params[:format].nil? && params[:format] == "json"
