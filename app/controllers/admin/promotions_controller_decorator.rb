@@ -4,6 +4,7 @@ $e2={"status_code"=>"2037","status_message"=>"Record not found"}
 $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
 $e4={"status_code"=>"2035","status_message"=>"destroyed"}
 $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
+$e26={"status_code"=>"2062","status_message"=>"please enter valid date"}
 require 'spree_core/action_callbacks'
   before_filter :check_http_authorization
   before_filter :load_resource
@@ -40,14 +41,23 @@ require 'spree_core/action_callbacks'
     p "i am in api method"
     if !params[:format].nil? && params[:format] == "json"
     begin
+    p @object
+    if @object.starts_at.to_date>=Date.today && @object.expires_at.to_date>Date.today
+      p "222222222222222222222222222"
     if @object.save
      render :json => @object.to_json, :status => 201
-      else
+      else  
        error = error_response_method($e1)
       render :json => error
     end
+    else
+      p "222222222222222222222222222222222"
+      error = error_response_method($e26)
+      render :json => error
+      end
     rescue Exception=>e
      #render :text => "#{e.message}", :status => 500
+     p "1111111111111111111111111111"
      error = error_response_method($e11)
       render :json => error
    end
