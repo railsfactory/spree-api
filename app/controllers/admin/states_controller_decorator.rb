@@ -70,7 +70,7 @@ def current_ability
   def show
   if !params[:format].nil? && params[:format] == "json"
     respond_with(@object) do |format|
-      format.json { render :json => @object.to_json(object_serialization_options) }
+      format.json { render :json => @object.to_json }
     end
     end
    end
