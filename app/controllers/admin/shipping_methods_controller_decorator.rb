@@ -14,18 +14,12 @@ Admin::ShippingMethodsController.class_eval do
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
   # respond_to :html
   respond_to :js, :except => [:show, :index]
+  #To set current user
   def current_ability
     user= current_user || User.find_by_authentication_token(params[:authentication_token])
-    
-    @current_ability ||= Ability.new(user)
+        @current_ability ||= Ability.new(user)
   end
-  #~ def new
-  #~ respond_with(@object) do |format|
-  #~ format.html { render :layout => !request.xhr? }
-  #~ format.js { render :layout => false }
-  #~ end
-  #~ end
-  
+  #To list the datas
   def index
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@collection) do |format|
@@ -34,6 +28,7 @@ Admin::ShippingMethodsController.class_eval do
       end
     end
   end
+  #To display the record
   def show
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@object) do |format|
@@ -41,34 +36,22 @@ Admin::ShippingMethodsController.class_eval do
       end
     end
   end
-   
-  #~ def edit
-  #~ respond_with(@object) do |format|
-  #~ format.html { render :layout => !request.xhr? }
-  #~ format.js { render :layout => false }
-  #~ end
-  #~ end
-
+  #To create new record
   def create
-    p "i am in api method"
-    if !params[:format].nil? && params[:format] == "json"
+      if !params[:format].nil? && params[:format] == "json"
       begin
         if @object.save
-          # render :text => "Resource created\n", :status => 201, :location => object_url
-          render :json => @object.to_json, :status => 201
+                   render :json => @object.to_json, :status => 201
         else
-          #respond_with(@object.errors, :status => 422)
-          error = error_response_method($e1)
+                    error = error_response_method($e1)
           render :json => error
         end
       rescue Exception=>e
         error = error_response_method($e11)
         render :json => error
-        #render :text => "#{e.message}", :status => 500
-      end
+              end
     else
-      p "111111111111111111111111111111111111111111111!!"
-      invoke_callbacks(:create, :before)
+           invoke_callbacks(:create, :before)
       p @object
       if @object.save
         if controller_name == "taxonomies"
@@ -86,7 +69,7 @@ Admin::ShippingMethodsController.class_eval do
       end
     end
   end
-
+#To update the existing record
   def update
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -95,16 +78,13 @@ Admin::ShippingMethodsController.class_eval do
         else
           error = error_response_method($e1)
           render :json => error
-          #respond_with(@object.errors, :status => 422)
-        end
+                end
       rescue Exception=>e
-        #render :text => "#{e.message}", :status => 500
-        error = error_response_method($e11)
+                error = error_response_method($e11)
         render :json => error
       end
     else
-      p "i came inside"
-      invoke_callbacks(:update, :before)
+           invoke_callbacks(:update, :before)
       if controller_name == "taxonomies"
         @image_object=@object.image
         @image_object.update_attributes(:attachment => params[:taxon][:attachement])
@@ -122,15 +102,16 @@ Admin::ShippingMethodsController.class_eval do
         respond_with(@object)
       end
     end
-
   end
+  #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
       @object=ShippingMethod.find_by_id(params[:id])
       if !@object.nil?
         @object.destroy
         if @object.destroy
-          render :text => 'Destroyed'
+          error=error_response_method($e4)
+        render:json=>error
         end
       else
         error=error_response_method($e2)
@@ -154,25 +135,21 @@ Admin::ShippingMethodsController.class_eval do
     end
   end
   def admin_token_passed_in_headers
-    p "111111111111111111111111111111111111111111111111111111111"
-    if !params[:format].nil? && params[:format] == "json"
+     if !params[:format].nil? && params[:format] == "json"
       request.headers['HTTP_AUTHORIZATION'].present?
     end
   end
-
-  def access_denied
-    p "222222222222222222222222222222222222222222222222222222222222"
-    if !params[:format].nil? && params[:format] == "json"
-      #render :text => 'access_denied', :status => 401
-      error = error_response_method($e12)
+	#To check access
+	  def access_denied
+       if !params[:format].nil? && params[:format] == "json"
+           error = error_response_method($e12)
       render :json => error
     end
   end
 
   # Generic action to handle firing of state events on an object
   def event
-    p "333333333333333333333333333333333333333333333333333333333333"
-    if !params[:format].nil? && params[:format] == "json"
+      if !params[:format].nil? && params[:format] == "json"
       valid_events = model_class.state_machine.events.map(&:name)
       valid_events_for_object = @object ? @object.state_transitions.map(&:event) : []
 
@@ -192,71 +169,58 @@ Admin::ShippingMethodsController.class_eval do
           if errors.blank?
             render :nothing => true
           else
-            #error = error_response_method($e10001)
+           
             render :json => errors.to_json, :status => 422
-            #render :json => error
+            
           end
         end
       end
     end
   end
-
+ #To display the error message
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
       @error = {}
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
-      #@error["Code"] = error["error_code"]
-      return @error
+          return @error
     end
   end
 
   protected
   
   def model_class
-    p "1111111111111111111111111111111111111111111111112333333333333333333333333333333333###"
-    #if !params[:format].nil? && params[:format] == "json"
-    controller_name.classify.constantize
-    #end
-  end
+       controller_name.classify.constantize
+      end
     
   def object_name
-    p "`````````````````````````````````````````````````````````````````````````~~~"
-    #if !params[:format].nil? && params[:format] == "json"
-    controller_name.singularize
-    #end
-  end
-    
+       controller_name.singularize
+      end
+   #To load resource for listing and editing 
   def load_resource
-    #if !params[:format].nil? && params[:format] == "json"
-    p "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{"
-    if member_action?
+        if member_action?
       @object ||= load_resource_instance
       instance_variable_set("@#{object_name}", @object)
     else
       @collection ||= collection
       instance_variable_set("@#{controller_name}", @collection)
     end
-    # end
-  end
-    
+      end
+      #To load resource insatnce  for creating and finding
   def load_resource_instance
-    p "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
-    #if !params[:format].nil? && params[:format] == "json"
-    if new_actions.include?(params[:action].to_sym)
+        if new_actions.include?(params[:action].to_sym)
       build_resource
     elsif params[:id]
       find_resource
     end
-    #end
   end
+  #To find the parent
   def parent_data
-    p "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-    self.class.parent_data
-  end
+      self.class.parent_data
+    end
+    #To find the parent
   def parent
-    p"4444444444444444444444444444444444444444444444444444444444444444444444444"
-    if !params[:format].nil? && params[:format] == "json"
+       if !params[:format].nil? && params[:format] == "json"
       nil
     else
       if parent_data.present?
@@ -267,10 +231,9 @@ Admin::ShippingMethodsController.class_eval do
       end
     end
   end
-
+#To find the data while updating and listing
   def find_resource
-    p "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-    if !params[:format].nil? && params[:format] == "json"
+       if !params[:format].nil? && params[:format] == "json"
       begin
         if parent.present?
           parent.send(controller_name).find(params[:id])
@@ -280,26 +243,18 @@ Admin::ShippingMethodsController.class_eval do
       rescue Exception => e
         error = error_response_method($e11)
         render :json => error
-        #render :text => "Resource not found (#{e.message})", :status => 500
-      end
+             end
     else
-      p "i am inn"
-      #~ edit_admin_product_url(@product)
-      #Product.find_by_permalink(params[:id])
-      if parent_data.present?
+           if parent_data.present?
         parent.send(controller_name).find(params[:id])
       else
         model_class.find(params[:id])
       end
-      #edit_admin_product_url(@product)
-    end
-  end
-  #~ def location_after_save
-  #~ edit_admin_product_url(@product)
-  #~ end
-  def build_resource
-    # if !params[:format].nil? && params[:format] == "json"
-    begin
+        end
+      end
+        #To build new resources
+    def build_resource
+       begin
       if parent.present?
         parent.send(controller_name).build(params[object_name])
       else
@@ -308,14 +263,11 @@ Admin::ShippingMethodsController.class_eval do
     rescue Exception=> e
       error = error_response_method($e11)
       render :json => error
-      #render :text => " #{e.message}", :status => 500
+          end
     end
-    #end
-  end
-    
+    #To collect the list of datas
   def collection
-    p ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    if !params[:format].nil? && params[:format] == "json"
+       if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
       params[:search] = {} if params[:search].blank?
       params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
@@ -333,15 +285,13 @@ Admin::ShippingMethodsController.class_eval do
   end
 
   def collection_serialization_options
-    p"^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-    if !params[:format].nil? && params[:format] == "json"
+   if !params[:format].nil? && params[:format] == "json"
       {}
     end
   end
 
   def object_serialization_options
-    p "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-    if !params[:format].nil? && params[:format] == "json"
+       if !params[:format].nil? && params[:format] == "json"
       {}
     end
   end
@@ -362,8 +312,7 @@ Admin::ShippingMethodsController.class_eval do
   end
 
   def invoke_callbacks(action, callback_type)
-    p "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~______________________________________"
-    callbacks = self.class.callbacks || {}
+      callbacks = self.class.callbacks || {}
     return if callbacks[action].nil?
     case callback_type.to_sym
     when :before then callbacks[action].before_methods.each {|method| send method }
@@ -375,8 +324,7 @@ Admin::ShippingMethodsController.class_eval do
   # URL helpers
 
   def new_object_url(options = {})
-    p "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    if parent_data.present?
+       if parent_data.present?
       new_polymorphic_url([:admin, parent, model_class], options)
     else
       new_polymorphic_url([:admin, model_class], options)
@@ -384,8 +332,7 @@ Admin::ShippingMethodsController.class_eval do
   end
 
   def edit_object_url(object, options = {})
-    p"++++++++++++++++++++++++++***************************************************"
-    if parent_data.present?
+       if parent_data.present?
       send "edit_admin_#{parent_data[:model_name]}_#{object_name}_url", parent, object, options
     else
       send "edit_admin_#{object_name}_url", object, options
@@ -393,9 +340,8 @@ Admin::ShippingMethodsController.class_eval do
   end
 
   def object_url(object = nil, options = {})
-    p "????????????????????????????????????????????????????????????????????????????????????"
-    if !params[:format].nil? && params[:format] == "json"
-      target = object ? object : @object
+     if !params[:format].nil? && params[:format] == "json"
+          target = object ? object : @object
       if parent.present? && object_name == "state"
         send "api_country_#{object_name}_url", parent, target, options
       elsif parent.present? && object_name == "taxon"
@@ -415,8 +361,7 @@ Admin::ShippingMethodsController.class_eval do
     end
   end
   def collection_url(options = {})
-    p ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-    if parent_data.present?
+       if parent_data.present?
       polymorphic_url([:admin, parent, model_class], options)
     else
       polymorphic_url([:admin, model_class], options)
@@ -424,34 +369,22 @@ Admin::ShippingMethodsController.class_eval do
   end
 
   def collection_actions
-    p "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-    #if !params[:format].nil? && params[:format] == "json"
-    [:index]
-    #end
-  end
+       [:index]
+     end
 
   def member_action?
-    p "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP"
-    #if !params[:format].nil? && params[:format] == "json"
-    !collection_actions.include? params[:action].to_sym
-    #end
+       !collection_actions.include? params[:action].to_sym
   end
 
   def new_actions
-    p "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-    #if !params[:format].nil? && params[:format] == "json"
-    [:new, :create]
-    #end
+       [:new, :create]
   end
 
   private
   def check_http_authorization
-    p "i am checking authentication_token"
-    if !params[:format].nil? && params[:format] == "json"
+      if !params[:format].nil? && params[:format] == "json"
       if current_user.authentication_token!=params[:authentication_token]
-        # if request.headers['HTTP_AUTHORIZATION'].blank?
-        #render :text => "Access Denied\n", :status => 401
-        error = error_response_method($e13)
+                error = error_response_method($e13)
         render :json => error
       end if current_user
     end

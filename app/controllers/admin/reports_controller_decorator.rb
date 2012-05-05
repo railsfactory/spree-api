@@ -1,9 +1,10 @@
 Admin::ReportsController.class_eval do
+	#To set current user
   def current_ability
     user= current_user || User.find_by_authentication_token(params[:authentication_token])
-    
-    @current_ability ||= Ability.new(user)
-  end
+        @current_ability ||= Ability.new(user)
+			end
+			#To find best_selling_products
 	def best_selling_products
 	  return_data=Hash.new
 	  prod_array=Array.new
@@ -18,7 +19,7 @@ Admin::ReportsController.class_eval do
 	  return_data[:products] = prod_array
 	  render :json => return_data.to_json, :status => 201
   end
-	
+	#To find gross_selling_products
 	def gross_selling_products
 	  return_data=Hash.new
 	  prod_array=Array.new
@@ -33,7 +34,7 @@ Admin::ReportsController.class_eval do
 	  return_data[:products] = prod_array
 	  render :json => return_data.to_json, :status => 201
   end
-	
+	#To find top_spenders
   def top_spenders
     return_data=Hash.new
 	  prod_array=Array.new
@@ -49,6 +50,7 @@ Admin::ReportsController.class_eval do
 	  return_data[:spenders] = prod_array
 	  render :json => return_data.to_json, :status => 201
 	end
+	#To find recent_orders
 	def  recent_orders
     return_data=Hash.new
 	  prod_array=Array.new
@@ -66,6 +68,7 @@ Admin::ReportsController.class_eval do
 	  return_data[:orders] = prod_array
 	  render :json => return_data.to_json, :status => 201
 	end
+		#To find out_of_stock
   def out_of_stock
     return_data=Hash.new
 	  prod_array=Array.new
@@ -80,6 +83,7 @@ Admin::ReportsController.class_eval do
 	  return_data[:products] = prod_array
 	  render :json => return_data.to_json, :status => 201
   end
+	#To find day_order_count
   def day_order_count
     return_data=Hash.new
 	  prod_array=Array.new
@@ -93,6 +97,7 @@ Admin::ReportsController.class_eval do
 	  return_data[:orders] = prod_array
 	  render :json => return_data.to_json, :status => 201
   end
+		#To find day_order_value
   def day_order_value
     return_data=Hash.new
 	  prod_array=Array.new
@@ -106,6 +111,7 @@ Admin::ReportsController.class_eval do
 	  return_data[:orders] = prod_array
 	  render :json => return_data.to_json, :status => 201
   end
+	#To find month order value
   def month_order_value
     return_data=Hash.new
 	  prod_array=Array.new
@@ -120,6 +126,7 @@ Admin::ReportsController.class_eval do
 	  return_data[:orders] = prod_array
 	  render :json => return_data.to_json, :status => 201
   end
+	#To find month order count
   def month_order_count
     return_data=Hash.new
 	  prod_array=Array.new
@@ -134,12 +141,12 @@ Admin::ReportsController.class_eval do
 	  return_data[:orders] = prod_array
 	  render :json => return_data.to_json, :status => 201
 	end
+	#To display the error message
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
       @error = {}
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
-      #@error["Code"] = error["error_code"]
       return @error
     end
   end

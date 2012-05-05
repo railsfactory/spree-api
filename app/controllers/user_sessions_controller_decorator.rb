@@ -3,25 +3,20 @@ UserSessionsController.class_eval do
   $e9={"status_code"=>"2033","status_message"=>"logged out sucessfully"}
   include SpreeBase
   helper :users, 'spree/base'
-
   include Spree::CurrentOrder
-
   after_filter :associate_user, :only => :create
-
   ssl_required :new, :create, :destroy, :update
   ssl_allowed :login_bar
-
+# To create user session
   def create
     authenticate_user!
-
     if user_signed_in?
-      api_key = current_user.generate_api_key!
+      api_key = current_user.generate_api_key! #To generate api key
       user_response = Hash.new
       user_response[:user] = Hash.new
       user_response[:user][:email]=current_user.email
       user_response[:user][:authentication_token]=current_user.authentication_token
       user_response[:user][:sign_in_count]=current_user.sign_in_count
-      #session[:authentication_token]=current_user.authentication_token
       respond_to do |format|
         format.html {
           flash.notice = t(:logged_in_succesfully)
@@ -41,7 +36,7 @@ UserSessionsController.class_eval do
       end
     end
   end
-  def error_response_method(error)
+  def error_response_method(error) #To display error message
     if !params[:format].nil? && params[:format] == "json"
       @error = {}
       @error["code"]=error["status_code"]
@@ -49,9 +44,10 @@ UserSessionsController.class_eval do
       return @error
     end
   end
-  def destroy
+  #To destroy user session
+  def destroy 
     if !params[:format].nil? && params[:format] == "json"
-      p current_user=User.find_by_authentication_token(params[:authentication_token])
+       current_user=User.find_by_authentication_token(params[:authentication_token])
       if current_user.present?
         current_user.authentication_token=nil
         current_user.save
