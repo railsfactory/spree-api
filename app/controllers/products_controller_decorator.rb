@@ -5,19 +5,22 @@ ProductsController.class_eval do
   $e4={"status_code"=>"2035","status_message"=>"destroyed"}
   $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
   include Spree::Search
+
   before_filter :check_http_authorization
   before_filter :load_resource
   skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
   authorize_resource
+  
   respond_to :json
+
   rescue_from ActionController::UnknownAction, :with => :render_404
-  # To set current user
   def current_ability
     user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    
     @current_ability ||= Ability.new(user)
     
   end
-  def retrieve_products #To get the collection of products
+  def retrieve_products
     base_scope = get_base_scope
     @products_scope = @product_group.apply_on(base_scope)
     curr_page = manage_pagination && keywords ? 1 : page
@@ -29,8 +32,9 @@ ProductsController.class_eval do
       })
   end
       
-  #To list the products
+      
   def index
+
     if !params[:format].nil? && params[:format] == "json"
       product_details = Hash.new
       @searcher = Spree::Config.searcher_class.new(params)
@@ -61,7 +65,10 @@ ProductsController.class_eval do
         end
         product_details[:products].push product_detail
       end
+ 
+ 
       respond_with(product_details) do |format|
+        
         format.json { render :json =>product_details}
       end
     else
@@ -72,26 +79,33 @@ ProductsController.class_eval do
       respond_with(@products)
     end
   end
-  #To display the particular product
+
   def show
     if !params[:format].nil? && params[:format] == "json"
+      puts "now the cursor in if condition"
+      p @object
       respond_with(@object) do |format|
         format.json { render :json => @object.to_json(object_serialization_options) }
       end
     else
       @product = Product.find_by_permalink!(params[:id])
+      p @product
       return unless @product
+
       @variants = Variant.active.includes([:option_values, :images]).where(:product_id => @product.id)
       @product_properties = ProductProperty.includes(:property).where(:product_id => @product.id)
       @selected_variant = @variants.detect { |v| v.available? }
+
       referer = request.env['HTTP_REFERER']
+
       if referer && referer.match(HTTP_REFERER_REGEXP)
         @taxon = Taxon.find_by_permalink($1)
       end
+
       respond_with(@product)
+  
     end
   end
-  #To destroy the product
   def destroy
     @object=Product.find_by_id(params[:id])
     if !@object.nil?
@@ -105,11 +119,11 @@ ProductsController.class_eval do
       render:json=>error
     end
   end
-  #To display the error message
   def error_response_method(error)
     @error = {}
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
+    #@error["Code"] = error["error_code"]
     return @error
   end
   protected
@@ -124,7 +138,7 @@ ProductsController.class_eval do
       controller_name.singularize
     end
   end
-  #To load resource
+    
   def load_resource
     if !params[:format].nil? && params[:format] == "json"
       if member_action?
@@ -136,7 +150,7 @@ ProductsController.class_eval do
       end
     end
   end
-  #To load resource instance
+    
   def load_resource_instance
     if !params[:format].nil? && params[:format] == "json"
       if new_actions.include?(params[:action].to_sym)
@@ -146,13 +160,13 @@ ProductsController.class_eval do
       end
     end
   end
-  #To find the parent record
+    
   def parent
     if !params[:format].nil? && params[:format] == "json"
       nil
     end
   end
-  #To find the data or record during edit and update method
+
   def find_resource
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -164,9 +178,17 @@ ProductsController.class_eval do
       rescue Exception => e
         error = error_response_method($e2)
         render :json => error
+        #render :text => "Resource not found (#{e.message})", :status => 500
       end
     end
   end
+    
+  #~ def collection_serialization_options
+  #~ if !params[:format].nil? && params[:format] == "json"
+  #~ {}
+  #~ end
+  #~ end
+
   def eager_load_associations
     if !params[:format].nil? && params[:format] == "json"
       nil
@@ -194,13 +216,18 @@ ProductsController.class_eval do
   private
   def check_http_authorization
     if !params[:format].nil? && params[:format] == "json"
+      #~ if request.headers['HTTP_AUTHORIZATION'].blank?
+      #~ render :text => "Access Denied\n", :status => 401
+      #~ end
       if current_user.authentication_token!=params[:authentication_token]
+        # if request.headers['HTTP_AUTHORIZATION'].blank?
+        #render :text => "Access Denied\n", :status => 401
         error = error_response_method($e13)
         render :json => error
       end if current_user
     end
   end
-  # To collect the data for index
+  private
   def collection
     params[:per_page] ||= 100
     @searcher = Spree::Config.searcher_class.new(params)

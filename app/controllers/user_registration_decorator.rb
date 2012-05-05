@@ -1,6 +1,7 @@
 UserRegistrationsController.class_eval do
   include SpreeBase
   helper :users, 'spree/base'
+
   ssl_required
   after_filter :associate_user, :only => :create
   before_filter :check_permissions, :only => [:edit, :update]
@@ -8,9 +9,9 @@ UserRegistrationsController.class_eval do
   $e6={"status_code"=>"2034","status_message"=>"sorry email already taken"}
   $e18={"status_code"=>"2046","status_message"=>"password miss match"}
   $e19={"status_code"=>"2049","status_message"=>"please enter valid email"}
-  #To create new user
   def create
     if !params[:format].nil? && params[:format] == "json"
+      p params.inspect
       if params[:user][:email]!=nil&&params[:user][:email]!=""
         if params[:user][:password]==params[:user][:password_confirmation] && params[:user][:password]!=""&&params[:user][:password_confirmation]!=""
           @user=User.new(params[:user])
@@ -45,18 +46,18 @@ UserRegistrationsController.class_eval do
     authorize!(:create, resource)
   end
 
-  def associate_user #To find the user
+  def associate_user
     return unless current_user and current_order
     current_order.associate_user!(current_user)
     session[:guest_token] = nil
   end
-  def save_user_role #To save the user roles 
+  def save_user_role
     return unless params[:user]
 
     @user.roles << admin
 
   end
-  def error_response_method(error) #To display the error message
+  def error_response_method(error)
     @error = {}
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]

@@ -12,27 +12,25 @@ Admin::PropertiesController.class_eval do
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
+  # respond_to :html
   respond_to :js, :except => [:show, :index]
-  #To set current user
   def current_ability
     user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    
     @current_ability ||= Ability.new(user)
   end
-  #To create new record
   def new
     respond_with(@object) do |format|
       format.html { render :layout => !request.xhr? }
       format.js { render :layout => false }
     end
   end
-  #To list the datas
   def index
     respond_with(@collection) do |format|
       format.html
       format.json { render :json => @collection }
     end
   end
-  #To display the record
   def show
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@object) do |format|
@@ -40,7 +38,7 @@ Admin::PropertiesController.class_eval do
       end
     end
   end
-  #To create new record
+
   def create
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -51,10 +49,12 @@ Admin::PropertiesController.class_eval do
           render :json => error
         end
       rescue Exception=>e
+        #render :text => "#{e.message}", :status => 500
         error = error_response_method($e11)
         render :json => error
       end
     else
+      p"i came in"
       invoke_callbacks(:create, :before)
       if @object.save
         if controller_name == "taxonomies"
@@ -72,7 +72,7 @@ Admin::PropertiesController.class_eval do
       end
     end
   end
-  #To update the existing record
+
   def update
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -83,6 +83,7 @@ Admin::PropertiesController.class_eval do
           render :json => error
         end
       rescue Exception=>e
+        #render :text => "#{e.message}", :status => 500
         error = error_response_method($e11)
         render :json => error
       end
@@ -105,8 +106,8 @@ Admin::PropertiesController.class_eval do
         respond_with(@object)
       end
     end
+
   end
-  #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
       @object=Property.find_by_id(params[:id])
@@ -146,9 +147,10 @@ Admin::PropertiesController.class_eval do
       request.headers['HTTP_AUTHORIZATION'].present?
     end
   end
-  #To check access
+
   def access_denied
     if !params[:format].nil? && params[:format] == "json"
+      #render :text => 'access_denied', :status => 401
       error = error_response_method($e12)
       render :json => error
     end
@@ -176,18 +178,21 @@ Admin::PropertiesController.class_eval do
           if errors.blank?
             render :nothing => true
           else
+            #error = error_response_method($e10001)
             render :json => errors.to_json, :status => 422
+            #render :json => error
           end
         end
       end
     end
   end
-  #To display the error message
+
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
       @error = {}
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
+      #@error["Code"] = error["error_code"]
       return @error
     end
   end
@@ -195,14 +200,19 @@ Admin::PropertiesController.class_eval do
   protected
   
   def model_class
+    #if !params[:format].nil? && params[:format] == "json"
     controller_name.classify.constantize
+    #end
   end
     
   def object_name
+    #if !params[:format].nil? && params[:format] == "json"
     controller_name.singularize
+    #end
   end
-  #To load resource for listing and editing
+    
   def load_resource
+    #if !params[:format].nil? && params[:format] == "json"
     if member_action?
       @object ||= load_resource_instance
       instance_variable_set("@#{object_name}", @object)
@@ -210,20 +220,21 @@ Admin::PropertiesController.class_eval do
       @collection ||= collection
       instance_variable_set("@#{controller_name}", @collection)
     end
+    # end
   end
-  #To load resource insatnce  for creating and finding
+    
   def load_resource_instance
+    #if !params[:format].nil? && params[:format] == "json"
     if new_actions.include?(params[:action].to_sym)
       build_resource
     elsif params[:id]
       find_resource
     end
+    #end
   end
-  #To find the parent
   def parent_data
     self.class.parent_data
   end
-  #To find the parent
   def parent
     if !params[:format].nil? && params[:format] == "json"
       nil
@@ -236,7 +247,7 @@ Admin::PropertiesController.class_eval do
       end
     end
   end
-  #To find the data while updating and listing
+
   def find_resource
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -248,6 +259,7 @@ Admin::PropertiesController.class_eval do
       rescue Exception => e
         error = error_response_method($e2)
         render :json => error
+        #render :text => "Resource not found (#{e.message})", :status => 500
       end
     else
       if parent_data.present?
@@ -258,7 +270,7 @@ Admin::PropertiesController.class_eval do
     
     end
   end
-  #To build new resources
+     
   def build_resource
     begin
       if parent.present?
@@ -269,9 +281,10 @@ Admin::PropertiesController.class_eval do
     rescue Exception=> e
       error = error_response_method($e11)
       render :json => error
+      # render :text => " #{e.message}", :status => 500
     end
   end
-  #To collect the list of datas
+    
   def collection
     if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
@@ -391,8 +404,10 @@ Admin::PropertiesController.class_eval do
 
   private
   def check_http_authorization
+    p "i am authorizing"
     if !params[:format].nil? && params[:format] == "json"
       if current_user.authentication_token!=params[:authentication_token]
+        #render :text => "Access Denied\n", :status => 401
         error = error_response_method($e13)
         render :json => error
       end if current_user

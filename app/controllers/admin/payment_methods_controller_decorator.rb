@@ -3,27 +3,29 @@ Admin::PaymentMethodsController.class_eval do
   before_filter :check_http_authorization
   skip_before_filter :load_resource, :only => [:create]
   before_filter :load_data
+  #before_filter :load_resource
   skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
   authorize_resource
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
+  # respond_to :html
   respond_to :js, :except => [:show, :index]
-  #To set current user
   def current_ability
     user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    
     @current_ability ||= Ability.new(user)
   end
-  #To list the datas
   def index
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@collection) do |format|
         format.html
         format.json { render :json => @collection}
 			end
+
     end
+
   end
-  #To display the payment methods
   def show
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@object) do |format|
@@ -31,21 +33,25 @@ Admin::PaymentMethodsController.class_eval do
       end
     end
   end
-  #To create new record
+ 
   def create
+    p "i am in api method"
     if !params[:format].nil? && params[:format] == "json"
       begin
         @payment_method = params[:payment_method][:type].constantize.new(params[:payment_method])
         @object = @payment_method
         invoke_callbacks(:create, :before)
         if @object.save
+          # render :text => "Resource created\n", :status => 201, :location => object_url
           invoke_callbacks(:create, :after)
           render :json => @object.to_json, :status => 201
         else
+          #respond_with(@object.errors, :status => 422)
           error = error_response_method($e1)
           render :json => error
         end
       rescue Exception=>e
+        # render :text => "#{e.message}", :status => 500
         error = error_response_method($e11)
         render :json => error
       end
@@ -63,7 +69,7 @@ Admin::PaymentMethodsController.class_eval do
       end
     end
   end
-  #To update the existing record
+
   def update
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -79,8 +85,10 @@ Admin::PaymentMethodsController.class_eval do
         else
           error = error_response_method($e1)
           render :json => error
+          #respond_with(@object.errors, :status => 422)
         end
       rescue Exception=>e
+        #render :text => "#{e.message}", :status => 500
         error = error_response_method($e11)
         render :json => error
       end
@@ -101,8 +109,8 @@ Admin::PaymentMethodsController.class_eval do
         respond_with(@payment_method)
       end
     end
+
   end
-  #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
       @object=PaymentMethod.find_by_id(params[:id])
@@ -133,15 +141,15 @@ Admin::PaymentMethodsController.class_eval do
       end
     end
   end
-  
   def admin_token_passed_in_headers
     if !params[:format].nil? && params[:format] == "json"
       request.headers['HTTP_AUTHORIZATION'].present?
     end
   end
-  #To check access
+
   def access_denied
     if !params[:format].nil? && params[:format] == "json"
+      #render :text => 'access_denied', :status => 401
       error = error_response_method($e12)
       render :json => error
     end
@@ -169,18 +177,21 @@ Admin::PaymentMethodsController.class_eval do
           if errors.blank?
             render :nothing => true
           else
+            #error = error_response_method($e10001)
             render :json => errors.to_json, :status => 422
+            #render :json => error
           end
         end
       end
     end
   end
-  #To display the error message
+
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
       @error = {}
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
+      #@error["Code"] = error["error_code"]
       return @error
     end
   end
@@ -193,7 +204,7 @@ Admin::PaymentMethodsController.class_eval do
   def object_name
     controller_name.singularize
   end
-  #To load resource for listing and editing
+    
   def load_resource
     if member_action?
       @object ||= load_resource_instance
@@ -203,7 +214,7 @@ Admin::PaymentMethodsController.class_eval do
       instance_variable_set("@#{controller_name}", @collection)
     end
   end
-  #To load resource insatnce  for creating and finding
+    
   def load_resource_instance
     if new_actions.include?(params[:action].to_sym)
       build_resource
@@ -211,7 +222,7 @@ Admin::PaymentMethodsController.class_eval do
       find_resource
     end
   end
-  #To find the parent
+    
   def parent
     if !params[:format].nil? && params[:format] == "json"
       nil
@@ -219,7 +230,7 @@ Admin::PaymentMethodsController.class_eval do
       self.class.parent_data
     end
   end
-  #To find the data while updating and listing
+
   def find_resource
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -231,6 +242,7 @@ Admin::PaymentMethodsController.class_eval do
       rescue Exception => e
         error = error_response_method($e2)
         render :json => error
+        #render :text => "Resource not found (#{e.message})", :status => 500
       end
     else
       if parent_data.present?
@@ -240,7 +252,7 @@ Admin::PaymentMethodsController.class_eval do
       end
     end
   end
-  #To build new resources
+    
   def build_resource
     begin
       if parent.present?
@@ -251,9 +263,10 @@ Admin::PaymentMethodsController.class_eval do
     rescue Exception=> e
       error = error_response_method($e11)
       render :json => error
+      #render :text => " #{e.message}", :status => 500
     end
   end
-  #To collect the list of datas
+    
   def collection
     if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
@@ -328,7 +341,12 @@ Admin::PaymentMethodsController.class_eval do
   private
   def check_http_authorization
     if !params[:format].nil? && params[:format] == "json"
+      #~ if request.headers['HTTP_AUTHORIZATION'].blank?
+      #~ render :text => "Access Denied\n", :status => 401
+      #~ end
       if current_user.authentication_token!=params[:authentication_token]
+        # if request.headers['HTTP_AUTHORIZATION'].blank?
+        #render :text => "Access Denied\n", :status => 401
         error = error_response_method($e13)
         render :json => error
       end if current_user

@@ -15,14 +15,16 @@ Admin::StatesController.class_eval do
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
+  # respond_to :html
   respond_to :js, :except => [:show, :index]
-  #To set current user
   def current_ability
     user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    
     @current_ability ||= Ability.new(user)
   end
-  #To list the datas
+
   def index
+    
     respond_with(@collection) do |format|
       if !params[:format].nil? && params[:format] == "json"
         format.json { render :json => @collection }
@@ -32,7 +34,6 @@ Admin::StatesController.class_eval do
       end
     end
   end
-  #To create new record
   def create
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -41,8 +42,10 @@ Admin::StatesController.class_eval do
         else
           error = error_response_method($e1)
           render :json => error
+          #respond_with(@object.errors, :status => 422)
         end
       rescue Exception=>e
+        #render :text => "#{e.message}", :status => 500
         error = error_response_method($e11)
         render :json => error
       end
@@ -64,7 +67,6 @@ Admin::StatesController.class_eval do
       end
     end
   end
-  #To display the record
   def show
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@object) do |format|
@@ -72,17 +74,22 @@ Admin::StatesController.class_eval do
       end
     end
   end
-  #To update the existing record
   def update
     if !params[:format].nil? && params[:format] == "json"
       begin
+        p @object
+        p "3333333333333333333333333333333333333333#"
+        p params[object_name]
+        p "1111111111111111111111111111111111111111111111111111111111111111111111111111"
         if @object.update_attributes(params[object_name])
           render :json => @object.to_json, :status => 201
         else
           error = error_response_method($e1)
           render :json => error
+          #respond_with(@object.errors, :status => 422)
         end
       rescue Exception=>e
+        #render :text => "#{e.message}", :status => 500
         error = error_response_method($e11)
         render :json => error
       end
@@ -106,7 +113,6 @@ Admin::StatesController.class_eval do
       end
     end
   end
-  #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
       @object=State.find_by_id(params[:id])
@@ -137,25 +143,28 @@ Admin::StatesController.class_eval do
       end
     end
   end
-  #To display the error message
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
       @error = {}
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
+      #@error["Code"] = error["error_code"]
       return @error
     end
   end
 
   def model_class
+    p "1111111111111111111111111111111111111111111111112333333333333333333333333333333333###"
     controller_name.classify.constantize
   end
 
   def object_name
+    p "`````````````````````````````````````````````````````````````````````````~~~"
     controller_name.singularize
   end
-  #To load resource for listing and editing
+
   def load_resource
+    p "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{"
     begin
       if member_action?
         @object ||= load_resource_instance
@@ -169,35 +178,42 @@ Admin::StatesController.class_eval do
       render :json => error
     end
   end
-  #To load resource insatnce  for creating and finding
+
   def load_resource_instance
+    p "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
     if new_actions.include?(params[:action].to_sym)
       build_resource
     elsif params[:id]
       find_resource
     end
   end
-  #To check access
   def access_denied
+    p "222222222222222222222222222222222222222222222222222222222222"
     if !params[:format].nil? && params[:format] == "json"
+      #render :text => 'access_denied', :status => 401
       error = error_response_method($e12)
       render :json => error
     end
   end
-  #To find the parent
   def parent_data
+    p "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    
     self.class.parent_data
+      
   end
-  #To find the parent
+
   def parent
+    p"4444444444444444444444444444444444444444444444444444444444444444444444444"
     if parent_data.present?
+      p "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
       @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{parent_data[:model_name]}_id"]).first rescue
+      
       instance_variable_set("@#{parent_data[:model_name]}", @parent)
     else
       nil
     end
   end
-  #To find the data while updating and listing
+
   def find_resource
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -207,6 +223,7 @@ Admin::StatesController.class_eval do
           model_class.includes.find(params[:id])
         end
       rescue Exception => e
+        #render :text => "Resource not found (#{e.message})", :status => 500
         error = error_response_method($e2)
         render :json => error
       end
@@ -220,7 +237,7 @@ Admin::StatesController.class_eval do
    
     end
   end
-  #To build new resources
+
   def build_resource
     begin
       if parent.present?
@@ -229,12 +246,20 @@ Admin::StatesController.class_eval do
         model_class.new(params[object_name])
       end
     rescue Exception=> e
+      #render :text => " #{e.message}", :status => 500
       error = error_response_method($e11)
       render :json => error
     end
   end
-  #To collect the list of datas
+  #~ def location_after_save
+  #~ admin_country_states_url(@country)
+  #~ end
+
+  #~ def collection
+  #~ super.order(:name)
+  #~ end
   def collection
+    p ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
     return parent.send(controller_name) if parent_data.present?
 
     if model_class.respond_to?(:accessible_by) && !current_ability.has_block?(params[:action], model_class)
@@ -249,6 +274,7 @@ Admin::StatesController.class_eval do
   end
 
   def invoke_callbacks(action, callback_type)
+    p "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~______________________________________"
     callbacks = self.class.callbacks || {}
     return if callbacks[action].nil?
     case callback_type.to_sym
@@ -261,6 +287,7 @@ Admin::StatesController.class_eval do
   # URL helpers
 
   def new_object_url(options = {})
+    p "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
     if parent_data.present?
       new_polymorphic_url([:admin, parent, model_class], options)
     else
@@ -269,6 +296,7 @@ Admin::StatesController.class_eval do
   end
 
   def edit_object_url(object, options = {})
+    p"++++++++++++++++++++++++++***************************************************"
     if parent_data.present?
       send "edit_admin_#{parent_data[:model_name]}_#{object_name}_url", parent, object, options
     else
@@ -277,6 +305,7 @@ Admin::StatesController.class_eval do
   end
 
   def object_url(object = nil, options = {})
+    p "????????????????????????????????????????????????????????????????????????????????????"
     target = object ? object : @object
     if parent_data.present?
       send "admin_#{parent_data[:model_name]}_#{object_name}_url", parent, target, options
@@ -286,6 +315,7 @@ Admin::StatesController.class_eval do
   end
 
   def collection_url(options = {})
+    p ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
     if parent_data.present?
       polymorphic_url([:admin, parent, model_class], options)
     else
@@ -294,20 +324,24 @@ Admin::StatesController.class_eval do
   end
 
   def collection_actions
+    p "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     [:index]
   end
 
   def member_action?
+    p "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP"
     !collection_actions.include? params[:action].to_sym
   end
 
   def new_actions
+    p "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
     [:new, :create]
   end
   private
   def check_http_authorization
     if !params[:format].nil? && params[:format] == "json"
       if current_user.authentication_token!=params[:authentication_token]
+        #render :text => "Access Denied\n", :status => 401
         error = error_response_method($e13)
         render :json => error
       end if current_user

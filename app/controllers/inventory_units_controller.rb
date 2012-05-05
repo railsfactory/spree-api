@@ -3,29 +3,30 @@ class InventoryUnitsController < Spree::BaseController
   before_filter :load_resource
   skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
   authorize_resource
+  
   respond_to :json
-  #To set current_user
   def current_ability
     user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    
     @current_ability ||= Ability.new(user)
   end
-  #To list inventory units
   def index
     respond_with(@collection) do |format|
       format.json { render :json => @collection.to_json(collection_serialization_options) }
     end
   end
-  #To display particular items
+
   def show
     respond_with(@object) do |format|
       format.json { render :json => @object.to_json(object_serialization_options) }
     end
   end
-  #To display error message
+
   def error_response_method(error)
     @error = {}
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
+    #@error["Code"] = error["error_code"]
     return @error
   end
 
@@ -37,7 +38,7 @@ class InventoryUnitsController < Spree::BaseController
   def object_name
     controller_name.singularize
   end
-  #To load resources
+    
   def load_resource
     if member_action?
       @object ||= load_resource_instance
@@ -47,7 +48,7 @@ class InventoryUnitsController < Spree::BaseController
       instance_variable_set("@#{controller_name}", @collection)
     end
   end
-  #To load resource instance
+    
   def load_resource_instance
     if new_actions.include?(params[:action].to_sym)
       build_resource
@@ -55,11 +56,11 @@ class InventoryUnitsController < Spree::BaseController
       find_resource
     end
   end
-  #To find parent record
+    
   def parent
     nil
   end
-  #To find resource
+
   def find_resource
     begin
       if parent.present?
@@ -70,9 +71,10 @@ class InventoryUnitsController < Spree::BaseController
     rescue Exception => e
       error = error_response_method($e2)
       render :json => error
+      #render :text => "Resource not found (#{e.message})", :status => 500
     end
   end
-  #To create new record
+    
   def build_resource
     begin
       if parent.present?
@@ -83,14 +85,17 @@ class InventoryUnitsController < Spree::BaseController
     rescue Exception=> e
       error = error_response_method($e11)
       render :json => error
+      #render :text => " #{e.message}", :status => 500
     end
   end
-  #To collect the list of records
+    
   def collection
     return @search unless @search.nil?
     params[:search] = {} if params[:search].blank?
     params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
+      
     scope = parent.present? ? parent.send(controller_name) : model_class.scoped
+     
     @search = scope.metasearch(params[:search]).relation.limit(100)
     @search
   end
@@ -138,7 +143,12 @@ class InventoryUnitsController < Spree::BaseController
 
   private
   def check_http_authorization
+    #~ if request.headers['HTTP_AUTHORIZATION'].blank?
+    #~ render :text => "Access Denied\n", :status => 401
+    #~ end
     if current_user.authentication_token!=params[:authentication_token]
+      # if request.headers['HTTP_AUTHORIZATION'].blank?
+      #render :text => "Access Denied\n", :status => 401
       error = error_response_method($e13)
       render :json => error
     end if current_user

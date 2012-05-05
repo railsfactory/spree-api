@@ -13,13 +13,13 @@ Admin::PromotionsController.class_eval do
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
+  # respond_to :html
   respond_to :js, :except => [:show, :index]
-  #To set current user
   def current_ability
     user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    
     @current_ability ||= Ability.new(user)
   end
-  #To list the datas
   def index
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@collection) do |format|
@@ -28,7 +28,6 @@ Admin::PromotionsController.class_eval do
       end
     end
   end
-  #To display the record
   def show
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@object) do |format|
@@ -36,11 +35,15 @@ Admin::PromotionsController.class_eval do
       end
     end
   end
-  #To create new record
+
+
   def create
+    p "i am in api method"
     if !params[:format].nil? && params[:format] == "json"
       begin
+        p @object
         if @object.starts_at.to_date>=Date.today && @object.expires_at.to_date>Date.today
+          p "222222222222222222222222222"
           if @object.save
             render :json => @object.to_json, :status => 201
           else
@@ -48,15 +51,19 @@ Admin::PromotionsController.class_eval do
             render :json => error
           end
         else
+          p "222222222222222222222222222222222"
           error = error_response_method($e26)
           render :json => error
         end
       rescue Exception=>e
+        #render :text => "#{e.message}", :status => 500
+        p "1111111111111111111111111111"
         error = error_response_method($e11)
         render :json => error
       end
     else
       invoke_callbacks(:create, :before)
+      p @object
       if @object.save
         if controller_name == "taxonomies"
           @object.create_image(:attachment=>params[:taxon][:attachement])
@@ -73,26 +80,31 @@ Admin::PromotionsController.class_eval do
       end
     end
   end
-  #To update the existing record
+
   def update
     if !params[:format].nil? && params[:format] == "json"
       begin
+        p params
         if params[:promotion][:starts_at].to_date>=Date.today && params[:promotion][:expires_at].to_date>Date.today
           if @object.update_attributes(params[object_name])
             render :json => @object.to_json, :status => 201
           else
             error = error_response_method($e1)
             render :json => error
+            #respond_with(@object.errors, :status => 422)
           end
         else
+          p "222222222222222222222222222222222"
           error = error_response_method($e26)
           render :json => error
         end
       rescue Exception=>e
+        #render :text => "#{e.message}", :status => 500
         error = error_response_method($e11)
         render :json => error
       end
     else
+      p "i came inside"
       invoke_callbacks(:update, :before)
       if controller_name == "taxonomies"
         @image_object=@object.image
@@ -111,8 +123,8 @@ Admin::PromotionsController.class_eval do
         respond_with(@object)
       end
     end
+
   end
-  #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
       @object=Promotion.find_by_id(params[:id])
@@ -148,9 +160,10 @@ Admin::PromotionsController.class_eval do
       request.headers['HTTP_AUTHORIZATION'].present?
     end
   end
-  #To check access
+
   def access_denied
     if !params[:format].nil? && params[:format] == "json"
+      #render :text => 'access_denied', :status => 401
       error = error_response_method($e12)
       render :json => error
     end
@@ -178,24 +191,26 @@ Admin::PromotionsController.class_eval do
           if errors.blank?
             render :nothing => true
           else
+            #error = error_response_method($e10001)
             render :json => errors.to_json, :status => 422
+            #render :json => error
           end
         end
       end
     end
   end
-  #To display the error message
+
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
       @error = {}
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
+      #@error["Code"] = error["error_code"]
       return @error
     end
   end
 
   protected
-  #To load resource for listing and editing
   def find_resource
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -205,6 +220,7 @@ Admin::PromotionsController.class_eval do
           model_class.includes(eager_load_associations).find(params[:id])
         end
       rescue Exception => e
+        #render :text => "Resource not found (#{e.message})", :status => 500
         error = error_response_method($e2)
         render :json => error
       end
@@ -216,13 +232,14 @@ Admin::PromotionsController.class_eval do
       end
     end
   end
-  #To collect the list of datas
   def collection
     if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
       params[:search] = {} if params[:search].blank?
       params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
+      
       scope = parent.present? ? parent.send(controller_name) : model_class.scoped
+     
       @search = scope.metasearch(params[:search]).relation.limit(100)
       @search
     else
@@ -288,6 +305,7 @@ Admin::PromotionsController.class_eval do
   def check_http_authorization
     if !params[:format].nil? && params[:format] == "json"
       if current_user.authentication_token!=params[:authentication_token]
+        #render :text => "Access Denied\n", :status => 401
         error = error_response_method($e13)
         render :json => error
       end if current_user
