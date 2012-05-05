@@ -340,7 +340,6 @@ Admin::ShippingMethodsController.class_eval do
   end
 
   def object_url(object = nil, options = {})
-    if !params[:format].nil? && params[:format] == "json"
     target = object ? object : @object
     if parent.present? && object_name == "state"
       send "api_country_#{object_name}_url", parent, target, options
