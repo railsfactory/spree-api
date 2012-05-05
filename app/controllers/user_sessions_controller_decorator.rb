@@ -1,7 +1,7 @@
 UserSessionsController.class_eval do 
   $e8={"status_code"=>"2032","status_message"=>"Username/Password is incorrect"}
   $e9={"status_code"=>"2033","status_message"=>"logged out sucessfully"}
- include SpreeBase
+  include SpreeBase
   helper :users, 'spree/base'
 
   include Spree::CurrentOrder
@@ -11,7 +11,7 @@ UserSessionsController.class_eval do
   ssl_required :new, :create, :destroy, :update
   ssl_allowed :login_bar
 
-def create
+  def create
     authenticate_user!
 
     if user_signed_in?
@@ -32,38 +32,38 @@ def create
         }
       end
     else
-        if !params[:format].nil? && params[:format] == "json"
-          error=error_response_method($e8)
+      if !params[:format].nil? && params[:format] == "json"
+        error=error_response_method($e8)
         render:json=>error
-          else
-      flash.now[:error] = t('devise.failure.invalid')
-      render :new
-    end
+      else
+        flash.now[:error] = t('devise.failure.invalid')
+        render :new
+      end
     end
   end
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
-    @error = {}
-    @error["code"]=error["status_code"]
-    @error["message"]=error["status_message"]
-    return @error
+      @error = {}
+      @error["code"]=error["status_code"]
+      @error["message"]=error["status_message"]
+      return @error
     end
   end
-   def destroy
+  def destroy
     if !params[:format].nil? && params[:format] == "json"
-     p current_user=User.find_by_authentication_token(params[:authentication_token])
-     if current_user.present?
-      current_user.authentication_token=nil
-      current_user.save
-     error=error_response_method($e9)
+      p current_user=User.find_by_authentication_token(params[:authentication_token])
+      if current_user.present?
+        current_user.authentication_token=nil
+        current_user.save
+        error=error_response_method($e9)
         render:json=>error
-        else
-          error=error_response_method($e13)
+      else
+        error=error_response_method($e13)
         render:json=>error
-        end
-        else
-              session.clear
-        super
-end        
+      end
+    else
+      session.clear
+      super
+    end
   end
-  end
+end

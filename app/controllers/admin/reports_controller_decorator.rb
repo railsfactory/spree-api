@@ -1,6 +1,6 @@
-  Admin::ReportsController.class_eval do
-		def current_ability
-   user= current_user || User.find_by_authentication_token(params[:authentication_token])
+Admin::ReportsController.class_eval do
+  def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
     
     @current_ability ||= Ability.new(user)
   end
@@ -34,8 +34,8 @@
 	  render :json => return_data.to_json, :status => 201
   end
 	
-def top_spenders
-	 return_data=Hash.new
+  def top_spenders
+    return_data=Hash.new
 	  prod_array=Array.new
 	  best=ActiveRecord::Base.connection.execute("Select A.id,A.email,sum(C.quantity),sum(B.cost_price * C.quantity) from users A, variants B, line_items C, orders D where A.id=D.user_id and B.id=C.variant_id and C.order_id=D.id and D.payment_state in ('paid','completed','payment','complete') group by A.id,A.email order by 4,1")
 	  best.each do |pr|
@@ -50,7 +50,7 @@ def top_spenders
 	  render :json => return_data.to_json, :status => 201
 	end
 	def  recent_orders
-		 return_data=Hash.new
+    return_data=Hash.new
 	  prod_array=Array.new
 	  best=ActiveRecord::Base.connection.execute("Select A.id,A.email,D.id,D.number,D.created_at,D.total from users A, orders D where A.id=D.user_id and D.payment_state in ('paid','completed','payment','complete') order by 4,3")
 	  best.each do |pr|
@@ -66,8 +66,8 @@ def top_spenders
 	  return_data[:orders] = prod_array
 	  render :json => return_data.to_json, :status => 201
 	end
-def out_of_stock
-	 return_data=Hash.new
+  def out_of_stock
+    return_data=Hash.new
 	  prod_array=Array.new
 	  best=ActiveRecord::Base.connection.execute("Select A.id,A.name,B.count_on_hand from products A, variants B where A.id=B.product_id and B.count_on_hand <=0 order by 1,2")
 	  best.each do |pr|
@@ -79,9 +79,9 @@ def out_of_stock
 	  end
 	  return_data[:products] = prod_array
 	  render :json => return_data.to_json, :status => 201
-end
-def day_order_count
-	 return_data=Hash.new
+  end
+  def day_order_count
+    return_data=Hash.new
 	  prod_array=Array.new
 	  best=ActiveRecord::Base.connection.execute("Select DATE(created_at),count(*) from orders where payment_state in ('paid','completed','payment','complete') group by DATE(created_at) order by 1 DESC")
 	  best.each do |pr|
@@ -92,9 +92,9 @@ def day_order_count
 	  end
 	  return_data[:orders] = prod_array
 	  render :json => return_data.to_json, :status => 201
-end
-def day_order_value
-	 return_data=Hash.new
+  end
+  def day_order_value
+    return_data=Hash.new
 	  prod_array=Array.new
 	  best=ActiveRecord::Base.connection.execute("Select DATE(created_at),sum(total) from orders where payment_state in ('paid','completed','payment','complete') group by DATE(created_at) order by 1 DESC")
 	  best.each do |pr|
@@ -105,9 +105,9 @@ def day_order_value
 	  end
 	  return_data[:orders] = prod_array
 	  render :json => return_data.to_json, :status => 201
-end
-def month_order_value
-	 return_data=Hash.new
+  end
+  def month_order_value
+    return_data=Hash.new
 	  prod_array=Array.new
 	  best=ActiveRecord::Base.connection.execute("Select Month(created_at),Year(created_at),sum(total) from orders where payment_state in ('paid','completed','payment','complete') group by Month(created_at),Year(created_at) order by 2 DESC ,1 DESC")
 	  best.each do |pr|
@@ -119,9 +119,9 @@ def month_order_value
 	  end
 	  return_data[:orders] = prod_array
 	  render :json => return_data.to_json, :status => 201
-end
-def month_order_count
-	 return_data=Hash.new
+  end
+  def month_order_count
+    return_data=Hash.new
 	  prod_array=Array.new
 	  best=ActiveRecord::Base.connection.execute("Select Month(created_at),Year(created_at),count(*) from orders where payment_state in ('paid','completed','payment','complete') group by Month(created_at),Year(created_at) order by 2 DESC ,1 DESC")
 	  best.each do |pr|
@@ -134,13 +134,13 @@ def month_order_count
 	  return_data[:orders] = prod_array
 	  render :json => return_data.to_json, :status => 201
 	end
-	 def error_response_method(error)
+  def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
-    @error = {}
-    @error["code"]=error["status_code"]
-    @error["message"]=error["status_message"]
-    #@error["Code"] = error["error_code"]
-    return @error
+      @error = {}
+      @error["code"]=error["status_code"]
+      @error["message"]=error["status_message"]
+      #@error["Code"] = error["error_code"]
+      return @error
     end
   end
 end

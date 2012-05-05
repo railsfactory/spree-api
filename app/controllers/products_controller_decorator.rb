@@ -1,9 +1,9 @@
 ProductsController.class_eval do
-$e1={"status_code"=>"2038","status_message"=>"parameter errors"}
-$e2={"status_code"=>"2037","status_message"=>"Record not found"}
-$e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
-$e4={"status_code"=>"2035","status_message"=>"destroyed"}
-$e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
+  $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
+  $e2={"status_code"=>"2037","status_message"=>"Record not found"}
+  $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
+  $e4={"status_code"=>"2035","status_message"=>"destroyed"}
+  $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
   include Spree::Search
 
   before_filter :check_http_authorization
@@ -14,26 +14,26 @@ $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the
   respond_to :json
 
   rescue_from ActionController::UnknownAction, :with => :render_404
-def current_ability
-   user= current_user || User.find_by_authentication_token(params[:authentication_token])
+  def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
     
     @current_ability ||= Ability.new(user)
     
   end
-   def retrieve_products
-      base_scope = get_base_scope
-      @products_scope = @product_group.apply_on(base_scope)
-      curr_page = manage_pagination && keywords ? 1 : page
+  def retrieve_products
+    base_scope = get_base_scope
+    @products_scope = @product_group.apply_on(base_scope)
+    curr_page = manage_pagination && keywords ? 1 : page
 
-      @products = @products_scope.paginate({
-          :include  => [:images, :master],
-          :per_page => per_page,
-          :page     => curr_page
-        })
-      end
+    @products = @products_scope.paginate({
+        :include  => [:images, :master],
+        :per_page => per_page,
+        :page     => curr_page
+      })
+  end
       
       
-   def index
+  def index
 
     if !params[:format].nil? && params[:format] == "json"
       product_details = Hash.new
@@ -41,106 +41,106 @@ def current_ability
       @products = @searcher.retrieve_products
       product_details[:products] = Array.new
       @products.each do |r|
-         product_detail=Hash.new
-         product_detail[:product_id]=r.id
-         product_detail[:name]=r.name
-         product_detail[:description]=r.description
-         product_detail[:created_at]=r.created_at
-         product_detail[:updated_at]=r.updated_at
-         product_detail[:permalink]=r.permalink
-         product_detail[:available_on]=r.available_on
-         product_detail[:tax_category_id]=r.tax_category_id
-         product_detail[:shipping_category_id]=r.shipping_category_id
-         product_detail[:deleted_at]=r.deleted_at
-         product_detail[:meta_description]=r.meta_description
-         product_detail[:meta_keywords]=r.meta_keywords
-         product_detail[:count_on_hand]=r.count_on_hand
-         @image=r.images
-         product_detail[:images]= Array.new
-         @image.each do |image|
-           product_image = Hash.new
-           product_image[:image_type]=image.attachment.content_type
-           product_image[:url]='http://spreeapi.railsfactory.com' + image.attachment.url(:original)
-           product_detail[:images].push product_image
-         end
+        product_detail=Hash.new
+        product_detail[:product_id]=r.id
+        product_detail[:name]=r.name
+        product_detail[:description]=r.description
+        product_detail[:created_at]=r.created_at
+        product_detail[:updated_at]=r.updated_at
+        product_detail[:permalink]=r.permalink
+        product_detail[:available_on]=r.available_on
+        product_detail[:tax_category_id]=r.tax_category_id
+        product_detail[:shipping_category_id]=r.shipping_category_id
+        product_detail[:deleted_at]=r.deleted_at
+        product_detail[:meta_description]=r.meta_description
+        product_detail[:meta_keywords]=r.meta_keywords
+        product_detail[:count_on_hand]=r.count_on_hand
+        @image=r.images
+        product_detail[:images]= Array.new
+        @image.each do |image|
+          product_image = Hash.new
+          product_image[:image_type]=image.attachment.content_type
+          product_image[:url]='http://spreeapi.railsfactory.com' + image.attachment.url(:original)
+          product_detail[:images].push product_image
+        end
         product_details[:products].push product_detail
-     end
+      end
  
  
-     respond_with(product_details) do |format|
+      respond_with(product_details) do |format|
         
         format.json { render :json =>product_details}
-     end
-  else
-    @searcher = Spree::Config.searcher_class.new(params)
-    @products = @searcher.retrieve_products
-    @new_sales=Product.where("available_on=?",Date.today-5.days)
-    @coming_soon=Product.where("available_on > ? and deleted_at is NULL",Date.today)
-    respond_with(@products)
+      end
+    else
+      @searcher = Spree::Config.searcher_class.new(params)
+      @products = @searcher.retrieve_products
+      @new_sales=Product.where("available_on=?",Date.today-5.days)
+      @coming_soon=Product.where("available_on > ? and deleted_at is NULL",Date.today)
+      respond_with(@products)
+    end
   end
-end
 
   def show
     if !params[:format].nil? && params[:format] == "json"
       puts "now the cursor in if condition"
       p @object
-    respond_with(@object) do |format|
-      format.json { render :json => @object.to_json(object_serialization_options) }
+      respond_with(@object) do |format|
+        format.json { render :json => @object.to_json(object_serialization_options) }
       end
-else
-   @product = Product.find_by_permalink!(params[:id])
-   p @product
-    return unless @product
+    else
+      @product = Product.find_by_permalink!(params[:id])
+      p @product
+      return unless @product
 
-    @variants = Variant.active.includes([:option_values, :images]).where(:product_id => @product.id)
-    @product_properties = ProductProperty.includes(:property).where(:product_id => @product.id)
-    @selected_variant = @variants.detect { |v| v.available? }
+      @variants = Variant.active.includes([:option_values, :images]).where(:product_id => @product.id)
+      @product_properties = ProductProperty.includes(:property).where(:product_id => @product.id)
+      @selected_variant = @variants.detect { |v| v.available? }
 
-    referer = request.env['HTTP_REFERER']
+      referer = request.env['HTTP_REFERER']
 
-    if referer && referer.match(HTTP_REFERER_REGEXP)
-      @taxon = Taxon.find_by_permalink($1)
-    end
+      if referer && referer.match(HTTP_REFERER_REGEXP)
+        @taxon = Taxon.find_by_permalink($1)
+      end
 
-    respond_with(@product)
+      respond_with(@product)
   
     end
   end
-def destroy
-@object=Product.find_by_id(params[:id])
-if !@object.nil?
-@object.destroy
-if @object.destroy
-   error=error_response_method($e4)
+  def destroy
+    @object=Product.find_by_id(params[:id])
+    if !@object.nil?
+      @object.destroy
+      if @object.destroy
+        error=error_response_method($e4)
         render:json=>error 
- end
-else 
-  error=error_response_method($e2)
-        render:json=>error
-end
-end
- def error_response_method(error)
+      end
+    else
+      error=error_response_method($e2)
+      render:json=>error
+    end
+  end
+  def error_response_method(error)
     @error = {}
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
     #@error["Code"] = error["error_code"]
     return @error
   end
- protected
-    def model_class
-        if !params[:format].nil? && params[:format] == "json"
+  protected
+  def model_class
+    if !params[:format].nil? && params[:format] == "json"
       controller_name.classify.constantize
-      end
     end
+  end
     
-    def object_name
-        if !params[:format].nil? && params[:format] == "json"
+  def object_name
+    if !params[:format].nil? && params[:format] == "json"
       controller_name.singularize
-      end
     end
+  end
     
-    def load_resource
-        if !params[:format].nil? && params[:format] == "json"
+  def load_resource
+    if !params[:format].nil? && params[:format] == "json"
       if member_action?
         @object ||= load_resource_instance
         instance_variable_set("@#{object_name}", @object)
@@ -148,93 +148,93 @@ end
         @collection ||= collection
         instance_variable_set("@#{controller_name}", @collection)
       end
-      end
     end
+  end
     
-    def load_resource_instance
-        if !params[:format].nil? && params[:format] == "json"
+  def load_resource_instance
+    if !params[:format].nil? && params[:format] == "json"
       if new_actions.include?(params[:action].to_sym)
-      build_resource
+        build_resource
       elsif params[:id]
         find_resource
       end
-      end
     end
+  end
     
-    def parent
-        if !params[:format].nil? && params[:format] == "json"
+  def parent
+    if !params[:format].nil? && params[:format] == "json"
       nil
-      end
     end
+  end
 
-    def find_resource
-        if !params[:format].nil? && params[:format] == "json"
+  def find_resource
+    if !params[:format].nil? && params[:format] == "json"
       begin
         if parent.present?
           parent.send(controller_name).find(params[:id])
-      else
-        model_class.includes(eager_load_associations).find(params[:id])
-      end
+        else
+          model_class.includes(eager_load_associations).find(params[:id])
+        end
       rescue Exception => e
-       error = error_response_method($e2)
-      render :json => error
-    #render :text => "Resource not found (#{e.message})", :status => 500
-  end
-  end
+        error = error_response_method($e2)
+        render :json => error
+        #render :text => "Resource not found (#{e.message})", :status => 500
+      end
     end
+  end
     
-    #~ def collection_serialization_options
-        #~ if !params[:format].nil? && params[:format] == "json"
-      #~ {}
-      #~ end
-    #~ end
+  #~ def collection_serialization_options
+  #~ if !params[:format].nil? && params[:format] == "json"
+  #~ {}
+  #~ end
+  #~ end
 
-    def eager_load_associations
-        if !params[:format].nil? && params[:format] == "json"
+  def eager_load_associations
+    if !params[:format].nil? && params[:format] == "json"
       nil
-      end
     end
+  end
     
-    def collection_actions
-        if !params[:format].nil? && params[:format] == "json"
+  def collection_actions
+    if !params[:format].nil? && params[:format] == "json"
       [:index]
-      end
     end
+  end
 
-    def member_action?
-        if !params[:format].nil? && params[:format] == "json"
+  def member_action?
+    if !params[:format].nil? && params[:format] == "json"
       !collection_actions.include? params[:action].to_sym
-      end
     end
+  end
 
-    def new_actions
-        if !params[:format].nil? && params[:format] == "json"
+  def new_actions
+    if !params[:format].nil? && params[:format] == "json"
       [:new, :create]
-      end
     end
+  end
 
   private
   def check_http_authorization
-      if !params[:format].nil? && params[:format] == "json"
-    #~ if request.headers['HTTP_AUTHORIZATION'].blank?
+    if !params[:format].nil? && params[:format] == "json"
+      #~ if request.headers['HTTP_AUTHORIZATION'].blank?
       #~ render :text => "Access Denied\n", :status => 401
-    #~ end
+      #~ end
       if current_user.authentication_token!=params[:authentication_token]
-      # if request.headers['HTTP_AUTHORIZATION'].blank?
+        # if request.headers['HTTP_AUTHORIZATION'].blank?
         #render :text => "Access Denied\n", :status => 401
-         error = error_response_method($e13)
-      render :json => error
+        error = error_response_method($e13)
+        render :json => error
       end if current_user
-      end
+    end
   end
-private
-    def collection
-      params[:per_page] ||= 100
-      @searcher = Spree::Config.searcher_class.new(params)
-      @collection = @searcher.retrieve_products
-    end
+  private
+  def collection
+    params[:per_page] ||= 100
+    @searcher = Spree::Config.searcher_class.new(params)
+    @collection = @searcher.retrieve_products
+  end
 
-    def object_serialization_options
-      { :include => [:master, :variants, :taxons] }
-    end
+  def object_serialization_options
+    { :include => [:master, :variants, :taxons] }
+  end
 end

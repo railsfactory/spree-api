@@ -1,10 +1,10 @@
 Admin::StatesController.class_eval do
   $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
-$e2={"status_code"=>"2037","status_message"=>"Record not found"}
-$e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
-$e4={"status_code"=>"2035","status_message"=>"destroyed"}
-$e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
-$e25={"status_code"=>"2060","status_message"=>"sorry parent record not found"}
+  $e2={"status_code"=>"2037","status_message"=>"Record not found"}
+  $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
+  $e4={"status_code"=>"2035","status_message"=>"destroyed"}
+  $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
+  $e25={"status_code"=>"2060","status_message"=>"sorry parent record not found"}
   belongs_to :country
   before_filter :load_data
   require 'spree_core/action_callbacks'
@@ -15,141 +15,141 @@ $e25={"status_code"=>"2060","status_message"=>"sorry parent record not found"}
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
- # respond_to :html
+  # respond_to :html
   respond_to :js, :except => [:show, :index]
-def current_ability
-   user= current_user || User.find_by_authentication_token(params[:authentication_token])
+  def current_ability
+    user= current_user || User.find_by_authentication_token(params[:authentication_token])
     
     @current_ability ||= Ability.new(user)
   end
 
-   def index
+  def index
     
     respond_with(@collection) do |format|
-        if !params[:format].nil? && params[:format] == "json"
-          format.json { render :json => @collection }
-          else
-      format.html
-      format.js  { render :partial => 'state_list.html.erb' }
+      if !params[:format].nil? && params[:format] == "json"
+        format.json { render :json => @collection }
+      else
+        format.html
+        format.js  { render :partial => 'state_list.html.erb' }
       end
     end
   end
   def create
-      if !params[:format].nil? && params[:format] == "json"
-        begin
-      if @object.update_attributes(params[object_name])
+    if !params[:format].nil? && params[:format] == "json"
+      begin
+        if @object.update_attributes(params[object_name])
           render :json => @object.to_json, :status => 201
-    else
-      error = error_response_method($e1)
-      render :json => error
-      #respond_with(@object.errors, :status => 422)
-    end
-     rescue Exception=>e
-     #render :text => "#{e.message}", :status => 500
-     error = error_response_method($e11)
-      render :json => error
-   end
         else
-    invoke_callbacks(:create, :before)
-    if @object.save
-     if controller_name == "taxonomies"
-       @object.create_image(:attachment=>params[:taxon][:attachement])
-    end
-      invoke_callbacks(:create, :after)
-      flash[:notice] = flash_message_for(@object, :successfully_created)
-      respond_with(@object) do |format|
-        format.html { redirect_to location_after_save }
-        format.js   { render :layout => false }
+          error = error_response_method($e1)
+          render :json => error
+          #respond_with(@object.errors, :status => 422)
+        end
+      rescue Exception=>e
+        #render :text => "#{e.message}", :status => 500
+        error = error_response_method($e11)
+        render :json => error
       end
     else
-      invoke_callbacks(:create, :fails)
-      respond_with(@object)
-    end
+      invoke_callbacks(:create, :before)
+      if @object.save
+        if controller_name == "taxonomies"
+          @object.create_image(:attachment=>params[:taxon][:attachement])
+        end
+        invoke_callbacks(:create, :after)
+        flash[:notice] = flash_message_for(@object, :successfully_created)
+        respond_with(@object) do |format|
+          format.html { redirect_to location_after_save }
+          format.js   { render :layout => false }
+        end
+      else
+        invoke_callbacks(:create, :fails)
+        respond_with(@object)
+      end
     end
   end
   def show
-  if !params[:format].nil? && params[:format] == "json"
-    respond_with(@object) do |format|
-      format.json { render :json => @object.to_json }
-    end
-    end
-   end
-   def update
-        if !params[:format].nil? && params[:format] == "json"
-    begin
-    p @object
-    p "3333333333333333333333333333333333333333#"
-    p params[object_name]
-    p "1111111111111111111111111111111111111111111111111111111111111111111111111111"
-      if @object.update_attributes(params[object_name])
-          render :json => @object.to_json, :status => 201
-    else
-      error = error_response_method($e1)
-      render :json => error
-      #respond_with(@object.errors, :status => 422)
-    end
-     rescue Exception=>e
-     #render :text => "#{e.message}", :status => 500
-     error = error_response_method($e11)
-      render :json => error
-   end
-   else
-    invoke_callbacks(:update, :before)
-     if controller_name == "taxonomies"
-    @image_object=@object.image
-    @image_object.update_attributes(:attachment => params[:taxon][:attachement])
-    end
-
-    if @object.update_attributes(params[object_name])
-     invoke_callbacks(:update, :after)
-      flash[:notice] = flash_message_for(@object, :successfully_updated)
+    if !params[:format].nil? && params[:format] == "json"
       respond_with(@object) do |format|
-        format.html { redirect_to location_after_save }
-        format.js   { render :layout => false }
+        format.json { render :json => @object.to_json }
       end
-    else
-      invoke_callbacks(:update, :fails)
-      respond_with(@object)
     end
   end
-end
-def destroy
-  if !params[:format].nil? && params[:format] == "json"
-@object=State.find_by_id(params[:id])
-if !@object.nil?
-@object.destroy
-if @object.destroy
-   error=error_response_method($e4)
-        render:json=>error
- end
-else 
-  error=error_response_method($e2)
-        render:json=>error
+  def update
+    if !params[:format].nil? && params[:format] == "json"
+      begin
+        p @object
+        p "3333333333333333333333333333333333333333#"
+        p params[object_name]
+        p "1111111111111111111111111111111111111111111111111111111111111111111111111111"
+        if @object.update_attributes(params[object_name])
+          render :json => @object.to_json, :status => 201
+        else
+          error = error_response_method($e1)
+          render :json => error
+          #respond_with(@object.errors, :status => 422)
+        end
+      rescue Exception=>e
+        #render :text => "#{e.message}", :status => 500
+        error = error_response_method($e11)
+        render :json => error
+      end
+    else
+      invoke_callbacks(:update, :before)
+      if controller_name == "taxonomies"
+        @image_object=@object.image
+        @image_object.update_attributes(:attachment => params[:taxon][:attachement])
+      end
+
+      if @object.update_attributes(params[object_name])
+        invoke_callbacks(:update, :after)
+        flash[:notice] = flash_message_for(@object, :successfully_updated)
+        respond_with(@object) do |format|
+          format.html { redirect_to location_after_save }
+          format.js   { render :layout => false }
         end
       else
-    invoke_callbacks(:destroy, :before)
-    if @object.destroy
-      invoke_callbacks(:destroy, :after)
-      flash[:notice] = flash_message_for(@object, :successfully_removed)
-      respond_with(@object) do |format|
-        format.html { redirect_to collection_url }
-        format.js   { render :partial => "/admin/shared/destroy" }
-      end
-    else
-      invoke_callbacks(:destroy, :fails)
-      respond_with(@object) do |format|
-        format.html { redirect_to collection_url }
+        invoke_callbacks(:update, :fails)
+        respond_with(@object)
       end
     end
   end
-end
-def error_response_method(error)
+  def destroy
     if !params[:format].nil? && params[:format] == "json"
-    @error = {}
-    @error["code"]=error["status_code"]
-    @error["message"]=error["status_message"]
-    #@error["Code"] = error["error_code"]
-    return @error
+      @object=State.find_by_id(params[:id])
+      if !@object.nil?
+        @object.destroy
+        if @object.destroy
+          error=error_response_method($e4)
+          render:json=>error
+        end
+      else
+        error=error_response_method($e2)
+        render:json=>error
+      end
+    else
+      invoke_callbacks(:destroy, :before)
+      if @object.destroy
+        invoke_callbacks(:destroy, :after)
+        flash[:notice] = flash_message_for(@object, :successfully_removed)
+        respond_with(@object) do |format|
+          format.html { redirect_to collection_url }
+          format.js   { render :partial => "/admin/shared/destroy" }
+        end
+      else
+        invoke_callbacks(:destroy, :fails)
+        respond_with(@object) do |format|
+          format.html { redirect_to collection_url }
+        end
+      end
+    end
+  end
+  def error_response_method(error)
+    if !params[:format].nil? && params[:format] == "json"
+      @error = {}
+      @error["code"]=error["status_code"]
+      @error["message"]=error["status_message"]
+      #@error["Code"] = error["error_code"]
+      return @error
     end
   end
 
@@ -166,15 +166,15 @@ def error_response_method(error)
   def load_resource
     p "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{"
     begin
-    if member_action?
-      @object ||= load_resource_instance
-      instance_variable_set("@#{object_name}", @object)
-    else
-      @collection ||= collection 
-      instance_variable_set("@#{controller_name}", @collection)
-    end
+      if member_action?
+        @object ||= load_resource_instance
+        instance_variable_set("@#{object_name}", @object)
+      else
+        @collection ||= collection
+        instance_variable_set("@#{controller_name}", @collection)
+      end
     rescue Exception=>e
-    error = error_response_method($e25)
+      error = error_response_method($e25)
       render :json => error
     end
   end
@@ -187,18 +187,18 @@ def error_response_method(error)
       find_resource
     end
   end
-def access_denied
+  def access_denied
     p "222222222222222222222222222222222222222222222222222222222222"
     if !params[:format].nil? && params[:format] == "json"
-    #render :text => 'access_denied', :status => 401
-    error = error_response_method($e12)
+      #render :text => 'access_denied', :status => 401
+      error = error_response_method($e12)
       render :json => error
-  end
+    end
   end
   def parent_data
     p "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
     
-      self.class.parent_data
+    self.class.parent_data
       
   end
 
@@ -215,48 +215,48 @@ def access_denied
   end
 
   def find_resource
-     if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       begin
         if parent.present?
           parent.send(controller_name).find(params[:id])
-      else
-        model_class.includes.find(params[:id])
-      end
+        else
+          model_class.includes.find(params[:id])
+        end
       rescue Exception => e
-    #render :text => "Resource not found (#{e.message})", :status => 500
-     error = error_response_method($e2)
-      render :json => error
-  end
-  else
-    
-  if parent_data.present?
-      parent.send(controller_name).find(params[:id])
+        #render :text => "Resource not found (#{e.message})", :status => 500
+        error = error_response_method($e2)
+        render :json => error
+      end
     else
-      model_class.find(params[:id])
-    end
+    
+      if parent_data.present?
+        parent.send(controller_name).find(params[:id])
+      else
+        model_class.find(params[:id])
+      end
    
-  end
+    end
   end
 
   def build_resource
-      begin
+    begin
       if parent.present?
-      parent.send(controller_name).build(params[object_name])
+        parent.send(controller_name).build(params[object_name])
       else
-      model_class.new(params[object_name])
+        model_class.new(params[object_name])
       end
-      rescue Exception=> e
+    rescue Exception=> e
       #render :text => " #{e.message}", :status => 500
-       error = error_response_method($e11)
+      error = error_response_method($e11)
       render :json => error
     end
   end
-#~ def location_after_save
-    #~ admin_country_states_url(@country)
+  #~ def location_after_save
+  #~ admin_country_states_url(@country)
   #~ end
 
   #~ def collection
-    #~ super.order(:name)
+  #~ super.order(:name)
   #~ end
   def collection
     p ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -278,9 +278,9 @@ def access_denied
     callbacks = self.class.callbacks || {}
     return if callbacks[action].nil?
     case callback_type.to_sym
-      when :before then callbacks[action].before_methods.each {|method| send method }
-      when :after  then callbacks[action].after_methods.each  {|method| send method }
-      when :fails  then callbacks[action].fails_methods.each  {|method| send method }
+    when :before then callbacks[action].before_methods.each {|method| send method }
+    when :after  then callbacks[action].after_methods.each  {|method| send method }
+    when :fails  then callbacks[action].fails_methods.each  {|method| send method }
     end
   end
 
@@ -337,14 +337,14 @@ def access_denied
     p "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
     [:new, :create]
   end
-   private
+  private
   def check_http_authorization
-         if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       if current_user.authentication_token!=params[:authentication_token]
         #render :text => "Access Denied\n", :status => 401
         error = error_response_method($e13)
-      render :json => error
-    end if current_user
+        render :json => error
+      end if current_user
+    end
   end
 end
-  end
