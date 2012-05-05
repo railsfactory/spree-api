@@ -241,6 +241,7 @@ Admin::MailMethodsController.class_eval do
       rescue Exception => e
         error = error_response_method($e2)
         render :json => error
+        end
       else
         if parent_data.present?
           parent.send(controller_name).find(params[:id])
