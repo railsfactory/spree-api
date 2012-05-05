@@ -4,42 +4,39 @@ class CountriesController <Spree::BaseController
   before_filter :load_resource
   skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
   authorize_resource
-  
   respond_to :json
+  #To set current user
   def current_ability
     user= current_user || User.find_by_authentication_token(params[:authentication_token])
-    
     @current_ability ||= Ability.new(user)
   end
+  #To list the countries
   def index
     respond_with(@collection) do |format|
       format.json { render :json => @collection.to_json(collection_serialization_options) }
     end
   end
-
+  #To show the countries
   def show
     respond_with(@object) do |format|
       format.json { render :json => @object.to_json(object_serialization_options) }
     end
   end
-
+  #To create new country
   def create
     begin
       if @object.save
-        # render :text => "Resource created\n", :status => 201, :location => object_url
         render :json => @object.to_json, :status => 201
       else
-        #respond_with(@object.errors, :status => 422)
         error = error_response_method($e1)
         render :json => error
       end
     rescue Exception=>e
-      #render :text => "#{e.message}", :status => 500
       error = error_response_method($e11)
       render :json => error
     end
   end
-
+  #To update the country
   def update
     begin
       if @object.update_attributes(params[object_name])
@@ -47,22 +44,34 @@ class CountriesController <Spree::BaseController
       else
         error = error_response_method($e1)
         render :json => error
-        #respond_with(@object.errors, :status => 422)
       end
     rescue Exception=>e
       error = error_response_method($e11)
       render :json => error
-      #render :text => "#{e.message}", :status => 500
     end
-
   end
- 
+  #To destroy the country
+  def destroy
+    if !params[:format].nil? && params[:format] == "json"
+      @object=Country.find_by_id(params[:id])
+      if !@object.nil?
+        @object.destroy
+        if @object.destroy
+          error=error_response_method($e4)
+          render:json=>error
+        end
+      else
+        error=error_response_method($e2)
+        render:json=>error
+      end
+    end
+  end
+  
   def admin_token_passed_in_headers
     request.headers['HTTP_AUTHORIZATION'].present?
   end
-
+  #To check the access of the user
   def access_denied
-    #render :text => 'access_denied', :status => 401
     error = error_response_method($e12)
     render :json => error
   end

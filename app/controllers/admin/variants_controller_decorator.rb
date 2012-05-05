@@ -6,28 +6,27 @@ Admin::VariantsController.class_eval do
   $e5={"status_code"=>"202","status_message"=>"Undefined method request check the url"}
   require 'spree_core/action_callbacks'
   before_filter :check_http_authorization
-  before_filter :load_resource
+  before_filter :load_resourcef
   skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
   authorize_resource
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
-  # respond_to :html
   respond_to :js, :except => [:show, :index]
+  #To set current user
   def current_ability
     user= current_user || User.find_by_authentication_token(params[:authentication_token])
-    
-    @current_ability ||= Ability.new(user)
+        @current_ability ||= Ability.new(user)
   end
-
+#To create new record
   def new
     respond_with(@object) do |format|
       format.html { render :layout => !request.xhr? }
       format.js { render :layout => false }
     end
   end
-  
-  def index
+  #To display the record
+   def index
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@collection) do |format|
         format.html
@@ -35,6 +34,7 @@ Admin::VariantsController.class_eval do
       end
     end
   end
+  #To display the record
   def show
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@object) do |format|
@@ -42,30 +42,25 @@ Admin::VariantsController.class_eval do
       end
     end
   end
-
+#To create new record
   def create
-    p "i am in api method"
-    if !params[:format].nil? && params[:format] == "json"
+      if !params[:format].nil? && params[:format] == "json"
       begin
         invoke_callbacks(:create, :before)
         if @object.save
           invoke_callbacks(:create, :after)
-          # render :text => "Resource created\n", :status => 201, :location => object_url
-          render :json => @object.to_json, :status => 201
+                 render :json => @object.to_json, :status => 201
         else
-          #respond_with(@object.errors, :status => 422)
-          error = error_response_method($e1)
+                   error = error_response_method($e1)
           render :json => error
         end
       rescue Exception=>e
-        #render :text => "#{e.message}", :status => 500
-        error = error_response_method($e11)
+             error = error_response_method($e11)
         render :json => error
       end
     else
       invoke_callbacks(:create, :before)
-      p @object
-      if @object.save
+          if @object.save
         if controller_name == "taxonomies"
           @object.create_image(:attachment=>params[:taxon][:attachement])
         end
@@ -81,7 +76,7 @@ Admin::VariantsController.class_eval do
       end
     end
   end
-
+ #To update the existing record
   def update
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -92,16 +87,13 @@ Admin::VariantsController.class_eval do
         else
           error = error_response_method($e1)
           render :json => error
-          #respond_with(@object.errors, :status => 422)
-        end
+                 end
       rescue Exception=>e
         error = error_response_method($e11)
         render :json => error
-        #render :text => "#{e.message}", :status => 500
-      end
+             end
     else
-      p "i came inside"
-      invoke_callbacks(:update, :before)
+           invoke_callbacks(:update, :before)
       if controller_name == "taxonomies"
         @image_object=@object.image
         @image_object.update_attributes(:attachment => params[:taxon][:attachement])
@@ -119,8 +111,8 @@ Admin::VariantsController.class_eval do
         respond_with(@object)
       end
     end
-
   end
+  #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
       @object=Variant.find_by_id(params[:id])
@@ -136,14 +128,12 @@ Admin::VariantsController.class_eval do
       end
     else
       @variant = Variant.find(params[:id])
-
       @variant.deleted_at = Time.now()
       if @variant.save
         flash.notice = I18n.t("notice_messages.variant_deleted")
       else
         flash.notice = I18n.t("notice_messages.variant_not_deleted")
       end
-
       respond_with(@variant) do |format|
         format.html { redirect_to admin_product_variants_url(params[:product_id]) }
         format.js  { render_js_for_destroy }
@@ -155,23 +145,19 @@ Admin::VariantsController.class_eval do
       request.headers['HTTP_AUTHORIZATION'].present?
     end
   end
-
+#To check access
   def access_denied
-  
-    if !params[:format].nil? && params[:format] == "json"
-      #render :text => 'access_denied', :status => 401
-      error = error_response_method($e12)
+      if !params[:format].nil? && params[:format] == "json"
+           error = error_response_method($e12)
       render :json => error
     end
   end
 
   # Generic action to handle firing of state events on an object
   def event
-    
-    if !params[:format].nil? && params[:format] == "json"
+        if !params[:format].nil? && params[:format] == "json"
       valid_events = model_class.state_machine.events.map(&:name)
       valid_events_for_object = @object ? @object.state_transitions.map(&:event) : []
-
       if params[:e].blank?
         errors = t('api.errors.missing_event')
       elsif valid_events_for_object.include?(params[:e].to_sym)
@@ -182,50 +168,37 @@ Admin::VariantsController.class_eval do
       else
         errors = t('api.errors.invalid_event', :events => valid_events.join(','))
       end
-
       respond_to do |wants|
         wants.json do
           if errors.blank?
             render :nothing => true
           else
-            #error = error_response_method($e10001)
-            render :json => errors.to_json, :status => 422
-            #render :json => error
-          end
+                       render :json => errors.to_json, :status => 422
+                    end
         end
       end
     end
   end
-
+#To display the error message
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
       @error = {}
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
-      #@error["Code"] = error["error_code"]
-      return @error
+           return @error
     end
   end
-
   protected
-  
-  def model_class
-    
-    controller_name.classify.constantize
-    
+    def model_class
+        controller_name.classify.constantize
+      end
+      def object_name
+         controller_name.singularize
   end
-    
-  def object_name
-     
-    controller_name.singularize
-
-  end
-    
+   #To load resource for listing and editing 
   def load_resource
-     
-    if member_action?
-       
-      @object ||= load_resource_instance
+         if member_action?
+             @object ||= load_resource_instance
       instance_variable_set("@#{object_name}", @object)
       p @object
     else
@@ -234,23 +207,21 @@ Admin::VariantsController.class_eval do
     end
     
   end
-    
+   #To load resource insatnce  for creating and finding 
   def load_resource_instance
-   
-    if new_actions.include?(params[:action].to_sym)
+       if new_actions.include?(params[:action].to_sym)
       build_resource
     elsif params[:id]
       find_resource
     end
-      
-  end
+          end
+    #To find the parent
   def parent_data
-     
-    self.class.parent_data
+         self.class.parent_data
   end
+  #To find the parent
   def parent
-    
-    if !params[:format].nil? && params[:format] == "json"
+        if !params[:format].nil? && params[:format] == "json"
       nil
     else
       if parent_data.present?
@@ -261,10 +232,9 @@ Admin::VariantsController.class_eval do
       end
     end
   end
-
+#To find the data while updating and listing
   def find_resource
-     
-    if !params[:format].nil? && params[:format] == "json"
+         if !params[:format].nil? && params[:format] == "json"
       begin
         if parent.present?
           parent.send(controller_name).find(params[:id])
@@ -274,11 +244,9 @@ Admin::VariantsController.class_eval do
       rescue Exception => e
         error = error_response_method($e2)
         render :json => error
-        #render :text => "Resource not found (#{e.message})", :status => 500
-      end
+             end
     else
-   
-      if parent_data.present?
+         if parent_data.present?
         parent.send(controller_name).find(params[:id])
         p parent
       else
@@ -288,9 +256,8 @@ Admin::VariantsController.class_eval do
    
     end
   end
-    
+    #To build new resources
   def build_resource
-
     begin
       if parent.present?
         parent.send(controller_name).build(params[object_name])
@@ -300,11 +267,9 @@ Admin::VariantsController.class_eval do
     rescue Exception=> e
       error = error_response_method($e11)
       render :json => error
-      #render :text => " #{e.message}", :status => 500
+         end
     end
-    #end
-  end
-    
+    #To collect the list of datas
   def collection
     if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
@@ -326,25 +291,21 @@ Admin::VariantsController.class_eval do
       @collection
 		end
   end
-
   def collection_serialization_options
     if !params[:format].nil? && params[:format] == "json"
       {}
     end
   end
-
   def object_serialization_options
     if !params[:format].nil? && params[:format] == "json"
       {}
     end
   end
-
   def eager_load_associations
     if !params[:format].nil? && params[:format] == "json"
       nil
     end
   end
-
   def object_errors
     if !params[:format].nil? && params[:format] == "json"
       {:errors => object.errors.full_messages}
@@ -353,7 +314,6 @@ Admin::VariantsController.class_eval do
   def location_after_save
     collection_url
   end
-
   def invoke_callbacks(action, callback_type)
     callbacks = self.class.callbacks || {}
     return if callbacks[action].nil?
@@ -365,7 +325,6 @@ Admin::VariantsController.class_eval do
   end
 
   # URL helpers
-
   def new_object_url(options = {})
     if parent_data.present?
       new_polymorphic_url([:admin, parent, model_class], options)
@@ -373,7 +332,6 @@ Admin::VariantsController.class_eval do
       new_polymorphic_url([:admin, model_class], options)
     end
   end
-
   def edit_object_url(object, options = {})
     if parent_data.present?
       send "edit_admin_#{parent_data[:model_name]}_#{object_name}_url", parent, object, options
@@ -381,7 +339,6 @@ Admin::VariantsController.class_eval do
       send "edit_admin_#{object_name}_url", object, options
     end
   end
-
   def object_url(object = nil, options = {})
     if !params[:format].nil? && params[:format] == "json"
       target = object ? object : @object
@@ -410,36 +367,22 @@ Admin::VariantsController.class_eval do
       polymorphic_url([:admin, model_class], options)
     end
   end
-
   def collection_actions
-     
-    [:index]
-    
-  end
-
+         [:index]
+      end
   def member_action?
-      
     !collection_actions.include? params[:action].to_sym
-      
   end
-
   def new_actions
-     
     [:new, :create]
-   
   end
-
   private
   def check_http_authorization
-
     if !params[:format].nil? && params[:format] == "json"
-  
-   
-      if current_user.authentication_token!=params[:authentication_token]
+        if current_user.authentication_token!=params[:authentication_token]
         error = error_response_method($e13)
         render :json => error
-        #render :text => "Access Denied\n", :status => 401
-      end if current_user
+             end if current_user
     end
   end
 end

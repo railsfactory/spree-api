@@ -4,52 +4,35 @@ class LineItemsController< Spree::BaseController
   $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
   $e4={"status_code"=>"2035","status_message"=>"destroyed"}
   $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
-
+  #To set current user
   def current_ability
     user= current_user || User.find_by_authentication_token(params[:authentication_token])
-    
     @current_ability ||= Ability.new(user)
   end
-  private
-  def parent
-    if params[:order_id]
-      @parent ||= Order.find_by_param(params[:order_id])
-    end
-  end
-  
-  def parent_data
-    params[:order_id]
-  end
-    
-  def collection_serialization_options
-    { :include => [:variant], :methods => [:description] }
-  end
-
-  def object_serialization_options
-    collection_serialization_options
-  end
-  public
+  #To create line_item
   def create
     if !params[:line_item].nil?
       if !params[:line_item][:quantity].nil?&&!params[:line_item][:variant_id].nil?
-        quantity = params[:line_item][:quantity]
-        @variant = Variant.find_by_id(params[:line_item][:variant_id])
-        if !@variant.nil?
-          p params[:authentication_token]
-          user=User.find_by_authentication_token(params[:authentication_token])
-          if user.present?
-            @order = current_order(true,params[:authentication_token])
-            p "ttttttttttttttttttttttttttttttttttttttttttttttttt"
-            p @order
-            @order.add_variant(@variant, quantity.to_i) if quantity.to_i > 0
-            @response = Order.find_by_id(@order.id)
-            render :json => @response.to_json, :status => 201
+        quantity = params[:line_item][:quantity].to_i
+        if (quantity <=> 0) >= 0
+          @variant = Variant.find_by_id(params[:line_item][:variant_id])
+          if !@variant.nil?
+            user=User.find_by_authentication_token(params[:authentication_token])
+            if user.present?
+              @order = current_order(true,params[:authentication_token])
+              @order.add_variant(@variant, quantity.to_i) if quantity.to_i > 0
+              @response = Order.find_by_id(@order.id)
+              render :json => @response.to_json, :status => 201
+            else
+              error=error_response_method($e13)
+              render:json=>error
+            end
           else
-            error=error_response_method($e13)
+            error=error_response_method($e2)
             render:json=>error
           end
         else
-          error=error_response_method($e2)
+          error=error_response_method($e52)
           render:json=>error
         end
       else
@@ -62,23 +45,11 @@ class LineItemsController< Spree::BaseController
     end
 
   end
-  def destroy
-    @object=LineItem.find_by_id(params[:id])
-    if !@object.nil?
-      @object.destroy
-    else
-      error=error_response_method($e2)
-      render:json=>error
-    end
-    if @object.destroy
-      render :text => 'Destroyed' 
-    end
-  end
+  #To display error message
   def error_response_method(error)
     @error = {}
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
-    #@error["Code"] = error["error_code"]
     return @error
   end
   protected
@@ -93,7 +64,7 @@ class LineItemsController< Spree::BaseController
       controller_name.singularize
     end
   end
-    
+  #To load resource
   def load_resource
     if !params[:format].nil? && params[:format] == "json"
       if member_action?
@@ -105,6 +76,7 @@ class LineItemsController< Spree::BaseController
       end
     end
   end
+  #To Collect data to list
   def collection
     if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
@@ -117,6 +89,7 @@ class LineItemsController< Spree::BaseController
       @search
     end
   end
+  #To load resource for creating or finding
   def load_resource_instance
     if !params[:format].nil? && params[:format] == "json"
       if new_actions.include?(params[:action].to_sym)
@@ -126,13 +99,13 @@ class LineItemsController< Spree::BaseController
       end
     end
   end
-    
+  #To find the parent
   def parent
     if !params[:format].nil? && params[:format] == "json"
       nil
     end
   end
-
+  #To find the record
   def find_resource
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -144,7 +117,6 @@ class LineItemsController< Spree::BaseController
       rescue Exception => e
         error = error_response_method($e2)
         render :json => error
-        #render :text => "Resource not found (#{e.message})", :status => 500
       end
     end
   end
@@ -180,14 +152,27 @@ class LineItemsController< Spree::BaseController
   end
 
   private
+  def parent
+    if params[:order_id]
+      @parent ||= Order.find_by_param(params[:order_id])
+    end
+  end
+  
+  def parent_data
+    params[:order_id]
+  end
+    
+  def collection_serialization_options
+    { :include => [:variant], :methods => [:description] }
+  end
+
+  def object_serialization_options
+    collection_serialization_options
+  end
+  
   def check_http_authorization
     if !params[:format].nil? && params[:format] == "json"
-      #~ if request.headers['HTTP_AUTHORIZATION'].blank?
-      #~ render :text => "Access Denied\n", :status => 401
-      #~ end
       if current_user.authentication_token!=params[:authentication_token]
-        # if request.headers['HTTP_AUTHORIZATION'].blank?
-        #render :text => "Access Denied\n", :status => 401
         error = error_response_method($e13)
         render :json => error
       end if current_user
