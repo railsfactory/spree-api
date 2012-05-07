@@ -72,9 +72,14 @@ end
             @variant = Variant.find_by_id(params[:line_item][:variant_id])
             if !@variant.nil?
               @order = Order.find_by_param(params[:id])
+              if @order.present?
               @order.add_variant(@variant, quantity.to_i) if quantity.to_i > 0
               @response = Order.find_by_id(@order.id)
               render :json => @response.to_json, :status => 201
+              else
+               error=error_response_method($e2)
+              render:json=>error
+               end              
             else
               error=error_response_method($e2)
               render:json=>error
