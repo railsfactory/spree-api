@@ -161,7 +161,7 @@ CheckoutController.class_eval do
       end
     end
   else
-    @order = current_order
+    @order = current_order(true)
     redirect_to cart_path and return unless @order and @order.checkout_allowed?
     redirect_to cart_path and return if @order.completed?
     @order.state = params[:state] if params[:state]
