@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
   # Add your extension routes here
   resources:line_items
+   match '/detailed_list', :to => 'products#detailed_list', :via => :get
+   match '/detailed_show/:id', :to => 'products#detailed_show', :via => :get
   resources :countries do
       resources :states
     end
@@ -16,6 +18,7 @@ Rails.application.routes.draw do
  namespace :admin do
   resources:variants
   resources:taxons
+  resources:product_properties
   match '/reports/best_selling_products', :to => 'reports#best_selling_products', :via => :get
 match '/reports/gross_selling_products', :to => 'reports#gross_selling_products', :via => :get
 match '/reports/top_spenders', :to => 'reports#top_spenders', :via => :get

@@ -28,7 +28,36 @@ ProductsController.class_eval do
         :page     => curr_page
       })
   end
-      
+  def  detailed_list
+     if !params[:format].nil? && params[:format] == "json"
+      product_details = Hash.new
+      @searcher = Spree::Config.searcher_class.new(params)
+      @products = @searcher.retrieve_products
+      product_details[:products] = Array.new
+      @products.each do |r|
+        product_detail=Hash.new
+        product_detail[:product_id]=r.id
+        product_detail[:name]=r.name
+        var=Variant.find(:all,:conditions=>["product_id=? and is_master=?",r.id,true])
+         var.each do |r|
+         price=r.price.to_i
+        product_detail[:price]=price
+        end
+        @image=r.images
+        product_detail[:images]= Array.new
+        @image.each do |image|
+          product_image = Hash.new
+          product_image[:image_type]=image.attachment.content_type
+          product_image[:url]='http://spreeapi.railsfactory.com' + image.attachment.url(:original)
+          product_detail[:images].push product_image
+        end
+        product_details[:products].push product_detail
+      end
+      respond_with(product_details) do |format|
+        format.json { render :json =>product_details}
+      end
+      end
+    end
       #To list the products
   def index
     if !params[:format].nil? && params[:format] == "json"
@@ -51,6 +80,11 @@ ProductsController.class_eval do
         product_detail[:meta_description]=r.meta_description
         product_detail[:meta_keywords]=r.meta_keywords
         product_detail[:count_on_hand]=r.count_on_hand
+        var=Variant.find(:all,:conditions=>["product_id=? and is_master=?",r.id,true])
+         var.each do |r|
+         price=r.price.to_i
+        product_detail[:price]=price
+        end
         @image=r.images
         product_detail[:images]= Array.new
         @image.each do |image|
@@ -72,6 +106,38 @@ ProductsController.class_eval do
       respond_with(@products)
     end
   end
+  def detailed_show
+     if !params[:format].nil? && params[:format] == "json"
+       if @object.present?
+       product_details = Hash.new
+        product_details[:products] = Array.new
+       product_detail=Hash.new
+        product_detail[:product_id]=@object.id
+        product_detail[:name]=@object.name
+         product_detail[:description]=@object.description
+        var=Variant.find(:all,:conditions=>["product_id=? and is_master=?",@object.id,true])
+         var.each do |r|
+         price=r.price.to_i
+        product_detail[:price]=price
+        end
+        @image=@object.images
+        product_detail[:images]= Array.new
+        @image.each do |image|
+          product_image = Hash.new
+          product_image[:image_type]=image.attachment.content_type
+          product_image[:url]='http://spreeapi.railsfactory.com' + image.attachment.url(:original)
+          product_detail[:images].push product_image
+        end
+        product_details[:products].push product_detail
+      respond_with(product_details) do |format|
+        format.json { render :json =>product_details}
+      end
+      else
+        error = error_response_method($e2)
+        render :json => error
+        end
+      end
+    end
 #To display the particular product
   def show
     if !params[:format].nil? && params[:format] == "json"
