@@ -28,15 +28,18 @@ ProductsController.class_eval do
         :page     => curr_page
       })
   end
-  def  detailed_list
-     if !params[:format].nil? && params[:format] == "json"
-       user=User.find_by_authentication_token(params[:authentication_token])
-          if user.present?
+      #To list the products
+  def index
+    if !params[:format].nil? && params[:format] == "json"
+   
       product_details = Hash.new
       @searcher = Spree::Config.searcher_class.new(params)
       @products = @searcher.retrieve_products
       product_details[:products] = Array.new
-      @products.each do |r|
+          if params[:e].present?
+            user=User.find_by_authentication_token(params[:authentication_token])
+          if user.present?
+            @products.first(10).each do |r|
         product_detail=Hash.new
         product_detail[:product_id]=r.id
         product_detail[:name]=r.name
@@ -59,18 +62,10 @@ ProductsController.class_eval do
         format.json { render :json =>product_details}
       end
       else
-         error=error_response_method($e4)
+         error=error_response_method($e13)
         render:json=>error 
       end
-      end
-    end
-      #To list the products
-  def index
-    if !params[:format].nil? && params[:format] == "json"
-      product_details = Hash.new
-      @searcher = Spree::Config.searcher_class.new(params)
-      @products = @searcher.retrieve_products
-      product_details[:products] = Array.new
+      else
       @products.each do |r|
         product_detail=Hash.new
         product_detail[:product_id]=r.id
@@ -104,6 +99,7 @@ ProductsController.class_eval do
       respond_with(product_details) do |format|
         format.json { render :json =>product_details}
       end
+      end
     else
       @searcher = Spree::Config.searcher_class.new(params)
       @products = @searcher.retrieve_products
@@ -112,11 +108,14 @@ ProductsController.class_eval do
       respond_with(@products)
     end
   end
-  def detailed_show
-     if !params[:format].nil? && params[:format] == "json"
-       user=User.find_by_authentication_token(params[:authentication_token])
+  
+#To display the particular product
+  def show
+    if !params[:format].nil? && params[:format] == "json"
+      if params[:e].present?&&params[:e]=="show"
+            user=User.find_by_authentication_token(params[:authentication_token])
           if user.present?
-       if @object.present?
+            if @object.present?
        product_details = Hash.new
         product_details[:products] = Array.new
        product_detail=Hash.new
@@ -145,16 +144,13 @@ ProductsController.class_eval do
         render :json => error
       end
       else
-         error=error_response_method($e4)
+         error=error_response_method($e13)
         render:json=>error 
       end
-      end
-    end
-#To display the particular product
-  def show
-    if !params[:format].nil? && params[:format] == "json"
+      else
       respond_with(@object) do |format|
         format.json { render :json => @object.to_json(object_serialization_options) }
+      end
       end
     else
       @product = Product.find_by_permalink!(params[:id])
