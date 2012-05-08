@@ -30,6 +30,8 @@ ProductsController.class_eval do
   end
   def  detailed_list
      if !params[:format].nil? && params[:format] == "json"
+       user=User.find_by_authentication_token(params[:authentication_token])
+          if user.present?
       product_details = Hash.new
       @searcher = Spree::Config.searcher_class.new(params)
       @products = @searcher.retrieve_products
@@ -55,6 +57,10 @@ ProductsController.class_eval do
       end
       respond_with(product_details) do |format|
         format.json { render :json =>product_details}
+      end
+      else
+         error=error_response_method($e4)
+        render:json=>error 
       end
       end
     end
@@ -108,6 +114,8 @@ ProductsController.class_eval do
   end
   def detailed_show
      if !params[:format].nil? && params[:format] == "json"
+       user=User.find_by_authentication_token(params[:authentication_token])
+          if user.present?
        if @object.present?
        product_details = Hash.new
         product_details[:products] = Array.new
@@ -135,7 +143,11 @@ ProductsController.class_eval do
       else
         error = error_response_method($e2)
         render :json => error
-        end
+      end
+      else
+         error=error_response_method($e4)
+        render:json=>error 
+      end
       end
     end
 #To display the particular product
