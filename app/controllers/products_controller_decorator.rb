@@ -31,33 +31,39 @@ ProductsController.class_eval do
       #To list the products
   def index
     if !params[:format].nil? && params[:format] == "json"
-   
       product_details = Hash.new
-      @searcher = Spree::Config.searcher_class.new(params)
-      @products = @searcher.retrieve_products
+      @products=Product.all
       product_details[:products] = Array.new
-          if params[:e].present?
-            user=User.find_by_authentication_token(params[:authentication_token])
+      if params[:e].present?
+          user=User.find_by_authentication_token(params[:authentication_token])
           if user.present?
-            @products.first(10).each do |r|
-        product_detail=Hash.new
-        product_detail[:product_id]=r.id
-        product_detail[:name]=r.name
-        var=Variant.find(:all,:conditions=>["product_id=? and is_master=?",r.id,true])
-         var.each do |r|
-         price=r.price.to_i
-        product_detail[:price]=price
-        end
-        @image=r.images
-        product_detail[:images]= Array.new
-        @image.each do |image|
-          product_image = Hash.new
-          product_image[:image_type]=image.attachment.content_type
-          product_image[:url]='http://spreeapi.railsfactory.com' + image.attachment.url(:original)
-          product_detail[:images].push product_image
-        end
-        product_details[:products].push product_detail
-      end
+             page = params[:page]
+              size = params[:size]
+             page= page.nil? ? 1 : page
+             size= size.nil? ? 10 : size
+             product_index = 0
+             @products.each do | r |
+                if (product_index >= (page.to_i-1) * size.to_i && product_index < (page.to_i) * size.to_i)
+                  product_detail=Hash.new
+                  product_detail[:product_id]=r.id
+                  product_detail[:name]=r.name
+                  var=Variant.find(:all,:conditions=>["product_id=? and is_master=?",r.id,true])
+                  var.each do |r|
+                   price=r.price.to_i
+                   product_detail[:price]=price
+                  end
+                  @image=r.images
+                  product_detail[:images]= Array.new
+                  @image.each do |image|
+                    product_image = Hash.new
+                    product_image[:image_type]=image.attachment.content_type
+                    product_image[:url]='http://spreeapi.railsfactory.com' + image.attachment.url(:original)
+                    product_detail[:images].push product_image
+                  end
+                product_details[:products].push product_detail
+              end
+              product_index = product_index + 1
+             end
       respond_with(product_details) do |format|
         format.json { render :json =>product_details}
       end
