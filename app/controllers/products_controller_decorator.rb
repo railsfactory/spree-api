@@ -8,7 +8,7 @@ ProductsController.class_eval do
   before_filter :check_http_authorization
   before_filter :load_resource
   skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
-  authorize_resource
+  #authorize_resource
   respond_to :json
   rescue_from ActionController::UnknownAction, :with => :render_404
   # To set current user
@@ -32,7 +32,11 @@ ProductsController.class_eval do
   def index
     if !params[:format].nil? && params[:format] == "json"
       product_details = Hash.new
+      if params[:keywords].present?
+        @product=Product.find(:all,:conditions=>["name  like ? and description like ?","%#{params[:keywords]}%","%#{params[:keywords]}%"])
+        else
       @products=Product.all
+      end
       product_details[:products] = Array.new
       if params[:e].present?
           user=User.find_by_authentication_token(params[:authentication_token])
@@ -114,7 +118,10 @@ ProductsController.class_eval do
       respond_with(@products)
     end
   end
-  
+   def search
+    p params
+    
+    end
 #To display the particular product
   def show
     if !params[:format].nil? && params[:format] == "json"
@@ -270,6 +277,7 @@ ProductsController.class_eval do
       [:new, :create]
     end
   end
+ 
 
   private
   def check_http_authorization
