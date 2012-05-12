@@ -1,4 +1,4 @@
-class CountriesController <Spree::BaseController
+class Spree::CountriesController <Spree::BaseController
   before_filter :access_denied, :except => [:index, :show,:create,:update,:delete]
   before_filter :check_http_authorization
   before_filter :load_resource
