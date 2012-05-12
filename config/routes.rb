@@ -29,5 +29,5 @@ match '/reports/day_order_value', :to => 'reports#day_order_value', :via => :get
 match '/reports/month_order_value', :to => 'reports#month_order_value', :via => :get
 match '/reports/month_order_count', :to => 'reports#month_order_count', :via => :get
 end
- match '/*path' => 'content#show'
+ #match '/*path' => 'content#show'
 end
