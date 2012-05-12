@@ -1,12 +1,14 @@
 module Spree
   module Admin
 ShippingMethodsController.class_eval do
+  
   $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
   $e2={"status_code"=>"2037","status_message"=>"Record not found"}
   $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
   $e4={"status_code"=>"2035","status_message"=>"destroyed"}
   $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
   require 'spree/core/action_callbacks'
+    before_filter :set_shipping_category, :only => [:create, :update]
   before_filter :check_http_authorization
   before_filter :load_resource
   #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
@@ -42,6 +44,7 @@ ShippingMethodsController.class_eval do
   def create
       if !params[:format].nil? && params[:format] == "json"
       begin
+      p @object
         if @object.save
                    render :json => @object.to_json, :status => 201
         else
@@ -381,6 +384,14 @@ ShippingMethodsController.class_eval do
   end
 
   private
+  def set_shipping_category
+        return true if params[:shipping_method][:shipping_category_id] == ""
+        p params[:shipping_method][:shipping_category_id]
+        @shipping_method=ShippingMethod.new
+        @shipping_method.shipping_category = Spree::ShippingCategory.find_by_id(params[:shipping_method][:shipping_category_id])
+        @shipping_method.save
+        params[:shipping_method].delete(:shipping_category_id)
+      end
   def check_http_authorization
       if !params[:format].nil? && params[:format] == "json"
       if current_user.authentication_token!=params[:authentication_token]
