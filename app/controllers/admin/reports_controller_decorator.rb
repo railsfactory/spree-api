@@ -25,7 +25,7 @@ ReportsController.class_eval do
 	def gross_selling_products
 	  return_data=Hash.new
 	  prod_array=Array.new
-	  best=ActiveRecord::Base.connection.execute("Select A.id,A.name,sum(B.cost_price * C.quantity) amount from products A, variants B, line_items C,orders D where A.id=B.product_id and B.id=C.variant_id and C.order_id=D.id and D.payment_state in ('paid','completed','payment','complete') group by A.id,A.name order by 3,1")
+	  best=ActiveRecord::Base.connection.execute("Select A.id,A.name,sum(B.cost_price * C.quantity) amount from spree_products A, spree_variants B, spree_line_items C,spree_orders D where A.id=B.product_id and B.id=C.variant_id and C.order_id=D.id and D.payment_state in ('paid','completed','payment','complete') group by A.id,A.name order by 3,1")
 	  best.each do |pr|
 		  prod_dtl=Hash.new
 		  prod_dtl[:id]=pr[0]
@@ -40,7 +40,7 @@ ReportsController.class_eval do
   def top_spenders
     return_data=Hash.new
 	  prod_array=Array.new
-	  best=ActiveRecord::Base.connection.execute("Select A.id,A.email,sum(C.quantity),sum(B.cost_price * C.quantity) from users A, variants B, line_items C, orders D where A.id=D.user_id and B.id=C.variant_id and C.order_id=D.id and D.payment_state in ('paid','completed','payment','complete') group by A.id,A.email order by 4,1")
+	  best=ActiveRecord::Base.connection.execute("Select A.id,A.email,sum(C.quantity),sum(B.cost_price * C.quantity) from spree_users A, spree_variants B, spree_line_items C, spree_orders D where A.id=D.user_id and B.id=C.variant_id and C.order_id=D.id and D.payment_state in ('paid','completed','payment','complete') group by A.id,A.email order by 4,1")
 	  best.each do |pr|
 		  prod_dtl=Hash.new
 		  prod_dtl[:id]=pr[0]
@@ -56,7 +56,7 @@ ReportsController.class_eval do
 	def  recent_orders
     return_data=Hash.new
 	  prod_array=Array.new
-	  best=ActiveRecord::Base.connection.execute("Select A.id,A.email,D.id,D.number,D.created_at,D.total from users A, orders D where A.id=D.user_id and D.payment_state in ('paid','completed','payment','complete') order by 4,3")
+	  best=ActiveRecord::Base.connection.execute("Select A.id,A.email,D.id,D.number,D.created_at,D.total from spree_users A, spree_orders D where A.id=D.user_id and D.payment_state in ('paid','completed','payment','complete') order by 4,3")
 	  best.each do |pr|
 		  prod_dtl=Hash.new
 		  prod_dtl[:user_id]=pr[0]
@@ -74,7 +74,7 @@ ReportsController.class_eval do
   def out_of_stock
     return_data=Hash.new
 	  prod_array=Array.new
-	  best=ActiveRecord::Base.connection.execute("Select A.id,A.name,B.count_on_hand from products A, variants B where A.id=B.product_id and B.count_on_hand <=0 order by 1,2")
+	  best=ActiveRecord::Base.connection.execute("Select A.id,A.name,B.count_on_hand from spree_products A, spree_variants B where A.id=B.product_id and B.count_on_hand <=0 order by 1,2")
 	  best.each do |pr|
 		  prod_dtl=Hash.new
 		  prod_dtl[:id]=pr[0]
@@ -89,7 +89,7 @@ ReportsController.class_eval do
   def day_order_count
     return_data=Hash.new
 	  prod_array=Array.new
-	  best=ActiveRecord::Base.connection.execute("Select DATE(created_at),count(*) from orders where payment_state in ('paid','completed','payment','complete') group by DATE(created_at) order by 1 DESC")
+	  best=ActiveRecord::Base.connection.execute("Select DATE(created_at),count(*) from spree_orders where payment_state in ('paid','completed','payment','complete') group by DATE(created_at) order by 1 DESC")
 	  best.each do |pr|
 		  prod_dtl=Hash.new
 		  prod_dtl[:order_date]=pr[0]
@@ -103,7 +103,7 @@ ReportsController.class_eval do
   def day_order_value
     return_data=Hash.new
 	  prod_array=Array.new
-	  best=ActiveRecord::Base.connection.execute("Select DATE(created_at),sum(total) from orders where payment_state in ('paid','completed','payment','complete') group by DATE(created_at) order by 1 DESC")
+	  best=ActiveRecord::Base.connection.execute("Select DATE(created_at),sum(total) from spree_orders where payment_state in ('paid','completed','payment','complete') group by DATE(created_at) order by 1 DESC")
 	  best.each do |pr|
 		  prod_dtl=Hash.new
 		  prod_dtl[:order_date]=pr[0]
@@ -117,7 +117,7 @@ ReportsController.class_eval do
   def month_order_value
     return_data=Hash.new
 	  prod_array=Array.new
-	  best=ActiveRecord::Base.connection.execute("Select Month(created_at),Year(created_at),sum(total) from orders where payment_state in ('paid','completed','payment','complete') group by Month(created_at),Year(created_at) order by 2 DESC ,1 DESC")
+	  best=ActiveRecord::Base.connection.execute("Select Month(created_at),Year(created_at),sum(total) from spree_orders where payment_state in ('paid','completed','payment','complete') group by Month(created_at),Year(created_at) order by 2 DESC ,1 DESC")
 	  best.each do |pr|
 		  prod_dtl=Hash.new
 		  prod_dtl[:order_month]=pr[0]
@@ -132,7 +132,7 @@ ReportsController.class_eval do
   def month_order_count
     return_data=Hash.new
 	  prod_array=Array.new
-	  best=ActiveRecord::Base.connection.execute("Select Month(created_at),Year(created_at),count(*) from orders where payment_state in ('paid','completed','payment','complete') group by Month(created_at),Year(created_at) order by 2 DESC ,1 DESC")
+	  best=ActiveRecord::Base.connection.execute("Select Month(created_at),Year(created_at),count(*) from spree_orders where payment_state in ('paid','completed','payment','complete') group by Month(created_at),Year(created_at) order by 2 DESC ,1 DESC")
 	  best.each do |pr|
 		  prod_dtl=Hash.new
 		  prod_dtl[:order_month]=pr[0]
