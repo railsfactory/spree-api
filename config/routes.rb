@@ -1,4 +1,4 @@
-Rails.application.routes.draw do
+Spree::Core::Engine.routes.draw do
   # Add your extension routes here
   resources:line_items
    match '/detailed_list', :to => 'products#detailed_list', :via => :get
