@@ -1,19 +1,20 @@
+module Spree
 ProductsController.class_eval do
   $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
   $e2={"status_code"=>"2037","status_message"=>"Record not found"}
   $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
   $e4={"status_code"=>"2035","status_message"=>"destroyed"}
   $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
-  include Spree::Search
+  #include Spree::Search
   before_filter :check_http_authorization
   before_filter :load_resource
-  skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
-  #authorize_resource
+  #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
+  authorize_resource
   respond_to :json
   rescue_from ActionController::UnknownAction, :with => :render_404
   # To set current user
   def current_ability
-    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
     @current_ability ||= Ability.new(user)
     
   end
@@ -32,14 +33,10 @@ ProductsController.class_eval do
   def index
     if !params[:format].nil? && params[:format] == "json"
       product_details = Hash.new
-      if params[:keywords].present?
-        @product=Product.find(:all,:conditions=>["name  like ? and description like ?","%#{params[:keywords]}%","%#{params[:keywords]}%"])
-        else
-      @products=Product.all
-      end
+      @products=Spree::Product.all
       product_details[:products] = Array.new
       if params[:e].present?
-          user=User.find_by_authentication_token(params[:authentication_token])
+          user=Spree::User.find_by_authentication_token(params[:authentication_token])
           if user.present?
              page = params[:page]
               size = params[:size]
@@ -51,7 +48,7 @@ ProductsController.class_eval do
                   product_detail=Hash.new
                   product_detail[:product_id]=r.id
                   product_detail[:name]=r.name
-                  var=Variant.find(:all,:conditions=>["product_id=? and is_master=?",r.id,true])
+                  var=Spree::Variant.find(:all,:conditions=>["product_id=? and is_master=?",r.id,true])
                   var.each do |r|
                    price=r.price.to_i
                    product_detail[:price]=price
@@ -91,7 +88,7 @@ ProductsController.class_eval do
         product_detail[:meta_description]=r.meta_description
         product_detail[:meta_keywords]=r.meta_keywords
         product_detail[:count_on_hand]=r.count_on_hand
-        var=Variant.find(:all,:conditions=>["product_id=? and is_master=?",r.id,true])
+        var=Spree::Variant.find(:all,:conditions=>["product_id=? and is_master=?",r.id,true])
          var.each do |r|
          price=r.price.to_i
         product_detail[:price]=price
@@ -113,20 +110,17 @@ ProductsController.class_eval do
     else
       @searcher = Spree::Config.searcher_class.new(params)
       @products = @searcher.retrieve_products
-      @new_sales=Product.where("available_on=?",Date.today-5.days)
-      @coming_soon=Product.where("available_on > ? and deleted_at is NULL",Date.today)
+      @new_sales=Spree::Product.where("available_on=?",Date.today-5.days)
+      @coming_soon=Spree::Product.where("available_on > ? and deleted_at is NULL",Date.today)
       respond_with(@products)
     end
   end
-   def search
-    p params
-    
-    end
+  
 #To display the particular product
   def show
     if !params[:format].nil? && params[:format] == "json"
       if params[:e].present?&&params[:e]=="show"
-            user=User.find_by_authentication_token(params[:authentication_token])
+            user=Spree::User.find_by_authentication_token(params[:authentication_token])
           if user.present?
             if @object.present?
        product_details = Hash.new
@@ -135,7 +129,7 @@ ProductsController.class_eval do
         product_detail[:product_id]=@object.id
         product_detail[:name]=@object.name
          product_detail[:description]=@object.description
-        var=Variant.find(:all,:conditions=>["product_id=? and is_master=?",@object.id,true])
+        var=Spree::Variant.find(:all,:conditions=>["product_id=? and is_master=?",@object.id,true])
          var.each do |r|
          price=r.price.to_i
         product_detail[:price]=price
@@ -166,10 +160,10 @@ ProductsController.class_eval do
       end
       end
     else
-      @product = Product.find_by_permalink!(params[:id])
+      @product = Spree::Product.find_by_permalink!(params[:id])
       return unless @product
-      @variants = Variant.active.includes([:option_values, :images]).where(:product_id => @product.id)
-      @product_properties = ProductProperty.includes(:property).where(:product_id => @product.id)
+      @variants = Spree::Variant.active.includes([:option_values, :images]).where(:product_id => @product.id)
+      @product_properties = Spree::ProductProperty.includes(:property).where(:product_id => @product.id)
       @selected_variant = @variants.detect { |v| v.available? }
       referer = request.env['HTTP_REFERER']
       if referer && referer.match(HTTP_REFERER_REGEXP)
@@ -180,7 +174,7 @@ ProductsController.class_eval do
   end
   #To destroy the product
   def destroy
-    @object=Product.find_by_id(params[:id])
+    @object=Spree::Product.find_by_id(params[:id])
     if !@object.nil?
       @object.destroy
       if @object.destroy
@@ -202,7 +196,7 @@ ProductsController.class_eval do
   protected
   def model_class
     if !params[:format].nil? && params[:format] == "json"
-      controller_name.classify.constantize
+      "Spree::#{controller_name.classify}".constantize
     end
   end
     
@@ -277,7 +271,6 @@ ProductsController.class_eval do
       [:new, :create]
     end
   end
- 
 
   private
   def check_http_authorization
@@ -298,4 +291,5 @@ ProductsController.class_eval do
   def object_serialization_options
     { :include => [:master, :variants, :taxons] }
   end
+end
 end

@@ -1,6 +1,8 @@
-UserRegistrationsController.class_eval do
-  include SpreeBase
-  helper :users, 'spree/base'
+Spree::UserRegistrationsController.class_eval do
+  #include Spree::Base
+  #~ helper :users, 'spree/base'
+   include Spree::Core::ControllerHelpers
+  helper 'spree/users', 'spree/base'
   ssl_required
   after_filter :associate_user, :only => :create
   before_filter :check_permissions, :only => [:edit, :update]
@@ -13,7 +15,7 @@ UserRegistrationsController.class_eval do
     if !params[:format].nil? && params[:format] == "json"
       if params[:user][:email]!=nil&&params[:user][:email]!=""
         if params[:user][:password]==params[:user][:password_confirmation] && params[:user][:password]!=""&&params[:user][:password_confirmation]!=""
-          @user=User.new(params[:user])
+          @user=Spree::User.new(params[:user])
           if @user.save
             render :json =>@user
           else

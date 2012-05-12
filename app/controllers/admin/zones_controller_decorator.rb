@@ -1,14 +1,16 @@
-Admin::ZonesController.class_eval do
+module Spree
+  module Admin
+ZonesController.class_eval do
   $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
   $e2={"status_code"=>"2037","status_message"=>"Record not found"}
   $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
   $e4={"status_code"=>"2035","status_message"=>"destroyed"}
   $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
-  require 'spree_core/action_callbacks'
+  require 'spree/core/action_callbacks'
   before_filter :check_http_authorization
   before_filter :load_resource
-  skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
-  authorize_resource
+  #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
+  #authorize_resource
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
@@ -16,7 +18,7 @@ Admin::ZonesController.class_eval do
   respond_to :js, :except => [:show, :index]
   #To set current user
   def current_ability
-    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
         @current_ability ||= Ability.new(user)
   end
  #To list the datas
@@ -106,7 +108,7 @@ Admin::ZonesController.class_eval do
   #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
-      @object=Zone.find_by_id(params[:id])
+      @object=Spree::Zone.find_by_id(params[:id])
       if !@object.nil?
         @object.destroy
         if @object.destroy
@@ -118,7 +120,7 @@ Admin::ZonesController.class_eval do
         render:json=>error
       end
     else
-      @variant = Variant.find(params[:id])
+      @variant = Spree::Variant.find(params[:id])
 
       @variant.deleted_at = Time.now()
       if @variant.save
@@ -188,7 +190,7 @@ Admin::ZonesController.class_eval do
   protected
   
   def model_class
-       controller_name.classify.constantize
+        "Spree::#{controller_name.classify}".constantize
     end
     
   def object_name
@@ -272,7 +274,7 @@ Admin::ZonesController.class_eval do
       
       scope = parent.present? ? parent.send(controller_name) : model_class.scoped
      
-      @search = scope.metasearch(params[:search]).relation.limit(100)
+      @search = scope
       @search
     else
       params[:search] ||= {}
@@ -387,4 +389,6 @@ Admin::ZonesController.class_eval do
       end if current_user
     end
   end
+end
+end
 end

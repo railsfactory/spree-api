@@ -1,41 +1,40 @@
-OrdersController.class_eval do
+Spree::OrdersController.class_eval do
   $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
   $e52={"status_code"=>"2052","status_message"=>"quantity cannot be negative"}
   $e2={"status_code"=>"2037","status_message"=>"Record not found"}
   $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
   $e4={"status_code"=>"2035","status_message"=>"destroyed"}
   $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
-  before_filter :check_http_authorization
-  before_filter :check_authorization
+  #before_filter :check_http_authorization
+  #before_filter :check_authorization
   before_filter :load_resource
-  skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
-  authorize_resource
-  before_filter :set_current_user
+  #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
+  #authorize_resource
+  #before_filter :set_current_user
   respond_to :json
   #To set current user
   def set_current_user
-  User.current = current_user
+  Spree::User.current = current_user
 end
 #To check user to access the order
-  def check_authorization
-    User.current = current_user
-     User.current
-     session[:access_token] ||= params[:token]
-     order = Order.find_by_number(params[:id]) || current_order
-    if order
-      p authorize! :edit, order, session[:access_token]
-    else
-      authorize!(:create, Order)
-    end
-  end
+  #~ def check_authorization
+    #~ Spree::User.current = current_user
+     #~ session[:access_token] ||= params[:token]
+     #~ order = Spree::Order.find_by_number(params[:id]) || current_order
+    #~ if order
+      #~ p authorize! :edit, order, session[:access_token]
+    #~ else
+      #~ authorize!(:create, Order)
+    #~ end
+  #~ end
   #To set and find current user
   def current_ability
     if !params[:format].nil? && params[:format] == "json"
-      user= current_user || User.find_by_authentication_token(params[:authentication_token])
+      user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
     
-      @current_ability ||= Ability.new(user)
+      @current_ability ||= Spree::Ability.new(user)
     else
-      @current_ability ||= ::Ability.new(current_user)
+      @current_ability ||= Spree::Ability.new(current_user)
     end
   end
   #To display the order list
@@ -51,7 +50,7 @@ end
         format.json { render :json => @object.to_json(object_serialization_options) }
       end
     else
-      @order = Order.find_by_number(params[:id])
+      @order = Spree::Order.find_by_number(params[:id])
     end
   end
   #To display the error message
@@ -69,12 +68,12 @@ end
           quantity = params[:line_item][:quantity].to_i
 
           if (quantity <=> 0) >= 0
-            @variant = Variant.find_by_id(params[:line_item][:variant_id])
+            @variant = Spree::Variant.find_by_id(params[:line_item][:variant_id])
             if !@variant.nil?
-              @order = Order.find_by_param(params[:id])
+              @order = Spree::Order.find_by_param(params[:id])
               if @order.present?
               @order.add_variant(@variant, quantity.to_i) if quantity.to_i > 0
-              @response = Order.find_by_id(@order.id)
+              @response = Spree::Order.find_by_id(@order.id)
               render :json => @response.to_json, :status => 201
               else
                error=error_response_method($e2)
@@ -108,7 +107,7 @@ end
   end
 #To delete the order
   def destroy
-    @object=Order.find_by_id(params[:id])
+    @object=Spree::Order.find_by_id(params[:id])
     if !@object.nil?
       @object.destroy
       if @object.destroy
@@ -123,7 +122,7 @@ end
   protected
   def model_class
     if !params[:format].nil? && params[:format] == "json"
-      controller_name.classify.constantize
+      "Spree::#{controller_name.classify}".constantize
     end
   end
     
@@ -153,7 +152,7 @@ end
       
       scope = parent.present? ? parent.send(controller_name) : model_class.scoped
      
-      @search = scope.metasearch(params[:search]).relation.limit(100)
+      @search = scope
       @search
     end
   end
@@ -230,7 +229,7 @@ end
   end
   #To find data
   def find_resource
-    Order.find_by_param(params[:id])
+    Spree::Order.find_by_param(params[:id])
   end
 
   def object_serialization_options

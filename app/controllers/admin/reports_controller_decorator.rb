@@ -1,14 +1,16 @@
-Admin::ReportsController.class_eval do
+module Spree
+  module Admin
+ReportsController.class_eval do
 	#To set current user
   def current_ability
-    user= current_user || User.find_by_authentication_token(params[:authentication_token])
-        @current_ability ||= Ability.new(user)
+    user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
+        @current_ability ||= Spree::Ability.new(user)
 			end
 			#To find best_selling_products
 	def best_selling_products
 	  return_data=Hash.new
 	  prod_array=Array.new
-	  best=ActiveRecord::Base.connection.execute("Select A.id,A.name,sum(C.quantity) qty from products A, variants B, line_items C,orders D where A.id=B.product_id and B.id=C.variant_id and C.order_id=D.id and D.payment_state in ('paid','completed','payment','complete') group by A.id,A.name order by 3,1")
+	  best=ActiveRecord::Base.connection.execute("Select A.id,A.name,sum(C.quantity) qty from spree_products A, spree_variants B, spree_line_items C,spree_orders D where A.id=B.product_id and B.id=C.variant_id and C.order_id=D.id and D.payment_state in ('paid','completed','payment','complete') group by A.id,A.name order by 3,1")
 	  best.each do |pr|
 		  prod_dtl=Hash.new
 		  prod_dtl[:id]=pr[0]
@@ -150,4 +152,6 @@ Admin::ReportsController.class_eval do
       return @error
     end
   end
+end
+end
 end

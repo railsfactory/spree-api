@@ -1,17 +1,19 @@
-Admin::PaymentMethodsController.class_eval do
-	require 'spree_core/action_callbacks'
+module Spree
+  module Admin
+PaymentMethodsController.class_eval do
+	require 'spree/core/action_callbacks'
   before_filter :check_http_authorization
   skip_before_filter :load_resource, :only => [:create]
   before_filter :load_data
-  skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
-  authorize_resource
+  #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
+  #authorize_resource
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
   respond_to :js, :except => [:show, :index]
   #To set current user
   def current_ability
-    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
     @current_ability ||= Ability.new(user)
   end
   #To list the datas
@@ -35,12 +37,12 @@ Admin::PaymentMethodsController.class_eval do
    def create
       if !params[:format].nil? && params[:format] == "json"
       begin
-        @payment_method = params[:payment_method][:type].constantize.new(params[:payment_method])
+         @payment_method = params[:payment_method].delete(:type).constantize.new(params[:payment_method])
         @object = @payment_method
         invoke_callbacks(:create, :before)
-        if @object.save
+        if @payment_method.save
           invoke_callbacks(:create, :after)
-          render :json => @object.to_json, :status => 201
+          render :json => @payment_method.to_json, :status => 201
         else
           error = error_response_method($e1)
           render :json => error
@@ -50,17 +52,17 @@ Admin::PaymentMethodsController.class_eval do
         render :json => error
       end
     else
-      @payment_method = params[:payment_method][:type].constantize.new(params[:payment_method])
-      @object = @payment_method
-      invoke_callbacks(:create, :before)
-      if @payment_method.save
-        invoke_callbacks(:create, :after)
-        flash[:notice] = I18n.t(:successfully_created, :resource => I18n.t(:payment_method))
-        respond_with(@payment_method, :location => edit_admin_payment_method_path(@payment_method))
-      else
-        invoke_callbacks(:create, :fails)
-        respond_with(@payment_method)
-      end
+    @payment_method = params[:payment_method].delete(:type).constantize.new(params[:payment_method])
+        @object = @payment_method
+        invoke_callbacks(:create, :before)
+        if @payment_method.save
+          invoke_callbacks(:create, :after)
+          flash.notice = I18n.t(:successfully_created, :resource => I18n.t(:payment_method))
+          respond_with(@payment_method, :location => edit_admin_payment_method_path(@payment_method))
+        else
+          invoke_callbacks(:create, :fails)
+          respond_with(@payment_method)
+        end
     end
   end
 #To update the existing record
@@ -71,7 +73,7 @@ Admin::PaymentMethodsController.class_eval do
         payment_method_type = params[:payment_method].delete(:type)
         if @payment_method['type'].to_s != payment_method_type
           @payment_method.update_attribute(:type, payment_method_type)
-          @payment_method = PaymentMethod.find(params[:id])
+          @payment_method = Spree::PaymentMethod.find(params[:id])
         end
         payment_method_params = params[@payment_method.class.name.underscore.gsub("/", "_")] || {}
         if @object.update_attributes(params[object_name])
@@ -89,7 +91,7 @@ Admin::PaymentMethodsController.class_eval do
       payment_method_type = params[:payment_method].delete(:type)
       if @payment_method['type'].to_s != payment_method_type
         @payment_method.update_attribute(:type, payment_method_type)
-        @payment_method = PaymentMethod.find(params[:id])
+        @payment_method = Spree::PaymentMethod.find(params[:id])
       end
       payment_method_params = params[@payment_method.class.name.underscore.gsub("/", "_")] || {}
       if @payment_method.update_attributes(params[:payment_method].merge(payment_method_params))
@@ -105,7 +107,7 @@ Admin::PaymentMethodsController.class_eval do
   #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
-      @object=PaymentMethod.find_by_id(params[:id])
+      @object=Spree::PaymentMethod.find_by_id(params[:id])
       if !@object.nil?
         @object.destroy
         if @object.destroy
@@ -187,7 +189,7 @@ Admin::PaymentMethodsController.class_eval do
 
   protected
   def model_class
-    controller_name.classify.constantize
+    "Spree::#{controller_name.classify}".constantize
   end
     
   def object_name
@@ -262,7 +264,7 @@ Admin::PaymentMethodsController.class_eval do
       
       scope = parent.present? ? parent.send(controller_name) : model_class.scoped
      
-      @search = scope.metasearch(params[:search]).relation.limit(100)
+      @search = scope
       @search
     else
       return parent.send(controller_name) if parent_data.present?
@@ -334,4 +336,6 @@ Admin::PaymentMethodsController.class_eval do
       end if current_user
     end
   end
+end
+end
 end

@@ -1,22 +1,24 @@
-Admin::OptionTypesController.class_eval do
+module Spree
+  module Admin
+  OptionTypesController.class_eval do
   $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
   $e2={"status_code"=>"2037","status_message"=>"Record not found"}
   $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
   $e4={"status_code"=>"2035","status_message"=>"destroyed"}
   $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
-  require 'spree_core/action_callbacks'
+  require 'spree/core/action_callbacks'
   before_filter :check_http_authorization
   before_filter :load_resource
-  skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
-  authorize_resource
+  #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
+  #authorize_resource
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
   respond_to :js, :except => [:show, :index]
   #To set current user
   def current_ability
-    user= current_user || User.find_by_authentication_token(params[:authentication_token])
-    @current_ability ||= Ability.new(user)
+    user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||= Spree::Ability.new(user)
   end
   #To create new option type
   def new
@@ -109,7 +111,7 @@ Admin::OptionTypesController.class_eval do
   #To destory the record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
-      @object=OptionType.find_by_id(params[:id])
+      @object=Spree::OptionType.find_by_id(params[:id])
       if !@object.nil?
         @object.destroy
         if @object.destroy
@@ -121,7 +123,7 @@ Admin::OptionTypesController.class_eval do
         render:json=>error
       end
     else
-      @product = Product.find_by_permalink(params[:id])
+      @product = Spree::Product.find_by_permalink(params[:id])
       @product.deleted_at = Time.now()
 
       @product.variants.each do |v|
@@ -196,7 +198,7 @@ Admin::OptionTypesController.class_eval do
   protected
   
   def model_class
-       controller_name.classify.constantize
+    "Spree::#{controller_name.classify}".constantize
   end
     
   def object_name
@@ -208,13 +210,13 @@ Admin::OptionTypesController.class_eval do
       @object ||= load_resource_instance
       instance_variable_set("@#{object_name}", @object)
     else
-      @collection ||= collection
-      instance_variable_set("@#{controller_name}", @collection)
+     @collection ||= collection
+     instance_variable_set("@#{controller_name}", @collection)
     end
      end
    #To load resource instance  
   def load_resource_instance
-       if new_actions.include?(params[:action].to_sym)
+    if new_actions.include?(params[:action].to_sym)
       build_resource
     elsif params[:id]
       find_resource
@@ -273,23 +275,23 @@ Admin::OptionTypesController.class_eval do
   end
     #To collect the data to list
   def collection
-    if !params[:format].nil? && params[:format] == "json"
+     if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
       params[:search] = {} if params[:search].blank?
       params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
       
       scope = parent.present? ? parent.send(controller_name) : model_class.scoped
-     
-      @search = scope.metasearch(params[:search]).relation.limit(100)
+
+      @search = scope
       @search
-    else
+   else
 			return parent.send(controller_name) if parent_data.present?
 
       if model_class.respond_to?(:accessible_by) && !current_ability.has_block?(params[:action], model_class)
         model_class.accessible_by(current_ability)
       else
         model_class.scoped
-      end
+       end
 		end
   end
 
@@ -312,16 +314,16 @@ Admin::OptionTypesController.class_eval do
   end
 
   def object_errors
-    if !params[:format].nil? && params[:format] == "json"
+        if !params[:format].nil? && params[:format] == "json"
       {:errors => object.errors.full_messages}
     end
   end
   def location_after_save
-    collection_url
+     collection_url
   end
 
   def invoke_callbacks(action, callback_type)
-    callbacks = self.class.callbacks || {}
+        callbacks = self.class.callbacks || {}
     return if callbacks[action].nil?
     case callback_type.to_sym
     when :before then callbacks[action].before_methods.each {|method| send method }
@@ -341,7 +343,7 @@ Admin::OptionTypesController.class_eval do
   end
 
   def edit_object_url(object, options = {})
-    if parent_data.present?
+       if parent_data.present?
       send "edit_admin_#{parent_data[:model_name]}_#{object_name}_url", parent, object, options
     else
       send "edit_admin_#{object_name}_url", object, options
@@ -349,7 +351,7 @@ Admin::OptionTypesController.class_eval do
   end
 
   def object_url(object = nil, options = {})
-    if !params[:format].nil? && params[:format] == "json"
+       if !params[:format].nil? && params[:format] == "json"
       target = object ? object : @object
       if parent.present? && object_name == "state"
         send "api_country_#{object_name}_url", parent, target, options
@@ -370,7 +372,7 @@ Admin::OptionTypesController.class_eval do
     end
   end
   def collection_url(options = {})
-    if parent_data.present?
+        if parent_data.present?
       polymorphic_url([:admin, parent, model_class], options)
     else
       polymorphic_url([:admin, model_class], options)
@@ -378,7 +380,7 @@ Admin::OptionTypesController.class_eval do
   end
 
   def collection_actions
-    [:index]
+        [:index]
   end
 
   def member_action?
@@ -398,4 +400,6 @@ Admin::OptionTypesController.class_eval do
       end if current_user
     end
   end
+end
+end 
 end

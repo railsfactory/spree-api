@@ -1,4 +1,6 @@
-Admin::ShipmentsController.class_eval do
+module Spree
+  module Admin
+ShipmentsController.class_eval do
   before_filter :load_order
   before_filter :load_shipment, :only => [:destroy, :edit, :update, :fire]
   before_filter :load_shipping_methods, :except => [:country_changed, :index]
@@ -7,8 +9,8 @@ Admin::ShipmentsController.class_eval do
   $e24={"status_code"=>"2051","status_message"=>"order id invalid"}
   #To set current user
   def current_ability
-    user= current_user || User.find_by_authentication_token(params[:authentication_token])
-    @current_ability ||= Ability.new(user)
+    user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
+    @current_ability ||=  Spree::Ability.new(user)
   end
   #To list the datas
   def index
@@ -22,7 +24,7 @@ Admin::ShipmentsController.class_eval do
  #To fire the shipment
   def fire
     if !params[:format].nil? && params[:format] == "json"
-      current_user=User.find_by_authentication_token(params[:authentication_token])
+      current_user=Spree::User.find_by_authentication_token(params[:authentication_token])
       if current_user.present?
         if @shipment.present?
           if @shipment.send("#{params[:e]}")
@@ -65,7 +67,7 @@ Admin::ShipmentsController.class_eval do
   # To load the current order
   def load_order
     begin
-      @order = Order.find_by_number(params[:order_id])
+      @order = Spree::Order.find_by_number(params[:order_id])
          rescue Exception=>e
       error=error_response_method($e24)
       render:json=>error
@@ -74,7 +76,7 @@ Admin::ShipmentsController.class_eval do
   # To load the load_shipping_methods
   def load_shipping_methods
       if @order.present?
-      @shipping_methods = ShippingMethod.all_available(@order, :back_end)
+      @shipping_methods = Spree::ShippingMethod.all_available(@order, :back_end)
     else
       error=error_response_method($e24)
       render:json=>error
@@ -83,11 +85,13 @@ Admin::ShipmentsController.class_eval do
    # To load the load_shipment
   def load_shipment
     begin
-      @shipment = Shipment.find_by_number(params[:id])
+      @shipment = Spree::Shipment.find_by_number(params[:id])
       p @shipment
     rescue Exception=>e
       error=error_response_method($e23)
       render:json=>error
     end
   end
+end
+end
 end

@@ -1,11 +1,13 @@
-Admin::PaymentsController.class_eval do
+module Spree
+  module Admin
+PaymentsController.class_eval do
   before_filter :load_order, :only => [:create, :new, :index, :fire]
   before_filter :load_payment, :except => [:create, :new, :index]
   before_filter :load_data
 	$e15={"status_code"=>"2039","status_message"=>"payments cannot be captured check payment id"}
   #To set current user
 	def current_ability
-    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
         @current_ability ||= Ability.new(user)
       end
       #To list the datas
@@ -53,11 +55,11 @@ Admin::PaymentsController.class_eval do
     if !params[:format].nil? && params[:format] == "json"
       p params
 		  if session[:order_id]==nil
-        current_user=User.find_by_authentication_token(params[:authentication_token])
+        current_user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if current_user.present?
-          current_order = Order.find_by_number(params[:order_id])
+          current_order = Spree::Order.find_by_number(params[:order_id])
           if current_order.present?
-            payment=Payment.find_by_order_id(current_order.id)
+            payment=Spree::Payment.find_by_order_id(current_order.id)
             if payment.present?
               @order=current_order
             else
@@ -73,7 +75,7 @@ Admin::PaymentsController.class_eval do
           render :json => error
         end
               else
-        @order ||= Order.find_by_number! params[:order_id]
+        @order ||= Spree::Order.find_by_number! params[:order_id]
       end
     end
   end
@@ -84,5 +86,6 @@ Admin::PaymentsController.class_eval do
     @error["message"]=error["status_message"]
       return @error
   end
-
+end
+end
 end

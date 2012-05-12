@@ -1,22 +1,24 @@
-Admin::PromotionsController.class_eval do
+module Spree
+  module Admin
+PromotionsController.class_eval do
   $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
   $e2={"status_code"=>"2037","status_message"=>"Record not found"}
   $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
   $e4={"status_code"=>"2035","status_message"=>"destroyed"}
   $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
   $e26={"status_code"=>"2062","status_message"=>"please enter valid date"}
-  require 'spree_core/action_callbacks'
+  require 'spree/core/action_callbacks'
   before_filter :check_http_authorization
   before_filter :load_resource
-  skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
-  authorize_resource
+  #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
+  #authorize_resource
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
   respond_to :js, :except => [:show, :index]
   	#To set current user
   def current_ability
-    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
         @current_ability ||= Ability.new(user)
       end
       #To list the datas  
@@ -115,7 +117,7 @@ Admin::PromotionsController.class_eval do
   #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
-      @object=Promotion.find_by_id(params[:id])
+      @object=Spree::Promotion.find_by_id(params[:id])
       if !@object.nil?
         @object.destroy
         if @object.destroy
@@ -223,13 +225,15 @@ Admin::PromotionsController.class_eval do
       params[:search] = {} if params[:search].blank?
       params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
             scope = parent.present? ? parent.send(controller_name) : model_class.scoped
-           @search = scope.metasearch(params[:search]).relation.limit(100)
+           @search = scope
       @search
     else
-      params[:search] ||= {}
-      params[:search][:meta_sort] ||= "ascend_by_name"
-      @search = super.metasearch(params[:search])
-      @zones = @search.paginate(:per_page => Spree::Config[:orders_per_page], :page => params[:page])
+       return parent.send(controller_name) if parent_data.present?
+    if model_class.respond_to?(:accessible_by) && !current_ability.has_block?(params[:action], model_class)
+      model_class.accessible_by(current_ability)
+    else
+      model_class.scoped
+    end
 		end
   end
 
@@ -293,4 +297,6 @@ Admin::PromotionsController.class_eval do
       end if current_user
     end
   end
+end
+end
 end

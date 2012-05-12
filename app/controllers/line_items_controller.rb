@@ -6,7 +6,7 @@ class LineItemsController< Spree::BaseController
   $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
 #To set current user
   def current_ability
-    user= current_user || User.find_by_authentication_token(params[:authentication_token])
+    user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
     @current_ability ||= Ability.new(user)
   end
 #To create line_item
@@ -15,13 +15,13 @@ class LineItemsController< Spree::BaseController
       if !params[:line_item][:quantity].nil?&&!params[:line_item][:variant_id].nil?
         quantity = params[:line_item][:quantity].to_i
           if (quantity <=> 0) >= 0
-        @variant = Variant.find_by_id(params[:line_item][:variant_id])
+        @variant = Spree::Variant.find_by_id(params[:line_item][:variant_id])
         if !@variant.nil?
-          user=User.find_by_authentication_token(params[:authentication_token])
+          user=Spree::User.find_by_authentication_token(params[:authentication_token])
           if user.present?
             @order = current_order(true,params[:authentication_token])
             @order.add_variant(@variant, quantity.to_i) if quantity.to_i > 0
-            @response = Order.find_by_id(@order.id)
+            @response = Spree::Order.find_by_id(@order.id)
             render :json => @response.to_json, :status => 201
           else
             error=error_response_method($e13)
@@ -85,7 +85,7 @@ class LineItemsController< Spree::BaseController
       
       scope = parent.present? ? parent.send(controller_name) : model_class.scoped
      
-      @search = scope.metasearch(params[:search]).relation.limit(100)
+      @search = scope
       @search
     end
   end

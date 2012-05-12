@@ -1,19 +1,21 @@
-Admin::UsersController.class_eval do
+module Spree
+  module Admin
+UsersController.class_eval do
   before_filter :check_json_authenticity, :only => :index
   before_filter :load_roles, :only => [:edit, :new, :update, :create]
   before_filter :load_roles, :only => [:edit, :new, :update, :create, :generate_api_key, :clear_api_key]
   before_filter :check_http_authorization
   before_filter :load_resource
-  skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
-  authorize_resource
+  #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
+  #authorize_resource
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
   respond_to :js, :except => [:show, :index]
   #To set current user
   def current_ability
-    user= current_user || User.find_by_authentication_token(params[:authentication_token])
-        @current_ability ||= Ability.new(user)
+    user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
+        @current_ability ||= Spree::Ability.new(user)
       end
   #To generate_api_key
   def generate_api_key
@@ -50,7 +52,7 @@ Admin::UsersController.class_eval do
       begin
         invoke_callbacks(:create, :before)
         if @object.email!=nil&&@object.email!=""&&@object.password!=nil&&@object.password!=""&&@object.password_confirmation!=nil&&@object.password_confirmation!=""
-          user=User.find_by_email(@object.email)
+          user=Spree::User.find_by_email(@object.email)
           if !user.present?
             if @object.password==@object.password_confirmation
               if @object.save
@@ -139,7 +141,7 @@ Admin::UsersController.class_eval do
   #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
-      @object=User.find_by_id(params[:id])
+      @object=Spree::User.find_by_id(params[:id])
       if !@object.nil?
         @object.destroy
         if @object.destroy
@@ -221,7 +223,7 @@ Admin::UsersController.class_eval do
 
   protected
     def model_class
-    controller_name.classify.constantize
+     "Spree::#{controller_name.classify}".constantize
   end
     
   def object_name
@@ -308,23 +310,25 @@ Admin::UsersController.class_eval do
       
       scope = parent.present? ? parent.send(controller_name) : model_class.scoped
      
-      @search = scope.metasearch(params[:search]).relation.limit(100)
+      @search = scope
       @search
     else
-      return @collection if @collection.present?
-      unless request.xhr?
-        @search = User.registered.metasearch(params[:search])
-        @collection = @search.paginate(:per_page => Spree::Config[:admin_products_per_page], :page => params[:page])
-      else
-        @collection = User.includes(:bill_address => [:state, :country], :ship_address => [:state, :country]).
-          where("users.email #{LIKE} :search
-                               OR addresses.firstname #{LIKE} :search
-                               OR addresses.lastname #{LIKE} :search
-                               OR ship_addresses_users.firstname #{LIKE} :search
-                               OR ship_addresses_users.lastname #{LIKE} :search",
-          {:search => "#{params[:q].strip}%"}).
-          limit(params[:limit] || 100)
-      end
+       return @collection if @collection.present?
+          unless request.xhr?
+            @search = Spree::User.registered.search(params[:q])
+            @collection = @search.result.page(params[:page]).per(Spree::Config[:admin_products_per_page])
+          else
+            #disabling proper nested include here due to rails 3.1 bug
+            #@collection = User.includes(:bill_address => [:state, :country], :ship_address => [:state, :country]).
+            @collection = Spree::User.includes(:bill_address, :ship_address).
+                              where("spree_users.email #{LIKE} :search
+                                     OR (spree_addresses.firstname #{LIKE} :search AND spree_addresses.id = spree_users.bill_address_id)
+                                     OR (spree_addresses.lastname  #{LIKE} :search AND spree_addresses.id = spree_users.bill_address_id)
+                                     OR (spree_addresses.firstname #{LIKE} :search AND spree_addresses.id = spree_users.ship_address_id)
+                                     OR (spree_addresses.lastname  #{LIKE} :search AND spree_addresses.id = spree_users.ship_address_id)",
+              { :search => "#{params[:q].strip}%" }).
+                limit(params[:limit] || 100)
+            end
 		end
   end
 
@@ -434,4 +438,6 @@ Admin::UsersController.class_eval do
       end if current_user
     end
   end
+end
+end
 end
