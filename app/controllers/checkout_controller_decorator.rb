@@ -61,6 +61,13 @@ Spree::CheckoutController.class_eval do
 
     end
   end
+   def error_response_method(error)
+    @error = {}
+    @error["code"]=error["status_code"]
+    @error["message"]=error["status_message"]
+    #@error["Code"] = error["error_code"]
+    return @error
+  end
 	 def load_order
         if !params[:format].nil? && params[:format] == "json"
       if session[:order_id]==nil
@@ -70,9 +77,9 @@ Spree::CheckoutController.class_eval do
         end
       end
         @order = current_order
-        redirect_to cart_path and return unless @order and @order.checkout_allowed?
+        render :json => error_response_method($e7) and return unless @order and @order.checkout_allowed?
         raise_insufficient_quantity and return if @order.insufficient_stock_lines.present?
-        redirect_to cart_path and return if @order.completed?
+       render :json => error_response_method($e7) and return if @order.completed?
         @order.state = params[:state] if params[:state]
         state_callback(:before)
       end
