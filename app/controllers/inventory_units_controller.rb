@@ -1,4 +1,4 @@
-class Spree::InventoryUnitsController < Spree::BaseController
+class InventoryUnitsController < Spree::BaseController
 	before_filter :check_http_authorization
   before_filter :load_resource
   #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
@@ -136,11 +136,20 @@ class Spree::InventoryUnitsController < Spree::BaseController
     [:new, :create]
   end
 
-  private
+    private
   def check_http_authorization
-    if current_user.authentication_token!=params[:authentication_token]
-      error = error_response_method($e13)
-      render :json => error
-    end if current_user
+        if !params[:format].nil? && params[:format] == "json"
+      if params[:authentication_token].present?
+        user=Spree::User.find_by_authentication_token(params[:authentication_token])
+        if !user.present?
+          #~ role=Spree::.find_by_id(user.id)
+          error = error_response_method($e13)
+        render :json => error
+      end 
+      else
+         error = error_response_method($e13)
+        render :json => error
+        end
+    end
   end
 end

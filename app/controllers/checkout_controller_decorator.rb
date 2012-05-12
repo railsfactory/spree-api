@@ -1,4 +1,5 @@
 Spree::CheckoutController.class_eval do
+   before_filter :check_http_authorization
 	 before_filter :check_authorization
   before_filter :check_registration, :except => [:registration, :update_registration]
   before_filter :load_order
@@ -100,4 +101,20 @@ Spree::CheckoutController.class_eval do
 				authorize!(:edit, current_order, session[:access_token])
 			end
     end
+     private
+  def check_http_authorization
+        if !params[:format].nil? && params[:format] == "json"
+      if params[:authentication_token].present?
+        user=Spree::User.find_by_authentication_token(params[:authentication_token])
+        if !user.present?
+          #~ role=Spree::.find_by_id(user.id)
+          error = error_response_method($e13)
+        render :json => error
+      end 
+      else
+         error = error_response_method($e13)
+        render :json => error
+        end
+    end
+  end
 	end

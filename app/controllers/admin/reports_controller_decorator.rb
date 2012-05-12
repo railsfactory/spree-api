@@ -1,6 +1,7 @@
 module Spree
   module Admin
 ReportsController.class_eval do
+	before_filter :check_http_authorization
 	#To set current user
   def current_ability
     user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
@@ -152,6 +153,29 @@ ReportsController.class_eval do
       return @error
     end
   end
+	  private
+  def check_http_authorization
+       if !params[:format].nil? && params[:format] == "json"
+      if params[:authentication_token].present?
+        user=Spree::User.find_by_authentication_token(params[:authentication_token])
+        if user.present?
+          #~ role=Spree::.find_by_id(user.id)
+          if !user.roles
+            error = error_response_method($e12)
+        render :json => error
+        end
+          else
+              error = error_response_method($e13)
+        render :json => error
+      end 
+      else
+         error = error_response_method($e13)
+        render :json => error
+        end
+    end
+  end
+	
+	
 end
 end
 end

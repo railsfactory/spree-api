@@ -10,6 +10,7 @@ module Spree
       $e13={"status_code"=>"2042","status_message"=>"authentication token is not valid "}
       helper 'spree/products'
       require 'spree/core/action_callbacks'
+        before_filter :check_http_authorization
       before_filter :check_json_authenticity, :only => :index
       before_filter :load_data, :except => :index
       create.before :create_before
@@ -235,4 +236,25 @@ module Spree
     end
   
   #end
+   private
+  def check_http_authorization
+       if !params[:format].nil? && params[:format] == "json"
+      if params[:authentication_token].present?
+        user=Spree::User.find_by_authentication_token(params[:authentication_token])
+        if user.present?
+          #~ role=Spree::.find_by_id(user.id)
+          if !user.roles
+            error = error_response_method($e12)
+        render :json => error
+        end
+          else
+              error = error_response_method($e13)
+        render :json => error
+      end 
+      else
+         error = error_response_method($e13)
+        render :json => error
+        end
+    end
+  end
 end

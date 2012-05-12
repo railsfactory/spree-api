@@ -218,13 +218,20 @@ end
     end
   end
 
-  private
+      private
   def check_http_authorization
-    if !params[:format].nil? && params[:format] == "json"
-      if current_user.authentication_token!=params[:authentication_token]
-        error = error_response_method($e13)
+        if !params[:format].nil? && params[:format] == "json"
+      if params[:authentication_token].present?
+        user=Spree::User.find_by_authentication_token(params[:authentication_token])
+        if !user.present?
+          #~ role=Spree::.find_by_id(user.id)
+          error = error_response_method($e13)
         render :json => error
-      end if current_user
+      end 
+      else
+         error = error_response_method($e13)
+        render :json => error
+        end
     end
   end
   #To find data

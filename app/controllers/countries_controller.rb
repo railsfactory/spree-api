@@ -1,4 +1,4 @@
-class Spree::CountriesController <Spree::BaseController
+class CountriesController <Spree::BaseController
   before_filter :access_denied, :except => [:index, :show,:create,:update,:delete]
   before_filter :check_http_authorization
   before_filter :load_resource
@@ -224,16 +224,20 @@ class Spree::CountriesController <Spree::BaseController
     [:new, :create]
   end
 
-  private
+      private
   def check_http_authorization
-    #~ if request.headers['HTTP_AUTHORIZATION'].blank?
-    #~ render :text => "Access Denied\n", :status => 401
-    #~ end
-    if current_user.authentication_token!=params[:authentication_token]
-      # if request.headers['HTTP_AUTHORIZATION'].blank?
-      #render :text => "Access Denied\n", :status => 401
-      error = error_response_method($e13)
-      render :json => error
-    end if current_user
+        if !params[:format].nil? && params[:format] == "json"
+      if params[:authentication_token].present?
+        user=Spree::User.find_by_authentication_token(params[:authentication_token])
+        if !user.present?
+          #~ role=Spree::.find_by_id(user.id)
+          error = error_response_method($e13)
+        render :json => error
+      end 
+      else
+         error = error_response_method($e13)
+        render :json => error
+        end
+    end
   end
 end
