@@ -192,9 +192,9 @@ StatesController.class_eval do
         end
 #To find the parent
   def parent
-       if parent_data.present?
-           @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{parent_data[:model_name]}_id"]).first rescue
-            instance_variable_set("@#{parent_data[:model_name]}", @parent)
+         if parent_data.present?
+      @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{model_name}_id"]).first
+      instance_variable_set("@#{model_name}", @parent)
     else
       nil
     end
