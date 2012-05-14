@@ -13,10 +13,23 @@ Spree::CheckoutController.class_eval do
 	 def update
     if !params[:format].nil? && params[:format] == "json"
       begin
+      p object_params
+      p params
         if @order.update_attributes(object_params)
-					 fire_event('spree.checkout.update')
+ 					 fire_event('spree.checkout.update')
+         final_order = []
           if @order.next
             state_callback(:after)
+            if params[:state] == "delivery"
+              final_order << @order            
+              final_order << @order.shipment
+            elsif params[:state] == "payment"
+              final_order << @order
+              final_order << @order.shipment
+              final_order << @order.payment
+            else
+              final_order << @order
+            end
           else
             flash[:error] = I18n.t(:payment_processing_failed)
             error=error_response_method($e3)
@@ -26,9 +39,9 @@ Spree::CheckoutController.class_eval do
           if @order.state == "complete" || @order.completed?
             flash[:notice] = I18n.t(:order_processed_successfully)
             flash[:commerce_tracking] = "nothing special"
-            render :json => @order.to_json, :status => 201
+            render :json => final_order.to_json, :status => 201
           else
-            render :json => @order.to_json, :status => 201
+            render :json => final_order.to_json, :status => 201
           end
         else
           error=error_response_method($e1)

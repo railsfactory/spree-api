@@ -46,7 +46,10 @@ PaymentsController.class_eval do
     flash[:error] = "#{ge.message}"
   ensure
     if !params[:format].nil? && params[:format] == "json"
-		 	render :json => @payment.to_json, :text=>"payment sucess",:status => 201
+      final_pay=[]
+      final_pay<<@payment
+      final_pay<<@payment.order.shipment
+		 	render :json => final_pay.to_json, :text=>"payment sucess",:status => 201
   
     else
       respond_with(@payment) { |format| format.html { redirect_to admin_order_payments_path(@order) } }
