@@ -1,6 +1,8 @@
 Spree::UserSessionsController.class_eval do 
   $e8={"status_code"=>"2032","status_message"=>"Username/Password is incorrect"}
   $e9={"status_code"=>"2033","status_message"=>"logged out sucessfully"}
+   $e20={"status_code"=>"2034","status_message"=>"password is wrong "}
+  $e21={"status_code"=>"2034","status_message"=>"please sign up to login"}
   #include Spree::Base
   include Spree::Core::ControllerHelpers
   helper 'spree/users', 'spree/base'

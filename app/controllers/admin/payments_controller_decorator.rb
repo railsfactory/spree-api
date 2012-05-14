@@ -54,7 +54,6 @@ PaymentsController.class_eval do
   # To load the current order
   def load_order
     if !params[:format].nil? && params[:format] == "json"
-      p params
 		  if session[:order_id]==nil
         current_user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if current_user.present?
@@ -75,9 +74,10 @@ PaymentsController.class_eval do
           error = error_response_method($e13)
           render :json => error
         end
+        end
               else
         @order ||= Spree::Order.find_by_number! params[:order_id]
-      end
+      #end
     end
   end
   #To display the error message

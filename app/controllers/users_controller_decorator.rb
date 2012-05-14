@@ -1,6 +1,6 @@
 class UsersController
   $e20={"status_code"=>"2034","status_message"=>"password is wrong "}
-  $e21={"status_code"=>"2034","status_message"=>"please sign in to login"}
+  $e21={"status_code"=>"2034","status_message"=>"please sign up to login"}
   #~ include SpreeBase
   #~ helper :users, 'spree/base'
   #~ include Spree::CurrentOrder
