@@ -10,7 +10,7 @@ Spree::Core::Engine.routes.draw do
       #resources :users , :except => [:new,:edit]
        devise_scope :user do
     match '/users' => 'user_registrations#create',:via=>:post
-    match '/user/sign_in'=>'log#create',:via=>:post
+    match '/user/log_in'=>'log#create',:via=>:post
   end
   resources :inventory_units, :except => [:new,:edit] do
       put :event, :on => :member
