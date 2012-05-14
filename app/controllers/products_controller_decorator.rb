@@ -209,8 +209,8 @@ ProductsController.class_eval do
   def load_resource
     if !params[:format].nil? && params[:format] == "json"
       if member_action?
-        @object ||= load_resource_instance
-        instance_variable_set("@#{object_name}", @object)
+        p @object ||= load_resource_instance
+      p  instance_variable_set("@#{object_name}", @object)
       else
         @collection ||= collection
         instance_variable_set("@#{controller_name}", @collection)
@@ -291,5 +291,12 @@ ProductsController.class_eval do
   def object_serialization_options
     { :include => [:master, :variants, :taxons] }
   end
+   def load_product
+     if !params[:format].nil? && params[:format] == "json"
+        @product = Product.active.find_by_id(params[:id])
+        else
+           @product = Product.active.find_by_permalink!(params[:id])
+           end
+      end
 end
 end
