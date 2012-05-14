@@ -278,10 +278,13 @@ MailMethodsController.class_eval do
       @search =scope
       @search
     else
-      params[:search] ||= {}
-      params[:search][:meta_sort] ||= "ascend_by_name"
-      @search = super.metasearch(params[:search])
-      @zones = @search.paginate(:per_page => Spree::Config[:orders_per_page], :page => params[:page])
+     return parent.send(controller_name) if parent_data.present?
+
+    if model_class.respond_to?(:accessible_by) && !current_ability.has_block?(params[:action], model_class)
+      model_class.accessible_by(current_ability)
+    else
+      model_class.scoped
+    end
 		end
   end
 
