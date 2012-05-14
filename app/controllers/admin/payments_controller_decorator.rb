@@ -33,7 +33,8 @@ PaymentsController.class_eval do
   def fire
     # TODO: consider finer-grained control for this type of action (right now anyone in admin role can perform)
     return unless event = params[:e] and @payment.payment_source
-    if @payment.payment_source.send("#{event}", @payment)
+     event = "void_transaction" if event == "void"
+        if @payment.send("#{event}!")
 			
       flash.notice = t('payment_updated')
 					
