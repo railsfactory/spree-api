@@ -435,8 +435,9 @@ UsersController.class_eval do
       if params[:authentication_token].present?
         user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if user.present?
-          #~ role=Spree::.find_by_id(user.id)
-          if !user.roles
+         role=user.roles
+          r=role.map(&:name)
+          if user.roles.empty?&&r!='admin'
             error = error_response_method($e12)
         render :json => error
         end

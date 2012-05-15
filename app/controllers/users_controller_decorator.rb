@@ -1,20 +1,6 @@
 class UsersController
   $e20={"status_code"=>"2034","status_message"=>"password is wrong "}
   $e21={"status_code"=>"2034","status_message"=>"please sign up to login"}
-  #~ include SpreeBase
-  #~ helper :users, 'spree/base'
-  #~ include Spree::CurrentOrder
-  #~ ssl_required :new, :create, :destroy, :update
-  #~ ssl_allowed :login_bar
-   #~ include Spree::Core::ControllerHelpers
-  #~ helper 'spree/users', 'spree/base'
-
-  #~ include Spree::Core::CurrentOrder
-
-  #~ after_filter :associate_user, :only => :create
-
-  #~ ssl_required :new, :create, :destroy, :update
-  #~ ssl_allowed :login_bar
   #To login the user and generate_api_key
   def create
     if !params[:format].nil? && params[:format] == "json"
@@ -47,7 +33,7 @@ class UsersController
         render:json=>error
       end
     end
-	  
+
   end
   #To respond the error message
   def error_response_method(error)

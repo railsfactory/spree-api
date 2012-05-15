@@ -1,7 +1,5 @@
 Spree::UserRegistrationsController.class_eval do
-  #include Spree::Base
-  #~ helper :users, 'spree/base'
-   include Spree::Core::ControllerHelpers
+  include Spree::Core::ControllerHelpers
   helper 'spree/users', 'spree/base'
   ssl_required
   after_filter :associate_user, :only => :create
@@ -41,7 +39,7 @@ Spree::UserRegistrationsController.class_eval do
         render_with_scope(:new)
       end
     end
-	  
+
   end
   def check_permissions
     authorize!(:create, resource)
@@ -52,7 +50,7 @@ Spree::UserRegistrationsController.class_eval do
     current_order.associate_user!(current_user)
     session[:guest_token] = nil
   end
-  def save_user_role #To save the user roles 
+  def save_user_role #To save the user roles
     return unless params[:user]
 
     @user.roles << admin

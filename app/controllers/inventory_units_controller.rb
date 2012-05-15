@@ -15,13 +15,13 @@ class Spree::InventoryUnitsController < Spree::BaseController
       format.json { render :json => @collection.to_json(collection_serialization_options) }
     end
   end
-#To display particular items
+  #To display particular items
   def show
     respond_with(@object) do |format|
       format.json { render :json => @object.to_json(object_serialization_options) }
     end
   end
-#To display error message
+  #To display error message
   def error_response_method(error)
     @error = {}
     @error["code"]=error["status_code"]
@@ -33,11 +33,11 @@ class Spree::InventoryUnitsController < Spree::BaseController
   def model_class
     "Spree::#{controller_name.classify}".constantize
   end
-    
+
   def object_name
     controller_name.singularize
   end
-    #To load resources
+  #To load resources
   def load_resource
     if member_action?
       @object ||= load_resource_instance
@@ -47,7 +47,7 @@ class Spree::InventoryUnitsController < Spree::BaseController
       instance_variable_set("@#{controller_name}", @collection)
     end
   end
-    #To load resource instance
+  #To load resource instance
   def load_resource_instance
     if new_actions.include?(params[:action].to_sym)
       build_resource
@@ -55,11 +55,11 @@ class Spree::InventoryUnitsController < Spree::BaseController
       find_resource
     end
   end
-    #To find parent record
+  #To find parent record
   def parent
     nil
   end
-#To find resource
+  #To find resource
   def find_resource
     begin
       if parent.present?
@@ -72,7 +72,7 @@ class Spree::InventoryUnitsController < Spree::BaseController
       render :json => error
     end
   end
-    #To create new record
+  #To create new record
   def build_resource
     begin
       if parent.present?
@@ -85,7 +85,7 @@ class Spree::InventoryUnitsController < Spree::BaseController
       render :json => error
     end
   end
-   #To collect the list of records
+  #To collect the list of records
   def collection
     return @search unless @search.nil?
     params[:search] = {} if params[:search].blank?
@@ -123,7 +123,7 @@ class Spree::InventoryUnitsController < Spree::BaseController
       send "api_#{object_name}_url",parent, target, options
     end
   end
-    
+
   def collection_actions
     [:index]
   end
@@ -136,20 +136,20 @@ class Spree::InventoryUnitsController < Spree::BaseController
     [:new, :create]
   end
 
-    private
+  private
   def check_http_authorization
-        if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       if params[:authentication_token].present?
         user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if !user.present?
           #~ role=Spree::.find_by_id(user.id)
           error = error_response_method($e13)
-        render :json => error
-      end 
-      else
-         error = error_response_method($e13)
-        render :json => error
+          render :json => error
         end
+      else
+        error = error_response_method($e13)
+        render :json => error
+      end
     end
   end
 end
