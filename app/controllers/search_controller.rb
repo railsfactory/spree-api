@@ -2,7 +2,7 @@ class Spree::SearchController< Spree::BaseController
 	rescue_from ActiveRecord::RecordNotFound, :with => :render_404
     helper 'spree/products'
 def search
-	      @taxon = Taxon.find_by_permalink!(params[:id])
+	      @taxon = Spree::Taxon.find_by_permalink!(params[:id])
       return unless @taxon
 
 			@searcher = Spree::Config.searcher_class.new(params.merge(:taxon => @taxon.id))
