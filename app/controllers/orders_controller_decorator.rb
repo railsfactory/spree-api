@@ -1,10 +1,10 @@
 Spree::OrdersController.class_eval do
-  $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
-  $e52={"status_code"=>"2052","status_message"=>"quantity cannot be negative"}
-  $e2={"status_code"=>"2037","status_message"=>"Record not found"}
-  $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
-  $e4={"status_code"=>"2035","status_message"=>"destroyed"}
-  $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
+  $e1={ "status_code"=>"2038","status_message"=>"parameter errors" }
+  $e52={ "status_code"=>"2052","status_message"=>"quantity cannot be negative" }
+  $e2={ "status_code"=>"2037","status_message"=>"Record not found" }
+  $e3={ "status_code"=>"2036","status_message"=>"Payment failed check the details entered" }
+  $e4={ "status_code"=>"2035","status_message"=>"destroyed" }
+  $e5={ "status_code"=>"2030","status_message"=>"Undefined method request check the url" }
   before_filter :check_http_authorization
   before_filter :load_resource
   respond_to :json
@@ -40,7 +40,7 @@ Spree::OrdersController.class_eval do
   end
   #To display the error message
   def error_response_method(error)
-    @error = {}
+    @error = { }
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
     return @error
@@ -83,7 +83,7 @@ Spree::OrdersController.class_eval do
     else
       @order = current_order
       if @order.update_attributes(params[:order])
-        @order.line_items = @order.line_items.select {|li| li.quantity > 0 }
+        @order.line_items = @order.line_items.select { |li| li.quantity > 0 }
         respond_with(@order) { |format| format.html { redirect_to cart_path } }
       else
         respond_with(@order)
@@ -107,7 +107,7 @@ Spree::OrdersController.class_eval do
   protected
   def model_class
     if !params[:format].nil? && params[:format] == "json"
-      "Spree::#{controller_name.classify}".constantize
+      "Spree::#{ controller_name.classify }".constantize
     end
   end
 
@@ -121,10 +121,10 @@ Spree::OrdersController.class_eval do
     if !params[:format].nil? && params[:format] == "json"
       if member_action?
         @object ||= load_resource_instance
-        instance_variable_set("@#{object_name}", @object)
+        instance_variable_set("@#{ object_name }", @object)
       else
         @collection ||= collection
-        instance_variable_set("@#{controller_name}", @collection)
+        instance_variable_set("@#{ controller_name }", @collection)
       end
     end
   end
@@ -132,7 +132,7 @@ Spree::OrdersController.class_eval do
   def collection
     if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
-      params[:search] = {} if params[:search].blank?
+      params[:search] = { } if params[:search].blank?
       params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
 
       scope = parent.present? ? parent.send(controller_name) : model_class.scoped
@@ -175,7 +175,7 @@ Spree::OrdersController.class_eval do
 
   def collection_serialization_options
     if !params[:format].nil? && params[:format] == "json"
-      {}
+      { }
     end
   end
 
@@ -231,10 +231,10 @@ Spree::OrdersController.class_eval do
 
   def object_serialization_options
     { :include => {
-        :bill_address => {:include => [:country, :state]},
-        :ship_address => {:include => [:country, :state]},
-        :shipments => {:include => [:shipping_method, :address]},
-        :line_items => {:include => [:variant]}
+        :bill_address => { :include => [:country, :state] },
+        :ship_address => { :include => [:country, :state] },
+        :shipments => { :include => [:shipping_method, :address] },
+        :line_items => { :include => [:variant] }
       }
     }
   end

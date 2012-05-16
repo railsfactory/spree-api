@@ -5,9 +5,9 @@ module Spree
       before_filter :load_order
       before_filter :load_shipment, :only => [:destroy, :edit, :update, :fire]
       before_filter :load_shipping_methods, :except => [:country_changed, :index]
-      $e22={"status_code"=>"2031","status_message"=>"sorry! backordered items cant be shipped Once stock updated this action could be done"}
-      $e23={"status_code"=>"2050","status_message"=>"shipment id invalid"}
-      $e24={"status_code"=>"2051","status_message"=>"order id invalid"}
+      $e22={ "status_code"=>"2031","status_message"=>"sorry! backordered items cant be shipped Once stock updated this action could be done" }
+      $e23={ "status_code"=>"2050","status_message"=>"shipment id invalid" }
+      $e24={ "status_code"=>"2051","status_message"=>"order id invalid" }
       #To set current user
       def current_ability
         user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
@@ -28,7 +28,7 @@ module Spree
           current_user=Spree::User.find_by_authentication_token(params[:authentication_token])
           if current_user.present?
             if @shipment.present?
-              if @shipment.send("#{params[:e]}")
+              if @shipment.send("#{ params[:e] }")
                 flash.notice = t('shipment_updated')
               else
                 flash[:error] = t('cannot_perform_operation')
@@ -48,7 +48,7 @@ module Spree
             render:json=>error
           end
         else
-          if @shipment.send("#{params[:e]}")
+          if @shipment.send("#{ params[:e] }")
             flash.notice = t('shipment_updated')
           else
             flash[:error] = t('cannot_perform_operation')
@@ -59,7 +59,7 @@ module Spree
       end
       #To display the error message
       def error_response_method(error)
-        @error = {}
+        @error = { }
         @error["code"]=error["status_code"]
         @error["message"]=error["status_message"]
         return @error

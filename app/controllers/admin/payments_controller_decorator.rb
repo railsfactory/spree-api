@@ -5,7 +5,7 @@ module Spree
       before_filter :load_order, :only => [:create, :new, :index, :fire]
       before_filter :load_payment, :except => [:create, :new, :index]
       before_filter :load_data
-      $e15={"status_code"=>"2039","status_message"=>"payments cannot be captured check payment id"}
+      $e15={ "status_code"=>"2039","status_message"=>"payments cannot be captured check payment id" }
       #To set current user
       def current_ability
         user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
@@ -34,7 +34,7 @@ module Spree
         # TODO: consider finer-grained control for this type of action (right now anyone in admin role can perform)
         return unless event = params[:e] and @payment.payment_source
         event = "void_transaction" if event == "void"
-        if @payment.send("#{event}!")
+        if @payment.send("#{ event }!")
 
           flash.notice = t('payment_updated')
 
@@ -43,7 +43,7 @@ module Spree
           flash[:error] = t('cannot_perform_operation')
         end
       rescue Spree::GatewayError => ge
-        flash[:error] = "#{ge.message}"
+        flash[:error] = "#{ ge.message }"
       ensure
         if !params[:format].nil? && params[:format] == "json"
           final_pay=[]
@@ -86,7 +86,7 @@ module Spree
       end
       #To display the error message
       def error_response_method(error)
-        @error = {}
+        @error = { }
         @error["code"]=error["status_code"]
         @error["message"]=error["status_message"]
         return @error

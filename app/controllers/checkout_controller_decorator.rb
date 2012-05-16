@@ -4,17 +4,15 @@ Spree::CheckoutController.class_eval do
   before_filter :check_registration, :except => [:registration, :update_registration]
   before_filter :load_order
   rescue_from Spree::Core::GatewayError, :with => :rescue_from_spree_gateway_error
-  $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
-  $e2={"status_code"=>"2037","status_message"=>"Record not found"}
-  $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
-  $e4={"status_code"=>"2035","status_message"=>"destroyed"}
-  $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
-  $e7={"status_code"=>"2031","status_message"=>"No items to checkout "}
+  $e1={ "status_code"=>"2038","status_message"=>"parameter errors" }
+  $e2={ "status_code"=>"2037","status_message"=>"Record not found" }
+  $e3={ "status_code"=>"2036","status_message"=>"Payment failed check the details entered" }
+  $e4={ "status_code"=>"2035","status_message"=>"destroyed" }
+  $e5={ "status_code"=>"2030","status_message"=>"Undefined method request check the url" }
+  $e7={ "status_code"=>"2031","status_message"=>"No items to checkout " }
   def update
     if !params[:format].nil? && params[:format] == "json"
       begin
-        p object_params
-        p params
         if @order.update_attributes(object_params)
           fire_event('spree.checkout.update')
           final_order = []
@@ -76,7 +74,7 @@ Spree::CheckoutController.class_eval do
     end
   end
   def error_response_method(error)
-    @error = {}
+    @error = { }
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
     #@error["Code"] = error["error_code"]
@@ -85,9 +83,9 @@ Spree::CheckoutController.class_eval do
   def load_order
     if !params[:format].nil? && params[:format] == "json"
       if session[:order_id]==nil
-        p current_user=Spree::User.find_by_authentication_token(params[:authentication_token])
+        current_user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if current_user.present?
-          p current_order = Spree::Order.find_all_by_user_id(current_user.id).last
+          current_order = Spree::Order.find_all_by_user_id(current_user.id).last
         end
       end
       @order = current_order
@@ -101,7 +99,6 @@ Spree::CheckoutController.class_eval do
   private
   def check_authorization
     if !params[:format].nil? && params[:format] == "json"
-      p session[:access_token]
       current_order = ''
       if session[:order_id] == nil
         current_user = Spree::User.find_by_authentication_token(params[:authentication_token])
@@ -109,7 +106,6 @@ Spree::CheckoutController.class_eval do
           current_order = Spree::Order.find_all_by_user_id(current_user.id).last
         end
       end
-      puts "session #{session}"
     else
       authorize!(:edit, current_order, session[:access_token])
     end

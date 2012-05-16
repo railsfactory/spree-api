@@ -84,7 +84,7 @@ class Spree::CountriesController <Spree::BaseController
     if params[:e].blank?
       errors = t('api.errors.missing_event')
     elsif valid_events_for_object.include?(params[:e].to_sym)
-      @object.send("#{params[:e]}!")
+      @object.send("#{ params[:e] }!")
       errors = nil
     elsif valid_events.include?(params[:e].to_sym)
       errors = t('api.errors.invalid_event_for_object', :events => valid_events_for_object.join(','))
@@ -106,7 +106,7 @@ class Spree::CountriesController <Spree::BaseController
   end
 
   def error_response_method(error)
-    @error = {}
+    @error = { }
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
     #@error["Code"] = error["error_code"]
@@ -115,7 +115,7 @@ class Spree::CountriesController <Spree::BaseController
 
   protected
   def model_class
-    "Spree::#{controller_name.classify}".constantize
+    "Spree::#{ controller_name.classify }".constantize
   end
 
   def object_name
@@ -125,10 +125,10 @@ class Spree::CountriesController <Spree::BaseController
   def load_resource
     if member_action?
       @object ||= load_resource_instance
-      instance_variable_set("@#{object_name}", @object)
+      instance_variable_set("@#{ object_name }", @object)
     else
       @collection ||= collection
-      instance_variable_set("@#{controller_name}", @collection)
+      instance_variable_set("@#{ controller_name }", @collection)
     end
   end
 
@@ -154,7 +154,7 @@ class Spree::CountriesController <Spree::BaseController
     rescue Exception => e
       error = error_response_method($e2)
       render :json => error
-      #render :text => "Resource not found (#{e.message})", :status => 500
+      #render :text => "Resource not found (#{ e.message })", :status => 500
     end
   end
 
@@ -168,13 +168,13 @@ class Spree::CountriesController <Spree::BaseController
     rescue Exception=> e
       error = error_response_method($e11)
       render :json => error
-      #render :text => " #{e.message}", :status => 500
+      #render :text => " #{ e.message }", :status => 500
     end
   end
 
   def collection
     return @search unless @search.nil?
-    params[:search] = {} if params[:search].blank?
+    params[:search] = { } if params[:search].blank?
     params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
 
     scope = parent.present? ? parent.send(controller_name) : model_class.scoped
@@ -184,11 +184,11 @@ class Spree::CountriesController <Spree::BaseController
   end
 
   def collection_serialization_options
-    {}
+    { }
   end
 
   def object_serialization_options
-    {}
+    { }
   end
 
   def eager_load_associations
@@ -196,19 +196,19 @@ class Spree::CountriesController <Spree::BaseController
   end
 
   def object_errors
-    {:errors => object.errors.full_messages}
+    { :errors => object.errors.full_messages }
   end
 
-  def object_url(object = nil, options = {})
+  def object_url(object = nil, options = { })
     target = object ? object : @object
     if parent.present? && object_name == "state"
-      send "api_country_#{object_name}_url", parent, target, options
+      send "api_country_#{ object_name }_url", parent, target, options
     elsif parent.present? && object_name == "taxon"
-      send "api_taxonomy_#{object_name}_url", parent, target, options
+      send "api_taxonomy_#{ object_name }_url", parent, target, options
     elsif parent.present?
-      send "api_#{parent[:model_name]}_#{object_name}_url", parent, target, options
+      send "api_#{ parent[:model_name] }_#{ object_name }_url", parent, target, options
     else
-      send "api_#{object_name}_url",parent, target, options
+      send "api_#{ object_name }_url",parent, target, options
     end
   end
 

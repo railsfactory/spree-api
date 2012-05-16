@@ -1,10 +1,10 @@
 module Spree
   ProductsController.class_eval do
-    $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
-    $e2={"status_code"=>"2037","status_message"=>"Record not found"}
-    $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
-    $e4={"status_code"=>"2035","status_message"=>"destroyed"}
-    $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
+    $e1={ "status_code"=>"2038","status_message"=>"parameter errors" }
+    $e2={ "status_code"=>"2037","status_message"=>"Record not found" }
+    $e3={ "status_code"=>"2036","status_message"=>"Payment failed check the details entered" }
+    $e4={ "status_code"=>"2035","status_message"=>"destroyed" }
+    $e5={ "status_code"=>"2030","status_message"=>"Undefined method request check the url" }
     #include Spree::Search
     before_filter :check_http_authorization
     before_filter :load_resource
@@ -66,7 +66,7 @@ module Spree
               product_index = product_index + 1
             end
             respond_with(product_details) do |format|
-              format.json { render :json =>product_details}
+              format.json { render :json =>product_details }
             end
           else
             error=error_response_method($e13)
@@ -104,7 +104,7 @@ module Spree
             product_details[:products].push product_detail
           end
           respond_with(product_details) do |format|
-            format.json { render :json =>product_details}
+            format.json { render :json =>product_details }
           end
         end
       else
@@ -144,7 +144,7 @@ module Spree
               end
               product_details[:products].push product_detail
               respond_with(product_details) do |format|
-                format.json { render :json =>product_details}
+                format.json { render :json =>product_details }
               end
             else
               error = error_response_method($e2)
@@ -188,7 +188,7 @@ module Spree
     end
     #To display the error message
     def error_response_method(error)
-      @error = {}
+      @error = { }
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
       return @error
@@ -196,7 +196,7 @@ module Spree
     protected
     def model_class
       if !params[:format].nil? && params[:format] == "json"
-        "Spree::#{controller_name.classify}".constantize
+        "Spree::#{ controller_name.classify }".constantize
       end
     end
 
@@ -210,10 +210,10 @@ module Spree
       if !params[:format].nil? && params[:format] == "json"
         if member_action?
           p @object ||= load_resource_instance
-          p  instance_variable_set("@#{object_name}", @object)
+          p  instance_variable_set("@#{ object_name }", @object)
         else
           @collection ||= collection
-          instance_variable_set("@#{controller_name}", @collection)
+          instance_variable_set("@#{ controller_name }", @collection)
         end
       end
     end

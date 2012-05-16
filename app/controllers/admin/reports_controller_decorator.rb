@@ -147,7 +147,7 @@ module Spree
       #To display the error message
       def error_response_method(error)
         if !params[:format].nil? && params[:format] == "json"
-          @error = {}
+          @error = { }
           @error["code"]=error["status_code"]
           @error["message"]=error["status_message"]
           return @error

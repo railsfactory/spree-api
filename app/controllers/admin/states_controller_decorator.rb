@@ -1,12 +1,12 @@
 module Spree
   module Admin
     StatesController.class_eval do
-      $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
-      $e2={"status_code"=>"2037","status_message"=>"Record not found"}
-      $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
-      $e4={"status_code"=>"2035","status_message"=>"destroyed"}
-      $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
-      $e25={"status_code"=>"2060","status_message"=>"sorry parent record not found"}
+      $e1={ "status_code"=>"2038","status_message"=>"parameter errors" }
+      $e2={ "status_code"=>"2037","status_message"=>"Record not found" }
+      $e3={ "status_code"=>"2036","status_message"=>"Payment failed check the details entered" }
+      $e4={ "status_code"=>"2035","status_message"=>"destroyed" }
+      $e5={ "status_code"=>"2030","status_message"=>"Undefined method request check the url" }
+      $e25={ "status_code"=>"2060","status_message"=>"sorry parent record not found" }
       #belongs_to :country
       before_filter :load_data
       require 'spree/core/action_callbacks'
@@ -142,7 +142,7 @@ module Spree
       #To display the error message
       def error_response_method(error)
         if !params[:format].nil? && params[:format] == "json"
-          @error = {}
+          @error = { }
           @error["code"]=error["status_code"]
           @error["message"]=error["status_message"]
           return @error
@@ -150,7 +150,7 @@ module Spree
       end
 
       def model_class
-        "Spree::#{controller_name.classify}".constantize
+        "Spree::#{ controller_name.classify }".constantize
       end
 
       def object_name
@@ -161,10 +161,10 @@ module Spree
         begin
           if member_action?
             @object ||= load_resource_instance
-            instance_variable_set("@#{object_name}", @object)
+            instance_variable_set("@#{ object_name }", @object)
           else
             @collection ||= collection
-            instance_variable_set("@#{controller_name}", @collection)
+            instance_variable_set("@#{ controller_name }", @collection)
           end
         rescue Exception=>e
           error = error_response_method($e25)
@@ -193,8 +193,8 @@ module Spree
       #To find the parent
       def parent
         if parent_data.present?
-          @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{model_name}_id"]).first
-          instance_variable_set("@#{model_name}", @parent)
+          @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{ model_name }_id"]).first
+          instance_variable_set("@#{ model_name }", @parent)
         else
           nil
         end
@@ -251,18 +251,18 @@ module Spree
       end
 
       def invoke_callbacks(action, callback_type)
-        callbacks = self.class.callbacks || {}
+        callbacks = self.class.callbacks || { }
         return if callbacks[action].nil?
         case callback_type.to_sym
-        when :before then callbacks[action].before_methods.each {|method| send method }
-        when :after  then callbacks[action].after_methods.each  {|method| send method }
-        when :fails  then callbacks[action].fails_methods.each  {|method| send method }
+        when :before then callbacks[action].before_methods.each { |method| send method }
+        when :after  then callbacks[action].after_methods.each  { |method| send method }
+        when :fails  then callbacks[action].fails_methods.each  { |method| send method }
         end
       end
 
       # URL helpers
 
-      def new_object_url(options = {})
+      def new_object_url(options = { })
         if parent_data.present?
           new_polymorphic_url([:admin, parent, model_class], options)
         else
@@ -270,24 +270,24 @@ module Spree
         end
       end
 
-      def edit_object_url(object, options = {})
+      def edit_object_url(object, options = { })
         if parent_data.present?
-          send "edit_admin_#{parent_data[:model_name]}_#{object_name}_url", parent, object, options
+          send "edit_admin_#{ parent_data[:model_name] }_#{ object_name }_url", parent, object, options
         else
-          send "edit_admin_#{object_name}_url", object, options
+          send "edit_admin_#{ object_name }_url", object, options
         end
       end
 
-      def object_url(object = nil, options = {})
+      def object_url(object = nil, options = { })
         target = object ? object : @object
         if parent_data.present?
-          send "admin_#{parent_data[:model_name]}_#{object_name}_url", parent, target, options
+          send "admin_#{ parent_data[:model_name] }_#{ object_name }_url", parent, target, options
         else
-          send "admin_#{object_name}_url", target, options
+          send "admin_#{ object_name }_url", target, options
         end
       end
 
-      def collection_url(options = {})
+      def collection_url(options = { })
         if parent_data.present?
           polymorphic_url([:admin, parent, model_class], options)
         else

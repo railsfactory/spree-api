@@ -1,6 +1,6 @@
 class Spree::LogController < Spree::BaseController
-  $e20={"status_code"=>"2034","status_message"=>"password is wrong "}
-  $e21={"status_code"=>"2034","status_message"=>"please sign in to login"}
+  $e20={ "status_code"=>"2034","status_message"=>"password is wrong " }
+  $e21={ "status_code"=>"2034","status_message"=>"please sign in to login" }
   include Spree::Core::ControllerHelpers
   helper 'spree/users', 'spree/base'
   ssl_required
@@ -42,7 +42,7 @@ class Spree::LogController < Spree::BaseController
   end
   #To respond the error message
   def error_response_method(error)
-    @error = {}
+    @error = { }
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
     return @error

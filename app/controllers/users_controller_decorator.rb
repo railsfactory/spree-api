@@ -1,6 +1,6 @@
 class UsersController
-  $e20={"status_code"=>"2034","status_message"=>"password is wrong "}
-  $e21={"status_code"=>"2034","status_message"=>"please sign up to login"}
+  $e20={ "status_code"=>"2034","status_message"=>"password is wrong " }
+  $e21={ "status_code"=>"2034","status_message"=>"please sign up to login" }
   #To login the user and generate_api_key
   def create
     if !params[:format].nil? && params[:format] == "json"
@@ -37,7 +37,7 @@ class UsersController
   end
   #To respond the error message
   def error_response_method(error)
-    @error = {}
+    @error = { }
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
     return @error
