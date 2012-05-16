@@ -1,6 +1,8 @@
 class Spree::InventoryUnitsController < Spree::BaseController
 	before_filter :check_http_authorization
   before_filter :load_resource
+  #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
+  #authorize_resource
   respond_to :json
   #To set current_user
   def current_ability
@@ -21,7 +23,7 @@ class Spree::InventoryUnitsController < Spree::BaseController
   end
   #To display error message
   def error_response_method(error)
-    @error = { }
+    @error = {}
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
     return @error
@@ -29,9 +31,9 @@ class Spree::InventoryUnitsController < Spree::BaseController
 
   protected
   def model_class
-    "Spree::#{ controller_name.classify }".constantize
+    "Spree::#{controller_name.classify}".constantize
   end
-    
+
   def object_name
     controller_name.singularize
   end
@@ -39,10 +41,10 @@ class Spree::InventoryUnitsController < Spree::BaseController
   def load_resource
     if member_action?
       @object ||= load_resource_instance
-      instance_variable_set("@#{ object_name }", @object)
+      instance_variable_set("@#{object_name}", @object)
     else
       @collection ||= collection
-      instance_variable_set("@#{ controller_name }", @collection)
+      instance_variable_set("@#{controller_name}", @collection)
     end
   end
   #To load resource instance
@@ -86,7 +88,7 @@ class Spree::InventoryUnitsController < Spree::BaseController
   #To collect the list of records
   def collection
     return @search unless @search.nil?
-    params[:search] = { } if params[:search].blank?
+    params[:search] = {} if params[:search].blank?
     params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
     scope = parent.present? ? parent.send(controller_name) : model_class.scoped
     @search = scope
@@ -94,11 +96,11 @@ class Spree::InventoryUnitsController < Spree::BaseController
   end
 
   def collection_serialization_options
-    { }
+    {}
   end
 
   def object_serialization_options
-    { }
+    {}
   end
 
   def eager_load_associations
@@ -106,22 +108,22 @@ class Spree::InventoryUnitsController < Spree::BaseController
   end
 
   def object_errors
-    { :errors => object.errors.full_messages }
+    {:errors => object.errors.full_messages}
   end
 
-  def object_url(object = nil, options = { })
+  def object_url(object = nil, options = {})
     target = object ? object : @object
     if parent.present? && object_name == "state"
-      send "api_country_#{ object_name }_url", parent, target, options
+      send "api_country_#{object_name}_url", parent, target, options
     elsif parent.present? && object_name == "taxon"
-      send "api_taxonomy_#{ object_name }_url", parent, target, options
+      send "api_taxonomy_#{object_name}_url", parent, target, options
     elsif parent.present?
-      send "api_#{ parent[:model_name] }_#{ object_name }_url", parent, target, options
+      send "api_#{parent[:model_name]}_#{object_name}_url", parent, target, options
     else
-      send "api_#{ object_name }_url",parent, target, options
+      send "api_#{object_name}_url",parent, target, options
     end
   end
-    
+
   def collection_actions
     [:index]
   end

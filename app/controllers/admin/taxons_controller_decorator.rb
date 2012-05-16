@@ -1,11 +1,11 @@
 module Spree
   module Admin
     TaxonsController.class_eval do
-      $e1={ "status_code"=>"2038","status_message"=>"parameter errors" }
-      $e2={ "status_code"=>"2037","status_message"=>"Record not found" }
-      $e3={ "status_code"=>"2036","status_message"=>"Payment failed check the details entered" }
-      $e4={ "status_code"=>"2035","status_message"=>"destroyed" }
-      $e5={ "status_code"=>"2030","status_message"=>"Undefined method request check the url" }
+      $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
+      $e2={"status_code"=>"2037","status_message"=>"Record not found"}
+      $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
+      $e4={"status_code"=>"2035","status_message"=>"destroyed"}
+      $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
       require 'spree/core/action_callbacks'
       before_filter :check_http_authorization
       before_filter :load_resource
@@ -166,7 +166,7 @@ module Spree
           if params[:e].blank?
             errors = t('api.errors.missing_event')
           elsif valid_events_for_object.include?(params[:e].to_sym)
-            @object.send("#{ params[:e] }!")
+            @object.send("#{params[:e]}!")
             errors = nil
           elsif valid_events.include?(params[:e].to_sym)
             errors = t('api.errors.invalid_event_for_object', :events => valid_events_for_object.join(','))
@@ -188,7 +188,7 @@ module Spree
       #To display the error message
       def error_response_method(error)
         if !params[:format].nil? && params[:format] == "json"
-          @error = { }
+          @error = {}
           @error["code"]=error["status_code"]
           @error["message"]=error["status_message"]
           return @error
@@ -198,7 +198,7 @@ module Spree
       protected
 
       def model_class
-        "Spree::#{ controller_name.classify }".constantize
+        "Spree::#{controller_name.classify}".constantize
       end
 
       def object_name
@@ -208,10 +208,10 @@ module Spree
       def load_resource
         if member_action?
           @object ||= load_resource_instance
-          instance_variable_set("@#{ object_name }", @object)
+          instance_variable_set("@#{object_name}", @object)
         else
           @collection ||= collection
-          instance_variable_set("@#{ controller_name }", @collection)
+          instance_variable_set("@#{controller_name}", @collection)
         end
       end
       #To load resource insatnce  for creating and finding
@@ -234,8 +234,8 @@ module Spree
           nil
         else
           if parent_data.present?
-            @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{ parent_data[:model_name] }_id"]).first
-            instance_variable_set("@#{ parent_data[:model_name] }", @parent)
+            @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{parent_data[:model_name]}_id"]).first
+            instance_variable_set("@#{parent_data[:model_name]}", @parent)
           else
             nil
           end
@@ -280,7 +280,7 @@ module Spree
       def collection
         if !params[:format].nil? && params[:format] == "json"
           return @search unless @search.nil?
-          params[:search] = { } if params[:search].blank?
+          params[:search] = {} if params[:search].blank?
           params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
 
           scope = parent.present? ? parent.send(controller_name) : model_class.scoped
@@ -300,13 +300,13 @@ module Spree
 
       def collection_serialization_options
         if !params[:format].nil? && params[:format] == "json"
-          { }
+          {}
         end
       end
 
       def object_serialization_options
         if !params[:format].nil? && params[:format] == "json"
-          { }
+          {}
         end
       end
 
@@ -318,7 +318,7 @@ module Spree
 
       def object_errors
         if !params[:format].nil? && params[:format] == "json"
-          { :errors => object.errors.full_messages }
+          {:errors => object.errors.full_messages}
         end
       end
       def location_after_save
@@ -326,18 +326,18 @@ module Spree
       end
 
       def invoke_callbacks(action, callback_type)
-        callbacks = self.class.callbacks || { }
+        callbacks = self.class.callbacks || {}
         return if callbacks[action].nil?
         case callback_type.to_sym
-        when :before then callbacks[action].before_methods.each { |method| send method }
-        when :after  then callbacks[action].after_methods.each  { |method| send method }
-        when :fails  then callbacks[action].fails_methods.each  { |method| send method }
+        when :before then callbacks[action].before_methods.each {|method| send method }
+        when :after  then callbacks[action].after_methods.each  {|method| send method }
+        when :fails  then callbacks[action].fails_methods.each  {|method| send method }
         end
       end
 
       # URL helpers
 
-      def new_object_url(options = { })
+      def new_object_url(options = {})
         if parent_data.present?
           new_polymorphic_url([:admin, parent, model_class], options)
         else
@@ -345,36 +345,36 @@ module Spree
         end
       end
 
-      def edit_object_url(object, options = { })
+      def edit_object_url(object, options = {})
         if parent_data.present?
-          send "edit_admin_#{ parent_data[:model_name] }_#{ object_name }_url", parent, object, options
+          send "edit_admin_#{parent_data[:model_name]}_#{object_name}_url", parent, object, options
         else
-          send "edit_admin_#{ object_name }_url", object, options
+          send "edit_admin_#{object_name}_url", object, options
         end
       end
 
-      def object_url(object = nil, options = { })
+      def object_url(object = nil, options = {})
         if !params[:format].nil? && params[:format] == "json"
           target = object ? object : @object
           if parent.present? && object_name == "state"
-            send "api_country_#{ object_name }_url", parent, target, options
+            send "api_country_#{object_name}_url", parent, target, options
           elsif parent.present? && object_name == "taxon"
-            send "api_taxonomy_#{ object_name }_url", parent, target, options
+            send "api_taxonomy_#{object_name}_url", parent, target, options
           elsif parent.present?
-            send "api_#{ parent[:model_name] }_#{ object_name }_url", parent, target, options
+            send "api_#{parent[:model_name]}_#{object_name}_url", parent, target, options
           else
-            send "api_#{ object_name }_url",parent, target, options
+            send "api_#{object_name}_url",parent, target, options
           end
         else
           target = object ? object : @object
           if parent_data.present?
-            send "admin_#{ parent_data[:model_name] }_#{ object_name }_url", parent, target, options
+            send "admin_#{parent_data[:model_name]}_#{object_name}_url", parent, target, options
           else
-            send "admin_#{ object_name }_url", target, options
+            send "admin_#{object_name}_url", target, options
           end
         end
       end
-      def collection_url(options = { })
+      def collection_url(options = {})
         if parent_data.present?
           polymorphic_url([:admin, parent, model_class], options)
         else

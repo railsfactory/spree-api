@@ -5,9 +5,9 @@ Spree::UserRegistrationsController.class_eval do
   after_filter :associate_user, :only => :create
   before_filter :check_permissions, :only => [:edit, :update]
   skip_before_filter :require_no_authentication
-  $e6={ "status_code"=>"2034","status_message"=>"sorry email already taken" }
-  $e18={ "status_code"=>"2046","status_message"=>"password miss match" }
-  $e19={ "status_code"=>"2049","status_message"=>"please enter valid email" }
+  $e6={"status_code"=>"2034","status_message"=>"sorry email already taken"}
+  $e18={"status_code"=>"2046","status_message"=>"password miss match"}
+  $e19={"status_code"=>"2049","status_message"=>"please enter valid email"}
   #To create new user
   def create
     if !params[:format].nil? && params[:format] == "json"
@@ -57,7 +57,7 @@ Spree::UserRegistrationsController.class_eval do
 
   end
   def error_response_method(error) #To display the error message
-    @error = { }
+    @error = {}
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
     return @error

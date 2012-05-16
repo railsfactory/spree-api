@@ -1,8 +1,8 @@
 Spree::UserSessionsController.class_eval do
-  $e8={ "status_code"=>"2032","status_message"=>"Username/Password is incorrect" }
-  $e9={ "status_code"=>"2033","status_message"=>"logged out sucessfully" }
-  $e20={ "status_code"=>"2034","status_message"=>"password is wrong " }
-  $e21={ "status_code"=>"2034","status_message"=>"please sign up to login" }
+  $e8={"status_code"=>"2032","status_message"=>"Username/Password is incorrect"}
+  $e9={"status_code"=>"2033","status_message"=>"logged out sucessfully"}
+  $e20={"status_code"=>"2034","status_message"=>"password is wrong "}
+  $e21={"status_code"=>"2034","status_message"=>"please sign up to login"}
   #include Spree::Base
   include Spree::Core::ControllerHelpers
   helper 'spree/users', 'spree/base'
@@ -53,7 +53,7 @@ Spree::UserSessionsController.class_eval do
           }
           format.js {
             user = resource.record
-            render :json => { :ship_address => user.ship_address, :bill_address => user.bill_address }.to_json
+            render :json => {:ship_address => user.ship_address, :bill_address => user.bill_address}.to_json
           }
         end
       else
@@ -90,7 +90,7 @@ Spree::UserSessionsController.class_eval do
   end
   def error_response_method(error) #To display error message
     if !params[:format].nil? && params[:format] == "json"
-      @error = {  }
+      @error = {}
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
       return @error

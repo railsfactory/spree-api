@@ -1,9 +1,9 @@
 class Spree::LineItemsController< Spree::BaseController
-  $e1={ "status_code"=>"2038","status_message"=>"parameter errors" }
-  $e2={ "status_code"=>"2037","status_message"=>"Record not found" }
-  $e3={ "status_code"=>"2036","status_message"=>"Payment failed check the details entered" }
-  $e4={ "status_code"=>"2035","status_message"=>"destroyed" }
-  $e5={ "status_code"=>"2030","status_message"=>"Undefined method request check the url" }
+  $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
+  $e2={"status_code"=>"2037","status_message"=>"Record not found"}
+  $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
+  $e4={"status_code"=>"2035","status_message"=>"destroyed"}
+  $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
   #To set current user
   def current_ability
     user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
@@ -47,7 +47,7 @@ class Spree::LineItemsController< Spree::BaseController
   end
   #To display error message
   def error_response_method(error)
-    @error = { }
+    @error = {}
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
     return @error
@@ -69,10 +69,10 @@ class Spree::LineItemsController< Spree::BaseController
     if !params[:format].nil? && params[:format] == "json"
       if member_action?
         @object ||= load_resource_instance
-        instance_variable_set("@#{ object_name }", @object)
+        instance_variable_set("@#{object_name}", @object)
       else
         @collection ||= collection
-        instance_variable_set("@#{ controller_name }", @collection)
+        instance_variable_set("@#{controller_name}", @collection)
       end
     end
   end
@@ -80,7 +80,7 @@ class Spree::LineItemsController< Spree::BaseController
   def collection
     if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
-      params[:search] = { } if params[:search].blank?
+      params[:search] = {} if params[:search].blank?
       params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
 
       scope = parent.present? ? parent.send(controller_name) : model_class.scoped
@@ -123,7 +123,7 @@ class Spree::LineItemsController< Spree::BaseController
 
   def collection_serialization_options
     if !params[:format].nil? && params[:format] == "json"
-      { }
+      {}
     end
   end
 

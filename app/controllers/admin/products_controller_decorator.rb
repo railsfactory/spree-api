@@ -1,13 +1,13 @@
 module Spree
 
   Admin::ProductsController.class_eval do
-    $e1={ "status_code"=>"2038","status_message"=>"parameter errors" }
-    $e2={ "status_code"=>"2037","status_message"=>"Record not found" }
-    $e3={ "status_code"=>"2036","status_message"=>"Payment failed check the details entered" }
-    $e4={ "status_code"=>"2035","status_message"=>"destroyed" }
-    $e5={ "status_code"=>"2030","status_message"=>"Undefined method request check the url" }
-    $e12={ "status_code"=>"2041","status_message"=>"You do not have permission to make this API call" }
-    $e13={ "status_code"=>"2042","status_message"=>"authentication token is not valid " }
+    $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
+    $e2={"status_code"=>"2037","status_message"=>"Record not found"}
+    $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
+    $e4={"status_code"=>"2035","status_message"=>"destroyed"}
+    $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
+    $e12={"status_code"=>"2041","status_message"=>"You do not have permission to make this API call"}
+    $e13={"status_code"=>"2042","status_message"=>"authentication token is not valid "}
     helper 'spree/products'
     require 'spree/core/action_callbacks'
     before_filter :check_json_authenticity, :only => :index
@@ -124,7 +124,7 @@ module Spree
     #To display error message
     def error_response_method(error)
       if !params[:format].nil? && params[:format] == "json"
-        @error = { }
+        @error = {}
         @error["code"]=error["status_code"]
         @error["message"]=error["status_message"]
         return @error
@@ -133,7 +133,7 @@ module Spree
 
     protected
     def model_class
-      "Spree::#{ controller_name.classify }".constantize
+      "Spree::#{controller_name.classify}".constantize
     end
     def object_name
       controller_name.singularize
@@ -142,10 +142,10 @@ module Spree
     def load_resource
       if member_action?
         @object ||= load_resource_instance
-        instance_variable_set("@#{ object_name }", @object)
+        instance_variable_set("@#{object_name}", @object)
       else
         @collection ||= collection
-        instance_variable_set("@#{ controller_name }", @collection)
+        instance_variable_set("@#{controller_name}", @collection)
       end
     end
     #To load resource instance
@@ -162,8 +162,8 @@ module Spree
 
     def parent
       if parent_data.present?
-        @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{ model_name }_id"]).first
-        instance_variable_set("@#{ model_name }", @parent)
+        @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{model_name}_id"]).first
+        instance_variable_set("@#{model_name}", @parent)
       else
         nil
       end
@@ -202,7 +202,7 @@ module Spree
       return @collection if @collection.present?
 
       unless request.xhr?
-        params[:q] ||= { }
+        params[:q] ||= {}
         params[:q][:deleted_at_null] ||= "1"
 
         params[:q][:s] ||= "name asc"
@@ -210,7 +210,7 @@ module Spree
         @search = super.search(params[:q])
         @collection = @search.result.
           group_by_products_id.
-          includes([:master, { :variants => [:images, :option_values] }]).
+          includes([:master, {:variants => [:images, :option_values]}]).
           page(params[:page]).
           per(Spree::Config[:admin_products_per_page])
 
@@ -221,12 +221,12 @@ module Spree
           @collection = @collection.group("spree_variants.price")
         end
       else
-        includes = [{ :variants => [:images,  { :option_values => :option_type }] }, { :master => :images }]
+        includes = [{:variants => [:images,  {:option_values => :option_type}]}, {:master => :images}]
 
-        @collection = super.where(["name #{ LIKE } ?", "%#{ params[:q] }%"])
+        @collection = super.where(["name #{LIKE} ?", "%#{params[:q]}%"])
         @collection = @collection.includes(includes).limit(params[:limit] || 10)
 
-        tmp = super.where(["#{ Variant.table_name }.sku #{ LIKE } ?", "%#{ params[:q] }%"])
+        tmp = super.where(["#{Variant.table_name}.sku #{LIKE} ?", "%#{params[:q]}%"])
         tmp = tmp.includes(:variants_including_master).limit(params[:limit] || 10)
         @collection.concat(tmp)
       end

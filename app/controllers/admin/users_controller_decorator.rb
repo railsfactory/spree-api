@@ -192,7 +192,7 @@ UsersController.class_eval do
       if params[:e].blank?
         errors = t('api.errors.missing_event')
       elsif valid_events_for_object.include?(params[:e].to_sym)
-        @object.send("#{ params[:e] }!")
+        @object.send("#{params[:e]}!")
         errors = nil
       elsif valid_events.include?(params[:e].to_sym)
         errors = t('api.errors.invalid_event_for_object', :events => valid_events_for_object.join(','))
@@ -214,7 +214,7 @@ UsersController.class_eval do
 #To display the error message
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
-      @error = { }
+      @error = {}
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
           return @error
@@ -223,7 +223,7 @@ UsersController.class_eval do
 
   protected
     def model_class
-     "Spree::#{ controller_name.classify }".constantize
+     "Spree::#{controller_name.classify}".constantize
   end
     
   def object_name
@@ -233,10 +233,10 @@ UsersController.class_eval do
   def load_resource
        if member_action?
       @object ||= load_resource_instance
-      instance_variable_set("@#{ object_name }", @object)
+      instance_variable_set("@#{object_name}", @object)
     else
       @collection ||= collection
-      instance_variable_set("@#{ controller_name }", @collection)
+      instance_variable_set("@#{controller_name}", @collection)
     end
   end
     #To load resource insatnce  for creating and finding
@@ -257,8 +257,8 @@ UsersController.class_eval do
       nil
     else
       if parent_data.present?
-        @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{ parent_data[:model_name] }_id"]).first
-        instance_variable_set("@#{ parent_data[:model_name] }", @parent)
+        @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{parent_data[:model_name]}_id"]).first
+        instance_variable_set("@#{parent_data[:model_name]}", @parent)
       else
         nil
       end
@@ -276,7 +276,7 @@ UsersController.class_eval do
       rescue Exception => e
         error = error_response_method($e2)
         render :json => error
-        #render :text => "Resource not found (#{ e.message })", :status => 500
+        #render :text => "Resource not found (#{e.message})", :status => 500
       end
     else
       if parent_data.present?
@@ -296,7 +296,7 @@ UsersController.class_eval do
         model_class.new(params[object_name])
       end
     rescue Exception=> e
-      #render :text => " #{ e.message }", :status => 500
+      #render :text => " #{e.message}", :status => 500
       error = error_response_method($e11)
       render :json => error
     end
@@ -305,7 +305,7 @@ UsersController.class_eval do
   def collection
     if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
-      params[:search] = { } if params[:search].blank?
+      params[:search] = {} if params[:search].blank?
       params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
       
       scope = parent.present? ? parent.send(controller_name) : model_class.scoped
@@ -321,12 +321,12 @@ UsersController.class_eval do
             #disabling proper nested include here due to rails 3.1 bug
             #@collection = User.includes(:bill_address => [:state, :country], :ship_address => [:state, :country]).
             @collection = Spree::User.includes(:bill_address, :ship_address).
-                              where("spree_users.email #{ LIKE } :search
-                                     OR (spree_addresses.firstname #{ LIKE } :search AND spree_addresses.id = spree_users.bill_address_id)
-                                     OR (spree_addresses.lastname  #{ LIKE } :search AND spree_addresses.id = spree_users.bill_address_id)
-                                     OR (spree_addresses.firstname #{ LIKE } :search AND spree_addresses.id = spree_users.ship_address_id)
-                                     OR (spree_addresses.lastname  #{ LIKE } :search AND spree_addresses.id = spree_users.ship_address_id)",
-              { :search => "#{ params[:q].strip }%" }).
+                              where("spree_users.email #{LIKE} :search
+                                     OR (spree_addresses.firstname #{LIKE} :search AND spree_addresses.id = spree_users.bill_address_id)
+                                     OR (spree_addresses.lastname  #{LIKE} :search AND spree_addresses.id = spree_users.bill_address_id)
+                                     OR (spree_addresses.firstname #{LIKE} :search AND spree_addresses.id = spree_users.ship_address_id)
+                                     OR (spree_addresses.lastname  #{LIKE} :search AND spree_addresses.id = spree_users.ship_address_id)",
+              { :search => "#{params[:q].strip}%" }).
                 limit(params[:limit] || 100)
             end
 		end
@@ -334,13 +334,13 @@ UsersController.class_eval do
 
   def collection_serialization_options
     if !params[:format].nil? && params[:format] == "json"
-      { }
+      {}
     end
   end
 
   def object_serialization_options
     if !params[:format].nil? && params[:format] == "json"
-      { }
+      {}
     end
   end
 
@@ -352,7 +352,7 @@ UsersController.class_eval do
 
   def object_errors
     if !params[:format].nil? && params[:format] == "json"
-      { :errors => object.errors.full_messages }
+      {:errors => object.errors.full_messages}
     end
   end
   def location_after_save
@@ -360,18 +360,18 @@ UsersController.class_eval do
   end
 
   def invoke_callbacks(action, callback_type)
-    callbacks = self.class.callbacks || { }
+    callbacks = self.class.callbacks || {}
     return if callbacks[action].nil?
     case callback_type.to_sym
-    when :before then callbacks[action].before_methods.each { |method| send method }
-    when :after  then callbacks[action].after_methods.each  { |method| send method }
-    when :fails  then callbacks[action].fails_methods.each  { |method| send method }
+    when :before then callbacks[action].before_methods.each {|method| send method }
+    when :after  then callbacks[action].after_methods.each  {|method| send method }
+    when :fails  then callbacks[action].fails_methods.each  {|method| send method }
     end
   end
 
   # URL helpers
 
-  def new_object_url(options = { })
+  def new_object_url(options = {})
     if parent_data.present?
       new_polymorphic_url([:admin, parent, model_class], options)
     else
@@ -379,37 +379,37 @@ UsersController.class_eval do
     end
   end
 
-  def edit_object_url(object, options = { })
+  def edit_object_url(object, options = {})
     if parent_data.present?
-      send "edit_admin_#{ parent_data[:model_name] }_#{ object_name }_url", parent, object, options
+      send "edit_admin_#{parent_data[:model_name]}_#{object_name}_url", parent, object, options
     else
-      send "edit_admin_#{ object_name }_url", object, options
+      send "edit_admin_#{object_name}_url", object, options
     end
   end
 
-  def object_url(object = nil, options = { })
+  def object_url(object = nil, options = {})
     if !params[:format].nil? && params[:format] == "json"
       target = object ? object : @object
       if parent.present? && object_name == "state"
-        send "api_country_#{ object_name }_url", parent, target, options
+        send "api_country_#{object_name}_url", parent, target, options
       elsif parent.present? && object_name == "taxon"
-        send "api_taxonomy_#{ object_name }_url", parent, target, options
+        send "api_taxonomy_#{object_name}_url", parent, target, options
       elsif parent.present?
-        send "api_#{ parent[:model_name] }_#{ object_name }_url", parent, target, options
+        send "api_#{parent[:model_name]}_#{object_name}_url", parent, target, options
       else
-        send "api_#{ object_name }_url",parent, target, options
+        send "api_#{object_name}_url",parent, target, options
       end
     else
       target = object ? object : @object
       if parent_data.present?
-        send "admin_#{ parent_data[:model_name] }_#{ object_name }_url", parent, target, options
+        send "admin_#{parent_data[:model_name]}_#{object_name}_url", parent, target, options
       else
-        send "admin_#{ object_name }_url", target, options
+        send "admin_#{object_name}_url", target, options
       end
     end
   end
   
-  def collection_url(options = { })
+  def collection_url(options = {})
     if parent_data.present?
       polymorphic_url([:admin, parent, model_class], options)
     else

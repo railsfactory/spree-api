@@ -21,7 +21,7 @@ module Spree
         if !params[:format].nil? && params[:format] == "json"
           respond_with(@collection) do |format|
             format.html
-            format.json { render :json => @collection }
+            format.json { render :json => @collection}
           end
         end
       end
@@ -75,7 +75,7 @@ module Spree
               @payment_method.update_attribute(:type, payment_method_type)
               @payment_method = Spree::PaymentMethod.find(params[:id])
             end
-            payment_method_params = params[@payment_method.class.name.underscore.gsub("/", "_")] || { }
+            payment_method_params = params[@payment_method.class.name.underscore.gsub("/", "_")] || {}
             if @object.update_attributes(params[object_name])
               render :json => @object.to_json, :status => 201
             else
@@ -93,7 +93,7 @@ module Spree
             @payment_method.update_attribute(:type, payment_method_type)
             @payment_method = Spree::PaymentMethod.find(params[:id])
           end
-          payment_method_params = params[@payment_method.class.name.underscore.gsub("/", "_")] || { }
+          payment_method_params = params[@payment_method.class.name.underscore.gsub("/", "_")] || {}
           if @payment_method.update_attributes(params[:payment_method].merge(payment_method_params))
             invoke_callbacks(:update, :after)
             flash[:notice] = I18n.t(:successfully_updated, :resource => I18n.t(:payment_method))
@@ -158,7 +158,7 @@ module Spree
           if params[:e].blank?
             errors = t('api.errors.missing_event')
           elsif valid_events_for_object.include?(params[:e].to_sym)
-            @object.send("#{ params[:e] }!")
+            @object.send("#{params[:e]}!")
             errors = nil
           elsif valid_events.include?(params[:e].to_sym)
             errors = t('api.errors.invalid_event_for_object', :events => valid_events_for_object.join(','))
@@ -180,7 +180,7 @@ module Spree
       #To display the error message
       def error_response_method(error)
         if !params[:format].nil? && params[:format] == "json"
-          @error = { }
+          @error = {}
           @error["code"]=error["status_code"]
           @error["message"]=error["status_message"]
           return @error
@@ -189,7 +189,7 @@ module Spree
 
       protected
       def model_class
-        "Spree::#{ controller_name.classify }".constantize
+        "Spree::#{controller_name.classify}".constantize
       end
 
       def object_name
@@ -199,10 +199,10 @@ module Spree
       def load_resource
         if member_action?
           @object ||= load_resource_instance
-          instance_variable_set("@#{ object_name }", @object)
+          instance_variable_set("@#{object_name}", @object)
         else
           @collection ||= collection
-          instance_variable_set("@#{ controller_name }", @collection)
+          instance_variable_set("@#{controller_name}", @collection)
         end
       end
       #To load resource insatnce  for creating and finding
@@ -259,7 +259,7 @@ module Spree
       def collection
         if !params[:format].nil? && params[:format] == "json"
           return @search unless @search.nil?
-          params[:search] = { } if params[:search].blank?
+          params[:search] = {} if params[:search].blank?
           params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
 
           scope = parent.present? ? parent.send(controller_name) : model_class.scoped
@@ -278,11 +278,11 @@ module Spree
       end
 
       def collection_serialization_options
-        { }
+        {}
       end
 
       def object_serialization_options
-        { }
+        {}
       end
 
       def eager_load_associations
@@ -290,27 +290,27 @@ module Spree
       end
 
       def object_errors
-        { :errors => object.errors.full_messages }
+        {:errors => object.errors.full_messages}
       end
 
-      def object_url(object = nil, options = { })
+      def object_url(object = nil, options = {})
         if !params[:format].nil? && params[:format] == "json"
           target = object ? object : @object
           if parent.present? && object_name == "state"
-            send "api_country_#{ object_name }_url", parent, target, options
+            send "api_country_#{object_name}_url", parent, target, options
           elsif parent.present? && object_name == "taxon"
-            send "api_taxonomy_#{ object_name }_url", parent, target, options
+            send "api_taxonomy_#{object_name}_url", parent, target, options
           elsif parent.present?
-            send "api_#{ parent[:model_name] }_#{ object_name }_url", parent, target, options
+            send "api_#{parent[:model_name]}_#{object_name}_url", parent, target, options
           else
-            send "api_#{ object_name }_url",parent, target, options
+            send "api_#{object_name}_url",parent, target, options
           end
         else
           target = object ? object : @object
           if parent_data.present?
-            send "admin_#{ parent_data[:model_name] }_#{ object_name }_url", parent, target, options
+            send "admin_#{parent_data[:model_name]}_#{object_name}_url", parent, target, options
           else
-            send "admin_#{ object_name }_url", target, options
+            send "admin_#{object_name}_url", target, options
           end
         end
       end
