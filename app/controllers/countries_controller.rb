@@ -16,13 +16,13 @@ class Spree::CountriesController <Spree::BaseController
       format.json { render :json => @collection.to_json(collection_serialization_options) }
     end
   end
-  #To show the countries
+#To show the countries
   def show
     respond_with(@object) do |format|
       format.json { render :json => @object.to_json(object_serialization_options) }
     end
   end
-  #To create new country
+#To create new country
   def create
     begin
       if @object.save
@@ -36,7 +36,7 @@ class Spree::CountriesController <Spree::BaseController
       render :json => error
     end
   end
-  #To update the country
+#To update the country
   def update
     begin
       if @object.update_attributes(params[object_name])
@@ -66,11 +66,11 @@ class Spree::CountriesController <Spree::BaseController
       end
     end
   end
-
+  
   def admin_token_passed_in_headers
     request.headers['HTTP_AUTHORIZATION'].present?
   end
-  #To check the access of the user
+#To check the access of the user
   def access_denied
     error = error_response_method($e12)
     render :json => error
@@ -115,13 +115,13 @@ class Spree::CountriesController <Spree::BaseController
 
   protected
   def model_class
-    "Spree::#{controller_name.classify}".constantize
+   "Spree::#{controller_name.classify}".constantize
   end
-
+    
   def object_name
     controller_name.singularize
   end
-
+    
   def load_resource
     if member_action?
       @object ||= load_resource_instance
@@ -131,7 +131,7 @@ class Spree::CountriesController <Spree::BaseController
       instance_variable_set("@#{controller_name}", @collection)
     end
   end
-
+    
   def load_resource_instance
     if new_actions.include?(params[:action].to_sym)
       build_resource
@@ -139,7 +139,7 @@ class Spree::CountriesController <Spree::BaseController
       find_resource
     end
   end
-
+    
   def parent
     nil
   end
@@ -157,7 +157,7 @@ class Spree::CountriesController <Spree::BaseController
       #render :text => "Resource not found (#{e.message})", :status => 500
     end
   end
-
+    
   def build_resource
     begin
       if parent.present?
@@ -171,14 +171,14 @@ class Spree::CountriesController <Spree::BaseController
       #render :text => " #{e.message}", :status => 500
     end
   end
-
+    
   def collection
     return @search unless @search.nil?
     params[:search] = {} if params[:search].blank?
     params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
-
+      
     scope = parent.present? ? parent.send(controller_name) : model_class.scoped
-
+     
     @search = scope
     @search
   end
@@ -211,7 +211,7 @@ class Spree::CountriesController <Spree::BaseController
       send "api_#{object_name}_url",parent, target, options
     end
   end
-
+    
   def collection_actions
     [:index]
   end
@@ -224,20 +224,20 @@ class Spree::CountriesController <Spree::BaseController
     [:new, :create]
   end
 
-  private
+      private
   def check_http_authorization
-    if !params[:format].nil? && params[:format] == "json"
+        if !params[:format].nil? && params[:format] == "json"
       if params[:authentication_token].present?
         user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if !user.present?
           #~ role=Spree::.find_by_id(user.id)
           error = error_response_method($e13)
-          render :json => error
-        end
-      else
-        error = error_response_method($e13)
         render :json => error
-      end
+      end 
+      else
+         error = error_response_method($e13)
+        render :json => error
+        end
     end
   end
 end

@@ -1,27 +1,27 @@
 Spree::CheckoutController.class_eval do
-  before_filter :check_http_authorization
-  before_filter :check_authorization
+   before_filter :check_http_authorization
+	 before_filter :check_authorization
   before_filter :check_registration, :except => [:registration, :update_registration]
   before_filter :load_order
-  rescue_from Spree::Core::GatewayError, :with => :rescue_from_spree_gateway_error
+ rescue_from Spree::Core::GatewayError, :with => :rescue_from_spree_gateway_error
   $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
   $e2={"status_code"=>"2037","status_message"=>"Record not found"}
   $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
   $e4={"status_code"=>"2035","status_message"=>"destroyed"}
   $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
   $e7={"status_code"=>"2031","status_message"=>"No items to checkout "}
-  def update
+	 def update
     if !params[:format].nil? && params[:format] == "json"
       begin
-        p object_params
-        p params
+      p object_params
+      p params
         if @order.update_attributes(object_params)
-          fire_event('spree.checkout.update')
-          final_order = []
+ 					 fire_event('spree.checkout.update')
+         final_order = []
           if @order.next
             state_callback(:after)
             if params[:state] == "delivery"
-              final_order << @order
+              final_order << @order            
               final_order << @order.shipment
             elsif params[:state] == "payment"
               final_order << @order
@@ -49,11 +49,11 @@ Spree::CheckoutController.class_eval do
         end
       rescue Exception=>e
         render :json => error_response_method($e7)
-
+    
       end
     else
       if @order.update_attributes(object_params)
-        fire_event('spree.checkout.update')
+				 fire_event('spree.checkout.update')
         if @order.next
           state_callback(:after)
         else
@@ -75,59 +75,59 @@ Spree::CheckoutController.class_eval do
 
     end
   end
-  def error_response_method(error)
+   def error_response_method(error)
     @error = {}
     @error["code"]=error["status_code"]
     @error["message"]=error["status_message"]
     #@error["Code"] = error["error_code"]
     return @error
   end
-  def load_order
-    if !params[:format].nil? && params[:format] == "json"
+	 def load_order
+        if !params[:format].nil? && params[:format] == "json"
       if session[:order_id]==nil
         p current_user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if current_user.present?
           p current_order = Spree::Order.find_all_by_user_id(current_user.id).last
         end
       end
-      @order = current_order
-      render :json => error_response_method($e7) and return unless @order and @order.checkout_allowed?
-      raise_insufficient_quantity and return if @order.insufficient_stock_lines.present?
-      render :json => error_response_method($e7) and return if @order.completed?
-      @order.state = params[:state] if params[:state]
-      state_callback(:before)
-    end
-  end
-  private
-  def check_authorization
-    if !params[:format].nil? && params[:format] == "json"
+        @order = current_order
+        render :json => error_response_method($e7) and return unless @order and @order.checkout_allowed?
+        raise_insufficient_quantity and return if @order.insufficient_stock_lines.present?
+       render :json => error_response_method($e7) and return if @order.completed?
+        @order.state = params[:state] if params[:state]
+        state_callback(:before)
+      end
+		end
+		private
+    def check_authorization
+			 if !params[:format].nil? && params[:format] == "json"
       p session[:access_token]
       current_order = ''
-      if session[:order_id] == nil
+        if session[:order_id] == nil
         current_user = Spree::User.find_by_authentication_token(params[:authentication_token])
         if current_user.present?
           current_order = Spree::Order.find_all_by_user_id(current_user.id).last
         end
       end
       puts "session #{session}"
-    else
-      authorize!(:edit, current_order, session[:access_token])
+			else
+				authorize!(:edit, current_order, session[:access_token])
+			end
     end
-  end
-  private
+     private
   def check_http_authorization
-    if !params[:format].nil? && params[:format] == "json"
+        if !params[:format].nil? && params[:format] == "json"
       if params[:authentication_token].present?
         user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if !user.present?
           #~ role=Spree::.find_by_id(user.id)
           error = error_response_method($e13)
-          render :json => error
-        end
-      else
-        error = error_response_method($e13)
         render :json => error
-      end
+      end 
+      else
+         error = error_response_method($e13)
+        render :json => error
+        end
     end
   end
-end
+	end
