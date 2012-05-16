@@ -1,5 +1,4 @@
-module Spree
-TaxonsController.class_eval do
+class Spree::SearchController< Spree::BaseController
 	rescue_from ActiveRecord::RecordNotFound, :with => :render_404
     helper 'spree/products'
 def search
@@ -15,4 +14,3 @@ def search
 				end
     end
     end
-		end
