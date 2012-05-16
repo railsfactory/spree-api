@@ -1,6 +1,7 @@
 Spree::Core::Engine.routes.draw do
   # Add your extension routes here
   resources:line_items
+  match '/t/*id', :to => 'taxons#search'
    match '/detailed_list', :to => 'products#detailed_list', :via => :get
    match '/detailed_show/:id', :to => 'products#detailed_show', :via => :get
   resources :countries do
