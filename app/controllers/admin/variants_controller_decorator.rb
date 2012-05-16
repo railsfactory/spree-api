@@ -223,15 +223,11 @@ VariantsController.class_eval do
   end
   #To find the parent
   def parent
-        if !params[:format].nil? && params[:format] == "json"
-      nil
+       if parent_data.present?
+      @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{model_name}_id"]).first
+      instance_variable_set("@#{model_name}", @parent)
     else
-      if parent_data.present?
-        @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{parent_data[:model_name]}_id"]).first
-        instance_variable_set("@#{parent_data[:model_name]}", @parent)
-      else
-        nil
-      end
+      nil
     end
   end
 #To find the data while updating and listing
@@ -283,14 +279,12 @@ VariantsController.class_eval do
       @search = scope
       @search
     else
-      @deleted = (params.key?(:deleted)  && params[:deleted] == "on") ? "checked" : ""
-
-      if @deleted.blank?
-        @collection ||= super
-      else
-        @collection ||= Variant.where(:product_id => parent.id).deleted
-      end
-      @collection
+       return parent.send(controller_name) if parent_data.present?
+    if model_class.respond_to?(:accessible_by) && !current_ability.has_block?(params[:action], model_class)
+      model_class.accessible_by(current_ability)
+    else
+      model_class.scoped
+    end
 		end
   end
   def collection_serialization_options
