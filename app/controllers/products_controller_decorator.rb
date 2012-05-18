@@ -33,7 +33,12 @@ ProductsController.class_eval do
   def index
     if !params[:format].nil? && params[:format] == "json"
       product_details = Hash.new
-      @products=Spree::Product.all
+      if params[:keywords].present?
+        @products=Spree::Product.find(:all,:conditions=>["name  like ? and description like ?","%#{params[:keywords]}%","%#{params[:keywords]}%"])
+      else
+        @products=Spree::Product.all
+      end
+      #@products=Spree::Product.all
       product_details[:products] = Array.new
       if params[:e].present?
           user=Spree::User.find_by_authentication_token(params[:authentication_token])
