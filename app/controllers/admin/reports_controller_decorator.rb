@@ -17,6 +17,15 @@ ReportsController.class_eval do
 		  prod_dtl[:id]=pr[0]
 		  prod_dtl[:name]=pr[1]
 		  prod_dtl[:qty]=pr[2]
+			var=Spree::Variant.find(:last,:conditions=>["product_id=? and is_master=?",pr[0],true])
+			@image=var.images
+			prod_dtl[:images]= Array.new
+			@image.each do |image|
+					product_image = Hash.new
+					product_image[:image_type]=image.attachment.content_type
+					product_image[:url]='http://spreeapi.railsfactory.com' + image.attachment.url(:original)
+					prod_dtl[:images].push product_image
+			end
 		  prod_array.push prod_dtl
 	  end
 	  return_data[:products] = prod_array
