@@ -34,7 +34,7 @@ ProductsController.class_eval do
     if !params[:format].nil? && params[:format] == "json"
       product_details = Hash.new
       if params[:keywords].present?
-        @products=Spree::Product.find(:all,:conditions=>["name  like ? and description like ?","%#{params[:keywords]}%","%#{params[:keywords]}%"])
+        @products=Spree::Product.find(:all,:conditions=>["name  like ? or description like ?","%#{params[:keywords]}%","%#{params[:keywords]}%"])
       else
         @products=Spree::Product.all
       end
