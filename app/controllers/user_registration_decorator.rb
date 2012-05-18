@@ -7,13 +7,13 @@ Spree::UserRegistrationsController.class_eval do
   after_filter :associate_user, :only => :create
   before_filter :check_permissions, :only => [:edit, :update]
   skip_before_filter :require_no_authentication
-  $e6={"status_code"=>"2034","status_message"=>"sorry email already taken"}
-  $e18={"status_code"=>"2046","status_message"=>"password miss match"}
-  $e19={"status_code"=>"2049","status_message"=>"please enter valid email"}
+  $e6={"status_code"=>"2034","status_message"=>"Sorry email already taken"}
+  $e18={"status_code"=>"2046","status_message"=>"Password miss match"}
+  $e19={"status_code"=>"2049","status_message"=>"Please enter valid email"}
   #To create new user
   def create
     if !params[:format].nil? && params[:format] == "json"
-      if params[:user][:email]!=nil&&params[:user][:email]!=""
+      if params[:user][:email]!=nil&&params[:user][:email]!=""&&params[:user][:email].match(/^(|(([A-Za-z0-9]+_+)|([A-Za-z0-9]+\-+)|([A-Za-z0-9]+\.+)|([A-Za-z0-9]+\++))*[A-Za-z0-9]+@((\w+\-+)|(\w+\.))*\w{1,63}\.[a-zA-Z]{2,6})$/i)
         if params[:user][:password]==params[:user][:password_confirmation] && params[:user][:password]!=""&&params[:user][:password_confirmation]!=""
           @user=Spree::User.new(params[:user])
           if @user.save
