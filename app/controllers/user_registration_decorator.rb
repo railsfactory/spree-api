@@ -10,10 +10,20 @@ Spree::UserRegistrationsController.class_eval do
   $e6={"status_code"=>"2034","status_message"=>"Sorry email already taken"}
   $e18={"status_code"=>"2046","status_message"=>"Password miss match"}
   $e19={"status_code"=>"2049","status_message"=>"Please enter valid email"}
+  $e30={"status_code"=>"2011","status_message"=>"Please enter a Password"}
+  $e31={"status_code"=>"2012","status_message"=>"Please enter a Confirm password"}
   #To create new user
   def create
     if !params[:format].nil? && params[:format] == "json"
       if params[:user][:email]!=nil&&params[:user][:email]!=""&&params[:user][:email].match(/^(|(([A-Za-z0-9]+_+)|([A-Za-z0-9]+\-+)|([A-Za-z0-9]+\.+)|([A-Za-z0-9]+\++))*[A-Za-z0-9]+@((\w+\-+)|(\w+\.))*\w{1,63}\.[a-zA-Z]{2,6})$/i)
+        if params[:user][:password]==""
+          error=error_response_method($e30)
+          render:json=>error
+else
+  if params[:user][:password_confirmation]==""
+          error=error_response_method($e31)
+          render:json=>error
+else
         if params[:user][:password]==params[:user][:password_confirmation] && params[:user][:password]!=""&&params[:user][:password_confirmation]!=""
           @user=Spree::User.new(params[:user])
           if @user.save
@@ -26,10 +36,13 @@ Spree::UserRegistrationsController.class_eval do
           error=error_response_method($e18)
           render:json=>error
         end
+        end
+      end
       else
         error=error_response_method($e19)
         render:json=>error
       end
+      
     else
       @user = build_resource(params[:user])
       logger.debug(@user)

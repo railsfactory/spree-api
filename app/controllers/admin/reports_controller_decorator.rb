@@ -1,7 +1,7 @@
 module Spree
   module Admin
 ReportsController.class_eval do
-	before_filter :check_http_authorization
+	before_filter :check_http_authorization,:except=>[:best_selling_products]
 	#To set current user
   def current_ability
     user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])

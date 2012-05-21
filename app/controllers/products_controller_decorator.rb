@@ -6,7 +6,7 @@ ProductsController.class_eval do
   $e4={"status_code"=>"2035","status_message"=>"destroyed"}
   $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
   #include Spree::Search
-  before_filter :check_http_authorization
+  #before_filter :check_http_authorization
   before_filter :load_resource
   #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
   authorize_resource
@@ -41,8 +41,7 @@ ProductsController.class_eval do
       #@products=Spree::Product.all
       product_details[:products] = Array.new
       if params[:e].present?
-          user=Spree::User.find_by_authentication_token(params[:authentication_token])
-          if user.present?
+          
              page = params[:page]
               size = params[:size]
              page= page.nil? ? 1 : page
@@ -73,10 +72,7 @@ ProductsController.class_eval do
       respond_with(product_details) do |format|
         format.json { render :json =>product_details}
       end
-      else
-         error=error_response_method($e13)
-        render:json=>error 
-      end
+      #end
       else
       @products.each do |r|
         product_detail=Hash.new
@@ -125,9 +121,7 @@ ProductsController.class_eval do
   def show
     if !params[:format].nil? && params[:format] == "json"
       if params[:e].present?&&params[:e]=="show"
-            user=Spree::User.find_by_authentication_token(params[:authentication_token])
-          if user.present?
-            if @object.present?
+                     if @object.present?
        product_details = Hash.new
         product_details[:products] = Array.new
        product_detail=Hash.new
@@ -154,10 +148,6 @@ ProductsController.class_eval do
       else
         error = error_response_method($e2)
         render :json => error
-      end
-      else
-         error=error_response_method($e13)
-        render:json=>error 
       end
       else
       respond_with(@object) do |format|
