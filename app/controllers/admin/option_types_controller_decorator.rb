@@ -137,6 +137,7 @@ module Spree
         format.html { redirect_to collection_url }
       end
     end
+    end
   end
   
   def admin_token_passed_in_headers
