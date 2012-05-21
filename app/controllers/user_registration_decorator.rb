@@ -33,7 +33,7 @@ else
             render:json=>error
           end
         else
-          error=error_response_method($e18)
+          error=error_response_method($e96)
           render:json=>error
         end
         end

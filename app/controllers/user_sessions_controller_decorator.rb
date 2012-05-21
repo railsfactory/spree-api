@@ -1,8 +1,8 @@
 Spree::UserSessionsController.class_eval do 
   $e8={"status_code"=>"2032","status_message"=>"Username/Password is incorrect"}
   $e9={"status_code"=>"2033","status_message"=>"logged out sucessfully"}
-   $e20={"status_code"=>"2034","status_message"=>"password is wrong "}
-  $e21={"status_code"=>"2034","status_message"=>"please sign up to login"}
+   $e20={"status_code"=>"2034","status_message"=>" please enter valid password"}
+  $e21={"status_code"=>"2034","status_message"=>"please enter valid email"}
   #include Spree::Base
   include Spree::Core::ControllerHelpers
   helper 'spree/users', 'spree/base'
@@ -17,7 +17,7 @@ Spree::UserSessionsController.class_eval do
       if params[:user][:email]!=""&&params[:user][:email]!=nil
         user=Spree::User.find_by_email(params[:user][:email])
         if user.present?
-          if user.valid_password?(params[:user][:password]) #To validate the password
+          if user.valid_password?(params[:user][:password]) &&params[:user][:password]!=""#To validate the password
             current_user=user
             api_key = current_user.generate_api_key! #To generate api key
             user_response = Hash.new

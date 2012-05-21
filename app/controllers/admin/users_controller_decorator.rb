@@ -1,6 +1,8 @@
 module Spree
   module Admin
 UsersController.class_eval do
+    $e99={"status_code"=>"2087","status_message"=>" please enter confirmation password"}
+    $e96={"status_code"=>"2088","status_message"=>" password doesnt match the confirmation password"}
   before_filter :check_json_authenticity, :only => :index
   before_filter :load_roles, :only => [:edit, :new, :update, :create]
   before_filter :load_roles, :only => [:edit, :new, :update, :create, :generate_api_key, :clear_api_key]
@@ -51,7 +53,9 @@ UsersController.class_eval do
     if !params[:format].nil? && params[:format] == "json"
       begin
         invoke_callbacks(:create, :before)
-        if @object.email!=nil&&@object.email!=""&&@object.password!=nil&&@object.password!=""&&@object.password_confirmation!=nil&&@object.password_confirmation!=""
+        if @object.email!=nil&&@object.email!=""&&params[:user][:email].match(/^(|(([A-Za-z0-9]+_+)|([A-Za-z0-9]+\-+)|([A-Za-z0-9]+\.+)|([A-Za-z0-9]+\++))*[A-Za-z0-9]+@((\w+\-+)|(\w+\.))*\w{1,63}\.[a-zA-Z]{2,6})$/i)
+          if @object.password!=nil&&@object.password!=""
+            if @object.password_confirmation!=nil&&@object.password_confirmation!=""
           user=Spree::User.find_by_email(@object.email)
           if !user.present?
             if @object.password==@object.password_confirmation
@@ -68,15 +72,23 @@ UsersController.class_eval do
                 render :json => error
               end
             else
-              error = error_response_method($e20)
+              error = error_response_method($e96)
               render :json => error
             end
           else
             error = error_response_method($e6)
             render :json => error
           end
+          else
+          error = error_response_method($e99)
+          render :json => error
+        end
         else
-          error = error_response_method($e1)
+          error = error_response_method($e20)
+          render :json => error
+        end
+        else
+          error = error_response_method($e21)
           render :json => error
         end
       rescue Exception=>e
