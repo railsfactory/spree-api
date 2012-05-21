@@ -278,12 +278,12 @@ StatesController.class_eval do
     end
   end
 
-  def object_url(object = nil, options = {})
-      target = object ? object : @object
+ def object_url(object = nil, options = {})
+    target = object ? object : @object
     if parent_data.present?
-      send "admin_#{parent_data[:model_name]}_#{object_name}_url", parent, target, options
+      spree.send "admin_#{model_name}_#{object_name}_url", parent, target, options
     else
-      send "admin_#{object_name}_url", target, options
+      spree.send "admin_#{object_name}_url", target, options
     end
   end
 
@@ -306,7 +306,6 @@ StatesController.class_eval do
   def new_actions
        [:new, :create]
   end
-  private
     private
   def check_http_authorization
        if !params[:format].nil? && params[:format] == "json"
