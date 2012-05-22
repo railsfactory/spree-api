@@ -96,6 +96,13 @@ Spree::CheckoutController.class_eval do
        render :json => error_response_method($e7) and return if @order.completed?
         @order.state = params[:state] if params[:state]
         state_callback(:before)
+        else
+        @order = Spree::Order.find_by_id(session[:order_id], :include => :adjustments)
+        redirect_to cart_path and return unless @order and @order.checkout_allowed?
+        raise_insufficient_quantity and return if @order.insufficient_stock_lines.present?
+        redirect_to cart_path and return if @order.completed?
+        @order.state = params[:state] if params[:state]
+        state_callback(:before)
       end
 		end
 		private
