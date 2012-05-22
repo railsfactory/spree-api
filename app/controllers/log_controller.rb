@@ -1,6 +1,6 @@
 class Spree::LogController < Spree::BaseController
-  $e20={"status_code"=>"2034","status_message"=>"password is wrong "}
-  $e21={"status_code"=>"2034","status_message"=>"please sign in to login"}
+  $e20={"status_code"=>"2034","status_message"=>"please enter valid password "}
+  $e21={"status_code"=>"2034","status_message"=>"please enter valid email"}
    include Spree::Core::ControllerHelpers
   helper 'spree/users', 'spree/base'
   ssl_required
