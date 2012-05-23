@@ -120,19 +120,20 @@ ZonesController.class_eval do
         render:json=>error
       end
     else
-      @variant = Spree::Variant.find(params[:id])
-
-      @variant.deleted_at = Time.now()
-      if @variant.save
-        flash.notice = I18n.t("notice_messages.variant_deleted")
-      else
-        flash.notice = I18n.t("notice_messages.variant_not_deleted")
+     invoke_callbacks(:destroy, :before)
+    if @object.destroy
+      invoke_callbacks(:destroy, :after)
+      flash.notice = flash_message_for(@object, :successfully_removed)
+      respond_with(@object) do |format|
+        format.html { redirect_to collection_url }
+        format.js   { render :partial => "spree/admin/shared/destroy" }
       end
-
-      respond_with(@variant) do |format|
-        format.html { redirect_to admin_product_variants_url(params[:product_id]) }
-        format.js  { render_js_for_destroy }
+    else
+      invoke_callbacks(:destroy, :fails)
+      respond_with(@object) do |format|
+        format.html { redirect_to collection_url }
       end
+    end
     end
   end
   
@@ -277,12 +278,10 @@ ZonesController.class_eval do
       @search = scope
       @search
     else
-      return parent.send(controller_name) if parent_data.present?
-    if model_class.respond_to?(:accessible_by) && !current_ability.has_block?(params[:action], model_class)
-      model_class.accessible_by(current_ability)
-    else
-      model_class.scoped
-    end
+    params[:q] ||= {}
+          params[:q][:meta_sort] ||= "ascend_by_name"
+          @search = super.search(params[:q])
+          @zones = @search.result.page(params[:page]).per(Spree::Config[:orders_per_page])
 		end
   end
 
@@ -389,7 +388,9 @@ ZonesController.class_eval do
         user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if user.present?
           #~ role=Spree::.find_by_id(user.id)
-          if !user.roles
+          role=user.role
+            r=role.map(&:name)
+         if user.roles.empty?&&r!='admin'
             error = error_response_method($e12)
         render :json => error
         end

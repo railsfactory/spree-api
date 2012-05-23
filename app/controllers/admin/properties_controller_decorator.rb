@@ -122,24 +122,20 @@ PropertiesController.class_eval do
         render:json=>error
       end
     else
-      @product = Spree::Product.find_by_permalink(params[:id])
-      @product.deleted_at = Time.now()
-
-      @product.variants.each do |v|
-        v.deleted_at = Time.now()
-        v.save
-      end
-
-      if @product.save
-        flash.notice = I18n.t("notice_messages.product_deleted")
-      else
-        flash.notice = I18n.t("notice_messages.product_not_deleted")
-      end
-
-      respond_with(@product) do |format|
+      invoke_callbacks(:destroy, :before)
+    if @object.destroy
+      invoke_callbacks(:destroy, :after)
+      flash.notice = flash_message_for(@object, :successfully_removed)
+      respond_with(@object) do |format|
         format.html { redirect_to collection_url }
-        format.js  { render_js_for_destroy }
+        format.js   { render :partial => "spree/admin/shared/destroy" }
       end
+    else
+      invoke_callbacks(:destroy, :fails)
+      respond_with(@object) do |format|
+        format.html { redirect_to collection_url }
+      end
+    end
     end
   end
   
@@ -398,7 +394,9 @@ PropertiesController.class_eval do
         user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if user.present?
           #~ role=Spree::.find_by_id(user.id)
-          if !user.roles
+           role=user.role
+            r=role.map(&:name)
+         if user.roles.empty?&&r!='admin'
             error = error_response_method($e12)
         render :json => error
         end

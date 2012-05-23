@@ -125,7 +125,7 @@ ShippingMethodsController.class_eval do
         flash[:notice] = flash_message_for(@object, :successfully_removed)
         respond_with(@object) do |format|
           format.html { redirect_to collection_url }
-          format.js   { render :partial => "/admin/shared/destroy" }
+          format.js   { render :partial => "spree/admin/shared/destroy" }
         end
       else
         invoke_callbacks(:destroy, :fails)
@@ -404,7 +404,9 @@ ShippingMethodsController.class_eval do
         user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if user.present?
           #~ role=Spree::.find_by_id(user.id)
-          if !user.roles
+          role=user.role
+            r=role.map(&:name)
+         if user.roles.empty?&&r!='admin'
             error = error_response_method($e12)
         render :json => error
         end
