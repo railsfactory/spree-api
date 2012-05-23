@@ -129,7 +129,7 @@ StatesController.class_eval do
         flash[:notice] = flash_message_for(@object, :successfully_removed)
         respond_with(@object) do |format|
           format.html { redirect_to collection_url }
-          format.js   { render :partial => "/admin/shared/destroy" }
+          format.js   { render :partial => "spree/admin/shared/destroy" }
         end
       else
         invoke_callbacks(:destroy, :fails)

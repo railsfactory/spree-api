@@ -124,29 +124,20 @@ TaxonsController.class_eval do
         render:json=>error
       end
     else
-      @product = Spree::Product.find_by_permalink(params[:id])
-      @product.deleted_at = Time.now()
-
-      @product.variants.each do |v|
-        v.deleted_at = Time.now()
-        v.save
-      end
-
-      if @product.save
-        flash.notice = I18n.t("notice_messages.product_deleted")
-      else
-        flash.notice = I18n.t("notice_messages.product_not_deleted")
-      end
-
-      respond_with(@product) do |format|
+       invoke_callbacks(:destroy, :before)
+    if @object.destroy
+      invoke_callbacks(:destroy, :after)
+      flash.notice = flash_message_for(@object, :successfully_removed)
+      respond_with(@object) do |format|
         format.html { redirect_to collection_url }
-        format.js  { render_js_for_destroy }
+        format.js   { render :partial => "spree/admin/shared/destroy" }
       end
-    end
-  end
-  def admin_token_passed_in_headers
-    if !params[:format].nil? && params[:format] == "json"
-      request.headers['HTTP_AUTHORIZATION'].present?
+    else
+      invoke_callbacks(:destroy, :fails)
+      respond_with(@object) do |format|
+        format.html { redirect_to collection_url }
+      end
+      end
     end
   end
 #To check access
