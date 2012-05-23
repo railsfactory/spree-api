@@ -1,40 +1,31 @@
 module Spree
   module Admin
-TaxonsController.class_eval do
-  $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
-  $e2={"status_code"=>"2037","status_message"=>"Record not found"}
-  $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
-  $e4={"status_code"=>"2035","status_message"=>"destroyed"}
-  $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
-  require 'spree/core/action_callbacks'
+PaymentMethodsController.class_eval do
+	require 'spree/core/action_callbacks'
   before_filter :check_http_authorization
-  before_filter :load_resource
+  skip_before_filter :load_resource, :only => [:create]
+  before_filter :load_data
   #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
   #authorize_resource
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
   respond_to :js, :except => [:show, :index]
-#To set current user
+  #To set current user
   def current_ability
     user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
     @current_ability ||= Ability.new(user)
   end
-#To create new record
-  def new
-    respond_with(@object) do |format|
-      format.html { render :layout => !request.xhr? }
-      format.js { render :layout => false }
-    end
-  end
-   #To list the datas
+  #To list the datas
   def index
-    respond_with(@collection) do |format|
-      format.html
-      format.json { render :json => @collection }
+    if !params[:format].nil? && params[:format] == "json"
+      respond_with(@collection) do |format|
+        format.html
+        format.json { render :json => @collection}
+			end
     end
   end
-  #To display the record
+  #To display the payment methods
   def show
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@object) do |format|
@@ -42,44 +33,50 @@ TaxonsController.class_eval do
       end
     end
   end
-#To create new record
-  def create
-    if !params[:format].nil? && params[:format] == "json"
+  #To create new record
+   def create
+      if !params[:format].nil? && params[:format] == "json"
       begin
-        Spree::Taxonomy.find(@object.taxonomy_id)
-        if @object.save
-          render :json => @object.to_json, :status => 201
+         @payment_method = params[:payment_method].delete(:type).constantize.new(params[:payment_method])
+        @object = @payment_method
+        invoke_callbacks(:create, :before)
+        if @payment_method.save
+          invoke_callbacks(:create, :after)
+          render :json => @payment_method.to_json, :status => 201
         else
           error = error_response_method($e1)
           render :json => error
         end
-      rescue ActiveRecord::RecordNotFound
+      rescue Exception=>e
         error = error_response_method($e11)
         render :json => error
-             end
-    else
-          invoke_callbacks(:create, :before)
-      if @object.save
-        if controller_name == "taxonomies"
-          @object.create_image(:attachment=>params[:taxon][:attachement])
-        end
-        invoke_callbacks(:create, :after)
-        flash[:notice] = flash_message_for(@object, :successfully_created)
-        respond_with(@object) do |format|
-          format.html { redirect_to location_after_save }
-          format.js   { render :layout => false }
-        end
-      else
-        invoke_callbacks(:create, :fails)
-        respond_with(@object)
       end
+    else
+    @payment_method = params[:payment_method].delete(:type).constantize.new(params[:payment_method])
+        @object = @payment_method
+        invoke_callbacks(:create, :before)
+        if @payment_method.save
+          invoke_callbacks(:create, :after)
+          flash.notice = I18n.t(:successfully_created, :resource => I18n.t(:payment_method))
+          respond_with(@payment_method, :location => edit_admin_payment_method_path(@payment_method))
+        else
+          invoke_callbacks(:create, :fails)
+          respond_with(@payment_method)
+        end
     end
   end
 #To update the existing record
   def update
     if !params[:format].nil? && params[:format] == "json"
       begin
-                  if @object.update_attributes(params[object_name])
+        invoke_callbacks(:update, :before)
+        payment_method_type = params[:payment_method].delete(:type)
+        if @payment_method['type'].to_s != payment_method_type
+          @payment_method.update_attribute(:type, payment_method_type)
+          @payment_method = Spree::PaymentMethod.find(params[:id])
+        end
+        payment_method_params = params[@payment_method.class.name.underscore.gsub("/", "_")] || {}
+        if @object.update_attributes(params[object_name])
           render :json => @object.to_json, :status => 201
         else
           error = error_response_method($e1)
@@ -88,31 +85,29 @@ TaxonsController.class_eval do
       rescue Exception=>e
         error = error_response_method($e11)
         render :json => error
-             end
+      end
     else
       invoke_callbacks(:update, :before)
-      if controller_name == "taxonomies"
-        @image_object=@object.image
-        @image_object.update_attributes(:attachment => params[:taxon][:attachement])
+      payment_method_type = params[:payment_method].delete(:type)
+      if @payment_method['type'].to_s != payment_method_type
+        @payment_method.update_attribute(:type, payment_method_type)
+        @payment_method = Spree::PaymentMethod.find(params[:id])
       end
-
-      if @object.update_attributes(params[object_name])
+      payment_method_params = params[@payment_method.class.name.underscore.gsub("/", "_")] || {}
+      if @payment_method.update_attributes(params[:payment_method].merge(payment_method_params))
         invoke_callbacks(:update, :after)
-        flash[:notice] = flash_message_for(@object, :successfully_updated)
-        respond_with(@object) do |format|
-          format.html { redirect_to location_after_save }
-          format.js   { render :layout => false }
-        end
+        flash[:notice] = I18n.t(:successfully_updated, :resource => I18n.t(:payment_method))
+        respond_with(@payment_method, :location => edit_admin_payment_method_path(@payment_method))
       else
         invoke_callbacks(:update, :fails)
-        respond_with(@object)
+        respond_with(@payment_method)
       end
     end
   end
   #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
-      @object=Spree::Taxon.find_by_id(params[:id])
+      @object=Spree::PaymentMethod.find_by_id(params[:id])
       if !@object.nil?
         @object.destroy
         if @object.destroy
@@ -124,26 +119,32 @@ TaxonsController.class_eval do
         render:json=>error
       end
     else
-       invoke_callbacks(:destroy, :before)
-    if @object.destroy
-      invoke_callbacks(:destroy, :after)
-      flash.notice = flash_message_for(@object, :successfully_removed)
-      respond_with(@object) do |format|
-        format.html { redirect_to collection_url }
-        format.js   { render :partial => "spree/admin/shared/destroy" }
+      invoke_callbacks(:destroy, :before)
+      if @object.destroy
+        invoke_callbacks(:destroy, :after)
+        flash[:notice] = flash_message_for(@object, :successfully_removed)
+        respond_with(@object) do |format|
+          format.html { redirect_to collection_url }
+          format.js   { render :partial => "spree/admin/shared/destroy" }
+        end
+      else
+        invoke_callbacks(:destroy, :fails)
+        respond_with(@object) do |format|
+          format.html { redirect_to collection_url }
+        end
       end
-    else
-      invoke_callbacks(:destroy, :fails)
-      respond_with(@object) do |format|
-        format.html { redirect_to collection_url }
-      end
-      end
+    end
+  end
+  
+  def admin_token_passed_in_headers
+    if !params[:format].nil? && params[:format] == "json"
+      request.headers['HTTP_AUTHORIZATION'].present?
     end
   end
 #To check access
   def access_denied
     if !params[:format].nil? && params[:format] == "json"
-           error = error_response_method($e12)
+      error = error_response_method($e12)
       render :json => error
     end
   end
@@ -170,66 +171,54 @@ TaxonsController.class_eval do
           if errors.blank?
             render :nothing => true
           else
-                        render :json => errors.to_json, :status => 422
-                     end
+            render :json => errors.to_json, :status => 422
+          end
         end
       end
     end
   end
- #To display the error message
+#To display the error message
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
       @error = {}
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
-           return @error
+      return @error
     end
   end
 
   protected
-  
   def model_class
-         "Spree::#{controller_name.classify}".constantize
-     end
+    "Spree::#{controller_name.classify}".constantize
+  end
     
   def object_name
-       controller_name.singularize
-      end
-  #To load resource for listing and editing  
+    controller_name.singularize
+  end
+  #To load resource for listing and editing
   def load_resource
-        if member_action?
+    if member_action?
       @object ||= load_resource_instance
       instance_variable_set("@#{object_name}", @object)
     else
       @collection ||= collection
       instance_variable_set("@#{controller_name}", @collection)
     end
-     end
-    #To load resource insatnce  for creating and finding
+  end
+     #To load resource insatnce  for creating and finding
   def load_resource_instance
-      if new_actions.include?(params[:action].to_sym)
+    if new_actions.include?(params[:action].to_sym)
       build_resource
     elsif params[:id]
       find_resource
     end
   end
-  #To find the parent
-  def parent_data
-    if !params[:format].nil? && params[:format] == "json"
-      self.class.parent_data
-    end
-  end
-  #To find the parent
+    #To find the parent
   def parent
     if !params[:format].nil? && params[:format] == "json"
       nil
     else
-      if parent_data.present?
-        @parent ||= parent_data[:model_class].where(parent_data[:find_by] => params["#{parent_data[:model_name]}_id"]).first
-        instance_variable_set("@#{parent_data[:model_name]}", @parent)
-      else
-        nil
-      end
+      self.class.parent_data
     end
   end
 #To find the data while updating and listing
@@ -251,10 +240,9 @@ TaxonsController.class_eval do
       else
         model_class.find(params[:id])
       end
-    
     end
   end
-      #To build new resources
+  #To build new resources
   def build_resource
     begin
       if parent.present?
@@ -263,11 +251,11 @@ TaxonsController.class_eval do
         model_class.new(params[object_name])
       end
     rescue Exception=> e
-            error = error_response_method($e11)
+      error = error_response_method($e11)
       render :json => error
-    end
+        end
   end
-    #To collect the list of datas
+#To collect the list of datas
   def collection
     if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
@@ -279,69 +267,30 @@ TaxonsController.class_eval do
       @search = scope
       @search
     else
-			return parent.send(controller_name) if parent_data.present?
+      return parent.send(controller_name) if parent_data.present?
 
       if model_class.respond_to?(:accessible_by) && !current_ability.has_block?(params[:action], model_class)
         model_class.accessible_by(current_ability)
       else
         model_class.scoped
       end
-		end
+    end
   end
 
   def collection_serialization_options
-    if !params[:format].nil? && params[:format] == "json"
-      {}
-    end
+    {}
   end
 
   def object_serialization_options
-    if !params[:format].nil? && params[:format] == "json"
-      {}
-    end
+    {}
   end
 
   def eager_load_associations
-    if !params[:format].nil? && params[:format] == "json"
-      nil
-    end
+    nil
   end
 
   def object_errors
-    if !params[:format].nil? && params[:format] == "json"
-      {:errors => object.errors.full_messages}
-    end
-  end
-  def location_after_save
-    collection_url
-  end
-
-  def invoke_callbacks(action, callback_type)
-    callbacks = self.class.callbacks || {}
-    return if callbacks[action].nil?
-    case callback_type.to_sym
-    when :before then callbacks[action].before_methods.each {|method| send method }
-    when :after  then callbacks[action].after_methods.each  {|method| send method }
-    when :fails  then callbacks[action].fails_methods.each  {|method| send method }
-    end
-  end
-
-  # URL helpers
-
-  def new_object_url(options = {})
-    if parent_data.present?
-      new_polymorphic_url([:admin, parent, model_class], options)
-    else
-      new_polymorphic_url([:admin, model_class], options)
-    end
-  end
-
-  def edit_object_url(object, options = {})
-    if parent_data.present?
-      send "edit_admin_#{parent_data[:model_name]}_#{object_name}_url", parent, object, options
-    else
-      send "edit_admin_#{object_name}_url", object, options
-    end
+    {:errors => object.errors.full_messages}
   end
 
   def object_url(object = nil, options = {})
@@ -365,14 +314,7 @@ TaxonsController.class_eval do
       end
     end
   end
-  def collection_url(options = {})
-    if parent_data.present?
-      polymorphic_url([:admin, parent, model_class], options)
-    else
-      polymorphic_url([:admin, model_class], options)
-    end
-  end
-
+    
   def collection_actions
     [:index]
   end
@@ -385,14 +327,14 @@ TaxonsController.class_eval do
     [:new, :create]
   end
 
-    private
+  private
   def check_http_authorization
-       if !params[:format].nil? && params[:format] == "json"
+         if !params[:format].nil? && params[:format] == "json"
       if params[:authentication_token].present?
         user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if user.present?
           #~ role=Spree::.find_by_id(user.id)
-         role=user.role
+          role=user.roles
             r=role.map(&:name)
          if user.roles.empty?&&r!='admin'
             error = error_response_method($e12)
@@ -408,7 +350,6 @@ TaxonsController.class_eval do
         end
     end
   end
-	
 end
 end
 end

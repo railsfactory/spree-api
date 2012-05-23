@@ -1,6 +1,6 @@
 module Spree
   module Admin
-TaxonomiesController.class_eval do
+TaxRatesController.class_eval do
   $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
   $e2={"status_code"=>"2037","status_message"=>"Record not found"}
   $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
@@ -20,8 +20,8 @@ TaxonomiesController.class_eval do
     user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
         @current_ability ||= Ability.new(user)
   end
-#To list the datas
-  def index
+#To display the record
+   def index
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@collection) do |format|
         format.html
@@ -29,7 +29,7 @@ TaxonomiesController.class_eval do
       end
     end
   end
-    #To display the record
+  #To display the record
   def show
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@object) do |format|
@@ -37,14 +37,20 @@ TaxonomiesController.class_eval do
       end
     end
   end
-#To create new record
+   #To create new record
   def create
-      if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       begin
-        if @object.save
-          render :json => @object.to_json, :status => 201
+        tax=Spree::TaxCategory.find_by_id(@object.tax_category_id)
+        if  tax.present?
+          if @object.save
+            render :json => @object.to_json, :status => 201
+          else
+                        error = error_response_method($e1)
+            render :json => error
+          end
         else
-          error = error_response_method($e1)
+          error = error_response_method($e25)
           render :json => error
         end
       rescue Exception=>e
@@ -53,20 +59,24 @@ TaxonomiesController.class_eval do
       end
     else
       invoke_callbacks(:create, :before)
-    if @object.save
-      invoke_callbacks(:create, :after)
-      flash.notice = flash_message_for(@object, :successfully_created)
-      respond_with(@object) do |format|
-        format.html { redirect_to location_after_save }
-        format.js   { render :layout => false }
+      p @object
+      if @object.save
+        if controller_name == "taxonomies"
+          @object.create_image(:attachment=>params[:taxon][:attachement])
+        end
+        invoke_callbacks(:create, :after)
+        flash[:notice] = flash_message_for(@object, :successfully_created)
+        respond_with(@object) do |format|
+          format.html { redirect_to location_after_save }
+          format.js   { render :layout => false }
+        end
+      else
+        invoke_callbacks(:create, :fails)
+        respond_with(@object)
       end
-    else
-      invoke_callbacks(:create, :fails)
-      respond_with(@object)
-    end
     end
   end
-#To update the existing record
+ #To update the existing record
   def update
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -75,30 +85,36 @@ TaxonomiesController.class_eval do
         else
           error = error_response_method($e1)
           render :json => error
-        end
+                 end
       rescue Exception=>e
                error = error_response_method($e11)
         render :json => error
       end
     else
-      invoke_callbacks(:update, :before)
-    if @object.update_attributes(params[object_name])
-      invoke_callbacks(:update, :after)
-      flash.notice = flash_message_for(@object, :successfully_updated)
-      respond_with(@object) do |format|
-        format.html { redirect_to location_after_save }
-        format.js   { render :layout => false }
+         invoke_callbacks(:update, :before)
+      if controller_name == "taxonomies"
+        @image_object=@object.image
+        @image_object.update_attributes(:attachment => params[:taxon][:attachement])
       end
-    else
-      invoke_callbacks(:update, :fails)
-      respond_with(@object)
+
+      if @object.update_attributes(params[object_name])
+        invoke_callbacks(:update, :after)
+        flash[:notice] = flash_message_for(@object, :successfully_updated)
+        respond_with(@object) do |format|
+          format.html { redirect_to location_after_save }
+          format.js   { render :layout => false }
+        end
+      else
+        invoke_callbacks(:update, :fails)
+        respond_with(@object)
+      end
     end
-    end
+
   end
   #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
-      @object=Spree::Taxonomy.find_by_id(params[:id])
+      @object=Spree::TaxRate.find_by_id(params[:id])
       if !@object.nil?
         @object.destroy
         if @object.destroy
@@ -134,7 +150,7 @@ TaxonomiesController.class_eval do
 #To check access
   def access_denied
     if !params[:format].nil? && params[:format] == "json"
-           error = error_response_method($e12)
+            error = error_response_method($e12)
       render :json => error
     end
   end
@@ -161,13 +177,13 @@ TaxonomiesController.class_eval do
           if errors.blank?
             render :nothing => true
           else
-                    render :json => errors.to_json, :status => 422
-                      end
+                       render :json => errors.to_json, :status => 422
+                     end
         end
       end
     end
   end
-  #To display the error message
+#To display the error message
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
       @error = {}
@@ -180,13 +196,11 @@ TaxonomiesController.class_eval do
   protected
   
   def model_class
-     "Spree::#{controller_name.classify}".constantize
+    "Spree::#{controller_name.classify}".constantize
   end
     
   def object_name
-  
     controller_name.singularize
-
   end
     #To load resource for listing and editing
   def load_resource
@@ -198,8 +212,8 @@ TaxonomiesController.class_eval do
       instance_variable_set("@#{controller_name}", @collection)
     end
   end
-    #To load resource insatnce  for creating and finding
-		   def load_resource_instance
+   #To load resource insatnce  for creating and finding 
+  def load_resource_instance
     if new_actions.include?(params[:action].to_sym)
       build_resource
     elsif params[:id]
@@ -233,20 +247,19 @@ TaxonomiesController.class_eval do
           model_class.includes(eager_load_associations).find(params[:id])
         end
       rescue Exception => e
-              error = error_response_method($e2)
+        error = error_response_method($e2)
         render :json => error
-      end
+             end
     else
-    
+  
       if parent_data.present?
         parent.send(controller_name).find(params[:id])
       else
         model_class.find(params[:id])
       end
-   
     end
   end
-     #To build new resources
+  #To build new resources
   def build_resource
     begin
       if parent.present?
@@ -255,10 +268,10 @@ TaxonomiesController.class_eval do
         model_class.new(params[object_name])
       end
     rescue Exception=> e
-          error = error_response_method($e11)
+      error = error_response_method($e11)
       render :json => error
-    end
-
+        end
+   
   end
     #To collect the list of datas
   def collection
@@ -366,14 +379,11 @@ TaxonomiesController.class_eval do
   end
 
   def collection_actions
-     
     [:index]
-
   end
 
   def member_action?
     !collection_actions.include? params[:action].to_sym
-
   end
 
   def new_actions
@@ -387,7 +397,7 @@ TaxonomiesController.class_eval do
         user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if user.present?
           #~ role=Spree::.find_by_id(user.id)
-         role=user.role
+           role=user.roles
             r=role.map(&:name)
          if user.roles.empty?&&r!='admin'
             error = error_response_method($e12)
@@ -404,6 +414,8 @@ TaxonomiesController.class_eval do
     end
   end
 	
-end
-end
+  end
+  end
+
+  
 end

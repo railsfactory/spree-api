@@ -1,6 +1,6 @@
 module Spree
   module Admin
-ShippingCategoriesController.class_eval do
+ZonesController.class_eval do
   $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
   $e2={"status_code"=>"2037","status_message"=>"Record not found"}
   $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
@@ -14,13 +14,14 @@ ShippingCategoriesController.class_eval do
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
+  # respond_to :html
   respond_to :js, :except => [:show, :index]
   #To set current user
   def current_ability
     user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
         @current_ability ||= Ability.new(user)
-      end
-        #To list the datas
+  end
+ #To list the datas
   def index
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@collection) do |format|
@@ -29,7 +30,7 @@ ShippingCategoriesController.class_eval do
       end
     end
   end
-    #To display the record
+  #To display the record
   def show
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@object) do |format|
@@ -38,23 +39,22 @@ ShippingCategoriesController.class_eval do
     end
   end
   #To create new record
-   def create
+  def create
        if !params[:format].nil? && params[:format] == "json"
       begin
         if @object.save
                   render :json => @object.to_json, :status => 201
         else
-                   error = error_response_method($e1)
+                    error = error_response_method($e1)
           render :json => error
         end
       rescue Exception=>e
         error = error_response_method($e11)
         render :json => error
-            end
+             end
     else
-          invoke_callbacks(:create, :before)
-      p @object
-      if @object.save
+            invoke_callbacks(:create, :before)
+           if @object.save
         if controller_name == "taxonomies"
           @object.create_image(:attachment=>params[:taxon][:attachement])
         end
@@ -81,9 +81,9 @@ ShippingCategoriesController.class_eval do
           render :json => error
                  end
       rescue Exception=>e
-        error = error_response_method($e11)
+              error = error_response_method($e11)
         render :json => error
-             end
+      end
     else
            invoke_callbacks(:update, :before)
       if controller_name == "taxonomies"
@@ -103,53 +103,56 @@ ShippingCategoriesController.class_eval do
         respond_with(@object)
       end
     end
+
   end
   #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
-      @object=Spree::ShippingCategory.find_by_id(params[:id])
+      @object=Spree::Zone.find_by_id(params[:id])
       if !@object.nil?
         @object.destroy
         if @object.destroy
-          render :text => 'Destroyed'
+          error=error_response_method($e4)
+          render:json=>error
         end
       else
         error=error_response_method($e2)
         render:json=>error
       end
     else
-      invoke_callbacks(:destroy, :before)
-      if @object.destroy
-        invoke_callbacks(:destroy, :after)
-        flash[:notice] = flash_message_for(@object, :successfully_removed)
-        respond_with(@object) do |format|
-          format.html { redirect_to collection_url }
-          format.js   { render :partial => "spree/admin/shared/destroy" }
-        end
-      else
-        invoke_callbacks(:destroy, :fails)
-        respond_with(@object) do |format|
-          format.html { redirect_to collection_url }
-        end
+     invoke_callbacks(:destroy, :before)
+    if @object.destroy
+      invoke_callbacks(:destroy, :after)
+      flash.notice = flash_message_for(@object, :successfully_removed)
+      respond_with(@object) do |format|
+        format.html { redirect_to collection_url }
+        format.js   { render :partial => "spree/admin/shared/destroy" }
+      end
+    else
+      invoke_callbacks(:destroy, :fails)
+      respond_with(@object) do |format|
+        format.html { redirect_to collection_url }
       end
     end
+    end
   end
+  
   def admin_token_passed_in_headers
-      if !params[:format].nil? && params[:format] == "json"
+       if !params[:format].nil? && params[:format] == "json"
       request.headers['HTTP_AUTHORIZATION'].present?
     end
   end
-#To check access
+	#To check access
   def access_denied
        if !params[:format].nil? && params[:format] == "json"
-      error = error_response_method($e12)
+            error = error_response_method($e12)
       render :json => error
-         end
+    end
   end
 
   # Generic action to handle firing of state events on an object
   def event
-       if !params[:format].nil? && params[:format] == "json"
+      if !params[:format].nil? && params[:format] == "json"
       valid_events = model_class.state_machine.events.map(&:name)
       valid_events_for_object = @object ? @object.state_transitions.map(&:event) : []
 
@@ -170,31 +173,31 @@ ShippingCategoriesController.class_eval do
             render :nothing => true
           else
                        render :json => errors.to_json, :status => 422
-                      end
+                     end
         end
       end
     end
   end
- #To display the error message
+
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
       @error = {}
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
-           return @error
+            return @error
     end
   end
 
   protected
   
   def model_class
-      "Spree::#{controller_name.classify}".constantize
-      end
+        "Spree::#{controller_name.classify}".constantize
+    end
     
   def object_name
         controller_name.singularize
-   end
-  #To load resource for listing and editing  
+     end
+   #To load resource for listing and editing 
   def load_resource
        if member_action?
       @object ||= load_resource_instance
@@ -204,7 +207,7 @@ ShippingCategoriesController.class_eval do
       instance_variable_set("@#{controller_name}", @collection)
     end
       end
-     #To load resource insatnce  for creating and finding
+    #To load resource insatnce  for creating and finding
   def load_resource_instance
        if new_actions.include?(params[:action].to_sym)
       build_resource
@@ -212,13 +215,13 @@ ShippingCategoriesController.class_eval do
       find_resource
     end
   end
-     #To find the parent
+  #To find the parent
   def parent_data
-       self.class.parent_data
-     end
-        #To find the parent
+        self.class.parent_data
+      end
+      #To find the parent
   def parent
-       if !params[:format].nil? && params[:format] == "json"
+      if !params[:format].nil? && params[:format] == "json"
       nil
     else
       if parent_data.present?
@@ -229,9 +232,9 @@ ShippingCategoriesController.class_eval do
       end
     end
   end
- #To find the data while updating and listing
+#To find the data while updating and listing
   def find_resource
-        if !params[:format].nil? && params[:format] == "json"
+       if !params[:format].nil? && params[:format] == "json"
       begin
         if parent.present?
           parent.send(controller_name).find(params[:id])
@@ -241,9 +244,9 @@ ShippingCategoriesController.class_eval do
       rescue Exception => e
         error = error_response_method($e2)
         render :json => error
-              end
+            end
     else
-            if parent_data.present?
+          if parent_data.present?
         parent.send(controller_name).find(params[:id])
       else
         model_class.find(params[:id])
@@ -251,7 +254,7 @@ ShippingCategoriesController.class_eval do
           end
         end
         #To build new resources
-    def build_resource
+   def build_resource
        begin
       if parent.present?
         parent.send(controller_name).build(params[object_name])
@@ -259,13 +262,13 @@ ShippingCategoriesController.class_eval do
         model_class.new(params[object_name])
       end
     rescue Exception=> e
-      error = error_response_method($e11)
+            error = error_response_method($e11)
       render :json => error
-          end
-      end
-  #To collect the list of datas
+    end
+    end
+    #To collect the list of datas
   def collection
-        if !params[:format].nil? && params[:format] == "json"
+      if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
       params[:search] = {} if params[:search].blank?
       params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
@@ -275,12 +278,10 @@ ShippingCategoriesController.class_eval do
       @search = scope
       @search
     else
-       return parent.send(controller_name) if parent_data.present?
-    if model_class.respond_to?(:accessible_by) && !current_ability.has_block?(params[:action], model_class)
-      model_class.accessible_by(current_ability)
-    else
-      model_class.scoped
-    end
+    params[:q] ||= {}
+          params[:q][:meta_sort] ||= "ascend_by_name"
+          @search = super.search(params[:q])
+          @zones = @search.result.page(params[:page]).per(Spree::Config[:orders_per_page])
 		end
   end
 
@@ -291,7 +292,7 @@ ShippingCategoriesController.class_eval do
   end
 
   def object_serialization_options
-       if !params[:format].nil? && params[:format] == "json"
+        if !params[:format].nil? && params[:format] == "json"
       {}
     end
   end
@@ -332,7 +333,7 @@ ShippingCategoriesController.class_eval do
   end
 
   def edit_object_url(object, options = {})
-       if parent_data.present?
+        if parent_data.present?
       send "edit_admin_#{parent_data[:model_name]}_#{object_name}_url", parent, object, options
     else
       send "edit_admin_#{object_name}_url", object, options
@@ -340,7 +341,7 @@ ShippingCategoriesController.class_eval do
   end
 
   def object_url(object = nil, options = {})
-      if !params[:format].nil? && params[:format] == "json"
+        if !params[:format].nil? && params[:format] == "json"
       target = object ? object : @object
       if parent.present? && object_name == "state"
         send "api_country_#{object_name}_url", parent, target, options
@@ -369,16 +370,16 @@ ShippingCategoriesController.class_eval do
   end
 
   def collection_actions
-      [:index]
-    end
-
-  def member_action?
-      !collection_actions.include? params[:action].to_sym
+        [:index]
      end
 
-  def new_actions
-        [:new, :create]
+  def member_action?
+       !collection_actions.include? params[:action].to_sym
    end
+
+  def new_actions
+      [:new, :create]
+  end
 
     private
   def check_http_authorization
@@ -387,7 +388,7 @@ ShippingCategoriesController.class_eval do
         user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if user.present?
           #~ role=Spree::.find_by_id(user.id)
-          role=user.role
+          role=user.roles
             r=role.map(&:name)
          if user.roles.empty?&&r!='admin'
             error = error_response_method($e12)

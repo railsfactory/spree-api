@@ -1,12 +1,11 @@
 module Spree
   module Admin
-ZonesController.class_eval do
-  $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
-  $e2={"status_code"=>"2037","status_message"=>"Record not found"}
-  $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
-  $e4={"status_code"=>"2035","status_message"=>"destroyed"}
-  $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
-  require 'spree/core/action_callbacks'
+UsersController.class_eval do
+    $e99={"status_code"=>"2087","status_message"=>" please enter confirmation password"}
+    $e96={"status_code"=>"2088","status_message"=>" password doesnt match the confirmation password"}
+  before_filter :check_json_authenticity, :only => :index
+  before_filter :load_roles, :only => [:edit, :new, :update, :create]
+  before_filter :load_roles, :only => [:edit, :new, :update, :create, :generate_api_key, :clear_api_key]
   before_filter :check_http_authorization
   before_filter :load_resource
   #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
@@ -14,23 +13,34 @@ ZonesController.class_eval do
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
-  # respond_to :html
   respond_to :js, :except => [:show, :index]
   #To set current user
   def current_ability
     user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
-        @current_ability ||= Ability.new(user)
-  end
- #To list the datas
-  def index
-    if !params[:format].nil? && params[:format] == "json"
-      respond_with(@collection) do |format|
-        format.html
-        format.json { render :json => @collection}
+        @current_ability ||= Spree::Ability.new(user)
       end
+  #To generate_api_key
+  def generate_api_key
+    if @user.generate_api_key!
+      flash.notice = t('api.key_generated')
+    end
+    redirect_to edit_admin_user_path(@user)
+  end
+#To clear_api_key
+  def clear_api_key
+    if @user.clear_api_key!
+      flash.notice = t('api.key_cleared')
+    end
+    redirect_to edit_admin_user_path(@user)
+  end
+#To create new record
+  def new
+    respond_with(@object) do |format|
+      format.html { render :layout => !request.xhr? }
+      format.js { render :layout => false }
     end
   end
-  #To display the record
+#To display the record
   def show
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@object) do |format|
@@ -38,23 +48,56 @@ ZonesController.class_eval do
       end
     end
   end
-  #To create new record
+#To create new record
   def create
-       if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       begin
-        if @object.save
-                  render :json => @object.to_json, :status => 201
+        invoke_callbacks(:create, :before)
+        if @object.email!=nil&&@object.email!=""&&params[:user][:email].match(/^(|(([A-Za-z0-9]+_+)|([A-Za-z0-9]+\-+)|([A-Za-z0-9]+\.+)|([A-Za-z0-9]+\++))*[A-Za-z0-9]+@((\w+\-+)|(\w+\.))*\w{1,63}\.[a-zA-Z]{2,6})$/i)
+          if @object.password!=nil&&@object.password!=""
+            if @object.password_confirmation!=nil&&@object.password_confirmation!=""
+          user=Spree::User.find_by_email(@object.email)
+          if !user.present?
+            if @object.password==@object.password_confirmation
+              if @object.save
+                invoke_callbacks(:create, :after)
+                user_response = Hash.new
+                user_response[:user] = Hash.new
+                user_response[:user][:id]=@object.id
+                user_response[:user][:email]=@object.email
+                user_response[:user][:sign_in_count]=@object.sign_in_count
+                render :json => user_response.to_json, :status => 201
+              else
+                error = error_response_method($e11)
+                render :json => error
+              end
+            else
+              error = error_response_method($e96)
+              render :json => error
+            end
+          else
+            error = error_response_method($e6)
+            render :json => error
+          end
+          else
+          error = error_response_method($e99)
+          render :json => error
+        end
         else
-                    error = error_response_method($e1)
+          error = error_response_method($e20)
+          render :json => error
+        end
+        else
+          error = error_response_method($e21)
           render :json => error
         end
       rescue Exception=>e
-        error = error_response_method($e11)
+          error = error_response_method($e11)
         render :json => error
-             end
+      end
     else
-            invoke_callbacks(:create, :before)
-           if @object.save
+      invoke_callbacks(:create, :before)
+      if @object.save
         if controller_name == "taxonomies"
           @object.create_image(:attachment=>params[:taxon][:attachement])
         end
@@ -70,22 +113,24 @@ ZonesController.class_eval do
       end
     end
   end
-#To update the existing record
+ #To update the existing record
   def update
     if !params[:format].nil? && params[:format] == "json"
       begin
+        invoke_callbacks(:update, :before)
         if @object.update_attributes(params[object_name])
+          invoke_callbacks(:update, :after)
           render :json => @object.to_json, :status => 201
         else
           error = error_response_method($e1)
           render :json => error
-                 end
+        end
       rescue Exception=>e
               error = error_response_method($e11)
         render :json => error
       end
     else
-           invoke_callbacks(:update, :before)
+      invoke_callbacks(:update, :before)
       if controller_name == "taxonomies"
         @image_object=@object.image
         @image_object.update_attributes(:attachment => params[:taxon][:attachement])
@@ -108,43 +153,43 @@ ZonesController.class_eval do
   #To destroy existing record
   def destroy
     if !params[:format].nil? && params[:format] == "json"
-      @object=Spree::Zone.find_by_id(params[:id])
+      @object=Spree::User.find_by_id(params[:id])
       if !@object.nil?
         @object.destroy
         if @object.destroy
-          error=error_response_method($e4)
-          render:json=>error
+          error = error_response_method($e4)
+          render :json => error
         end
       else
         error=error_response_method($e2)
         render:json=>error
       end
     else
-     invoke_callbacks(:destroy, :before)
-    if @object.destroy
-      invoke_callbacks(:destroy, :after)
-      flash.notice = flash_message_for(@object, :successfully_removed)
-      respond_with(@object) do |format|
-        format.html { redirect_to collection_url }
-        format.js   { render :partial => "spree/admin/shared/destroy" }
+      invoke_callbacks(:destroy, :before)
+      if @object.destroy
+        invoke_callbacks(:destroy, :after)
+        flash[:notice] = flash_message_for(@object, :successfully_removed)
+        respond_with(@object) do |format|
+          format.html { redirect_to collection_url }
+          format.js   { render :partial => "spree/admin/shared/destroy" }
+        end
+      else
+        invoke_callbacks(:destroy, :fails)
+        respond_with(@object) do |format|
+          format.html { redirect_to collection_url }
+        end
       end
-    else
-      invoke_callbacks(:destroy, :fails)
-      respond_with(@object) do |format|
-        format.html { redirect_to collection_url }
-      end
-    end
     end
   end
   
   def admin_token_passed_in_headers
-       if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       request.headers['HTTP_AUTHORIZATION'].present?
     end
   end
-	#To check access
+#To check access
   def access_denied
-       if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
             error = error_response_method($e12)
       render :json => error
     end
@@ -152,7 +197,7 @@ ZonesController.class_eval do
 
   # Generic action to handle firing of state events on an object
   def event
-      if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       valid_events = model_class.state_machine.events.map(&:name)
       valid_events_for_object = @object ? @object.state_transitions.map(&:event) : []
 
@@ -172,32 +217,31 @@ ZonesController.class_eval do
           if errors.blank?
             render :nothing => true
           else
-                       render :json => errors.to_json, :status => 422
-                     end
+                    render :json => errors.to_json, :status => 422
+                    end
         end
       end
     end
   end
-
+#To display the error message
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
       @error = {}
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
-            return @error
+          return @error
     end
   end
 
   protected
-  
-  def model_class
-        "Spree::#{controller_name.classify}".constantize
-    end
+    def model_class
+     "Spree::#{controller_name.classify}".constantize
+  end
     
   def object_name
-        controller_name.singularize
-     end
-   #To load resource for listing and editing 
+    controller_name.singularize
+  end
+    #To load resource for listing and editing
   def load_resource
        if member_action?
       @object ||= load_resource_instance
@@ -206,10 +250,10 @@ ZonesController.class_eval do
       @collection ||= collection
       instance_variable_set("@#{controller_name}", @collection)
     end
-      end
+  end
     #To load resource insatnce  for creating and finding
   def load_resource_instance
-       if new_actions.include?(params[:action].to_sym)
+    if new_actions.include?(params[:action].to_sym)
       build_resource
     elsif params[:id]
       find_resource
@@ -217,11 +261,11 @@ ZonesController.class_eval do
   end
   #To find the parent
   def parent_data
-        self.class.parent_data
-      end
-      #To find the parent
+    self.class.parent_data
+  end
+  #To find the parent
   def parent
-      if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       nil
     else
       if parent_data.present?
@@ -234,7 +278,7 @@ ZonesController.class_eval do
   end
 #To find the data while updating and listing
   def find_resource
-       if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       begin
         if parent.present?
           parent.send(controller_name).find(params[:id])
@@ -244,31 +288,34 @@ ZonesController.class_eval do
       rescue Exception => e
         error = error_response_method($e2)
         render :json => error
-            end
+        #render :text => "Resource not found (#{e.message})", :status => 500
+      end
     else
-          if parent_data.present?
+      if parent_data.present?
         parent.send(controller_name).find(params[:id])
       else
         model_class.find(params[:id])
       end
-          end
-        end
-        #To build new resources
-   def build_resource
-       begin
+    
+    end
+  end
+    #To build new resources 
+  def build_resource
+    begin
       if parent.present?
         parent.send(controller_name).build(params[object_name])
       else
         model_class.new(params[object_name])
       end
     rescue Exception=> e
-            error = error_response_method($e11)
+      #render :text => " #{e.message}", :status => 500
+      error = error_response_method($e11)
       render :json => error
     end
-    end
+  end
     #To collect the list of datas
   def collection
-      if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
       params[:search] = {} if params[:search].blank?
       params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
@@ -278,21 +325,33 @@ ZonesController.class_eval do
       @search = scope
       @search
     else
-    params[:q] ||= {}
-          params[:q][:meta_sort] ||= "ascend_by_name"
-          @search = super.search(params[:q])
-          @zones = @search.result.page(params[:page]).per(Spree::Config[:orders_per_page])
+       return @collection if @collection.present?
+          unless request.xhr?
+            @search = Spree::User.registered.search(params[:q])
+            @collection = @search.result.page(params[:page]).per(Spree::Config[:admin_products_per_page])
+          else
+            #disabling proper nested include here due to rails 3.1 bug
+            #@collection = User.includes(:bill_address => [:state, :country], :ship_address => [:state, :country]).
+            @collection = Spree::User.includes(:bill_address, :ship_address).
+                              where("spree_users.email #{LIKE} :search
+                                     OR (spree_addresses.firstname #{LIKE} :search AND spree_addresses.id = spree_users.bill_address_id)
+                                     OR (spree_addresses.lastname  #{LIKE} :search AND spree_addresses.id = spree_users.bill_address_id)
+                                     OR (spree_addresses.firstname #{LIKE} :search AND spree_addresses.id = spree_users.ship_address_id)
+                                     OR (spree_addresses.lastname  #{LIKE} :search AND spree_addresses.id = spree_users.ship_address_id)",
+              { :search => "#{params[:q].strip}%" }).
+                limit(params[:limit] || 100)
+            end
 		end
   end
 
   def collection_serialization_options
-      if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       {}
     end
   end
 
   def object_serialization_options
-        if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       {}
     end
   end
@@ -313,7 +372,7 @@ ZonesController.class_eval do
   end
 
   def invoke_callbacks(action, callback_type)
-       callbacks = self.class.callbacks || {}
+    callbacks = self.class.callbacks || {}
     return if callbacks[action].nil?
     case callback_type.to_sym
     when :before then callbacks[action].before_methods.each {|method| send method }
@@ -325,7 +384,7 @@ ZonesController.class_eval do
   # URL helpers
 
   def new_object_url(options = {})
-      if parent_data.present?
+    if parent_data.present?
       new_polymorphic_url([:admin, parent, model_class], options)
     else
       new_polymorphic_url([:admin, model_class], options)
@@ -333,7 +392,7 @@ ZonesController.class_eval do
   end
 
   def edit_object_url(object, options = {})
-        if parent_data.present?
+    if parent_data.present?
       send "edit_admin_#{parent_data[:model_name]}_#{object_name}_url", parent, object, options
     else
       send "edit_admin_#{object_name}_url", object, options
@@ -341,7 +400,7 @@ ZonesController.class_eval do
   end
 
   def object_url(object = nil, options = {})
-        if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       target = object ? object : @object
       if parent.present? && object_name == "state"
         send "api_country_#{object_name}_url", parent, target, options
@@ -361,8 +420,9 @@ ZonesController.class_eval do
       end
     end
   end
+  
   def collection_url(options = {})
-       if parent_data.present?
+    if parent_data.present?
       polymorphic_url([:admin, parent, model_class], options)
     else
       polymorphic_url([:admin, model_class], options)
@@ -370,25 +430,25 @@ ZonesController.class_eval do
   end
 
   def collection_actions
-        [:index]
-     end
-
-  def member_action?
-       !collection_actions.include? params[:action].to_sym
-   end
-
-  def new_actions
-      [:new, :create]
+    [:index]
   end
 
-    private
+  def member_action?
+    !collection_actions.include? params[:action].to_sym
+  end
+
+  def new_actions
+    [:new, :create]
+  end
+
+   private
   def check_http_authorization
        if !params[:format].nil? && params[:format] == "json"
       if params[:authentication_token].present?
         user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if user.present?
           #~ role=Spree::.find_by_id(user.id)
-          role=user.role
+           role=user.roles
             r=role.map(&:name)
          if user.roles.empty?&&r!='admin'
             error = error_response_method($e12)

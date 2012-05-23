@@ -1,26 +1,27 @@
 module Spree
   module Admin
-TaxCategoriesController.class_eval do
+MailMethodsController.class_eval do 
   $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
   $e2={"status_code"=>"2037","status_message"=>"Record not found"}
   $e3={"status_code"=>"2036","status_message"=>"Payment failed check the details entered"}
   $e4={"status_code"=>"2035","status_message"=>"destroyed"}
   $e5={"status_code"=>"2030","status_message"=>"Undefined method request check the url"}
+  $e11={"status_code"=>"2040","status_message"=>"something went wrong check parameters"}
   require 'spree/core/action_callbacks'
   before_filter :check_http_authorization
   before_filter :load_resource
   #skip_before_filter :verify_authenticity_token, :if => lambda { admin_token_passed_in_headers }
-  #authorize_resource
+  #authorize_resource 
   attr_accessor :parent_data
   attr_accessor :callbacks
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
   respond_to :js, :except => [:show, :index]
- #To set current user
-   def current_ability
+  #To set current user
+  def current_ability
     user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
-        @current_ability ||= Ability.new(user)
+    @current_ability ||= Ability.new(user)
   end
-#To list the datas
+  #To list mail methods
   def index
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@collection) do |format|
@@ -29,7 +30,7 @@ TaxCategoriesController.class_eval do
       end
     end
   end
-  #To display the record
+  #To show particular mail_method
   def show
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@object) do |format|
@@ -37,23 +38,23 @@ TaxCategoriesController.class_eval do
       end
     end
   end
-  #To create new record
+   #To create mail methods
   def create
-       if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       begin
         if @object.save
-                    render :json => @object.to_json, :status => 201
+          render :json => @object.to_json, :status => 201
         else
-                   error = error_response_method($e1)
+          error = error_response_method($e1)
           render :json => error
         end
       rescue Exception=>e
-               error = error_response_method($e11)
+        error = error_response_method($e11)
         render :json => error
       end
     else
-           invoke_callbacks(:create, :before)
-           if @object.save
+      invoke_callbacks(:create, :before)
+      if @object.save
         if controller_name == "taxonomies"
           @object.create_image(:attachment=>params[:taxon][:attachement])
         end
@@ -69,7 +70,7 @@ TaxCategoriesController.class_eval do
       end
     end
   end
- #To update the existing record
+#To update mail methods
   def update
     if !params[:format].nil? && params[:format] == "json"
       begin
@@ -78,13 +79,13 @@ TaxCategoriesController.class_eval do
         else
           error = error_response_method($e1)
           render :json => error
-                end
+        end
       rescue Exception=>e
         error = error_response_method($e11)
         render :json => error
-            end
+      end
     else
-           invoke_callbacks(:update, :before)
+      invoke_callbacks(:update, :before)
       if controller_name == "taxonomies"
         @image_object=@object.image
         @image_object.update_attributes(:attachment => params[:taxon][:attachement])
@@ -102,11 +103,12 @@ TaxCategoriesController.class_eval do
         respond_with(@object)
       end
     end
+
   end
-  #To destroy existing record
-   def destroy
+  #To destroy mail methods
+  def destroy
     if !params[:format].nil? && params[:format] == "json"
-      @object=Spree::TaxCategory.find_by_id(params[:id])
+      @object=Spree::MailMethod.find_by_id(params[:id])
       if !@object.nil?
         @object.destroy
         if @object.destroy
@@ -140,20 +142,19 @@ TaxCategoriesController.class_eval do
       request.headers['HTTP_AUTHORIZATION'].present?
     end
   end
-#To check access
+#To restrict other user then admin 
   def access_denied
-       if !params[:format].nil? && params[:format] == "json"
-          error = error_response_method($e12)
+    if !params[:format].nil? && params[:format] == "json"
+      error = error_response_method($e12)
       render :json => error
     end
   end
 
   # Generic action to handle firing of state events on an object
   def event
-     if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       valid_events = model_class.state_machine.events.map(&:name)
       valid_events_for_object = @object ? @object.state_transitions.map(&:event) : []
-
       if params[:e].blank?
         errors = t('api.errors.missing_event')
       elsif valid_events_for_object.include?(params[:e].to_sym)
@@ -170,56 +171,56 @@ TaxCategoriesController.class_eval do
           if errors.blank?
             render :nothing => true
           else
-                       render :json => errors.to_json, :status => 422
-                      end
+            render :json => errors.to_json, :status => 422
+          end
         end
       end
     end
   end
-#To display the error message
+#To display error message
   def error_response_method(error)
     if !params[:format].nil? && params[:format] == "json"
       @error = {}
       @error["code"]=error["status_code"]
       @error["message"]=error["status_message"]
-            return @error
+      return @error
     end
   end
 
   protected
   
   def model_class
-        "Spree::#{controller_name.classify}".constantize
-     end
+   "Spree::#{controller_name.classify}".constantize
+  end
     
   def object_name
-       controller_name.singularize
-    end
-    #To load resource for listing and editing
+    controller_name.singularize
+  end
+    #To load resource
   def load_resource
-        if member_action?
+    if member_action?
       @object ||= load_resource_instance
       instance_variable_set("@#{object_name}", @object)
     else
       @collection ||= collection
       instance_variable_set("@#{controller_name}", @collection)
     end
-      end
-    #To load resource insatnce  for creating and finding
+  end
+    #To load resource instance
   def load_resource_instance
-      if new_actions.include?(params[:action].to_sym)
+    if new_actions.include?(params[:action].to_sym)
       build_resource
     elsif params[:id]
       find_resource
     end
   end
-  #To find the parent
+  #To find parent data
   def parent_data
-        self.class.parent_data
-      end
-      #To find the parent
+    self.class.parent_data
+  end
+  #To find the parent
   def parent
-       if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       nil
     else
       if parent_data.present?
@@ -230,9 +231,9 @@ TaxCategoriesController.class_eval do
       end
     end
   end
-#To find the data while updating and listing
+#To find the resource
   def find_resource
-       if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       begin
         if parent.present?
           parent.send(controller_name).find(params[:id])
@@ -242,18 +243,18 @@ TaxCategoriesController.class_eval do
       rescue Exception => e
         error = error_response_method($e2)
         render :json => error
-          end
+        end
     else
-           if parent_data.present?
+      if parent_data.present?
         parent.send(controller_name).find(params[:id])
       else
         model_class.find(params[:id])
       end
-          end
-        end
-        #To build new resources
-    def build_resource
-        begin
+    end
+  end
+  #To build new resource
+  def build_resource
+    begin
       if parent.present?
         parent.send(controller_name).build(params[object_name])
       else
@@ -262,21 +263,23 @@ TaxCategoriesController.class_eval do
     rescue Exception=> e
       error = error_response_method($e11)
       render :json => error
-          end
-     end
-    #To collect the list of datas
+    end
+   
+  end
+    #To collect the list of  data 
   def collection
-       if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       return @search unless @search.nil?
       params[:search] = {} if params[:search].blank?
       params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
       
       scope = parent.present? ? parent.send(controller_name) : model_class.scoped
      
-      @search = scope
+      @search =scope
       @search
     else
-       return parent.send(controller_name) if parent_data.present?
+     return parent.send(controller_name) if parent_data.present?
+
     if model_class.respond_to?(:accessible_by) && !current_ability.has_block?(params[:action], model_class)
       model_class.accessible_by(current_ability)
     else
@@ -286,13 +289,13 @@ TaxCategoriesController.class_eval do
   end
 
   def collection_serialization_options
-      if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       {}
     end
   end
 
   def object_serialization_options
-      if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       {}
     end
   end
@@ -313,7 +316,7 @@ TaxCategoriesController.class_eval do
   end
 
   def invoke_callbacks(action, callback_type)
-     callbacks = self.class.callbacks || {}
+    callbacks = self.class.callbacks || {}
     return if callbacks[action].nil?
     case callback_type.to_sym
     when :before then callbacks[action].before_methods.each {|method| send method }
@@ -325,7 +328,7 @@ TaxCategoriesController.class_eval do
   # URL helpers
 
   def new_object_url(options = {})
-      if parent_data.present?
+    if parent_data.present?
       new_polymorphic_url([:admin, parent, model_class], options)
     else
       new_polymorphic_url([:admin, model_class], options)
@@ -333,7 +336,7 @@ TaxCategoriesController.class_eval do
   end
 
   def edit_object_url(object, options = {})
-       if parent_data.present?
+    if parent_data.present?
       send "edit_admin_#{parent_data[:model_name]}_#{object_name}_url", parent, object, options
     else
       send "edit_admin_#{object_name}_url", object, options
@@ -341,7 +344,7 @@ TaxCategoriesController.class_eval do
   end
 
   def object_url(object = nil, options = {})
-       if !params[:format].nil? && params[:format] == "json"
+    if !params[:format].nil? && params[:format] == "json"
       target = object ? object : @object
       if parent.present? && object_name == "state"
         send "api_country_#{object_name}_url", parent, target, options
@@ -362,7 +365,7 @@ TaxCategoriesController.class_eval do
     end
   end
   def collection_url(options = {})
-       if parent_data.present?
+    if parent_data.present?
       polymorphic_url([:admin, parent, model_class], options)
     else
       polymorphic_url([:admin, model_class], options)
@@ -370,25 +373,25 @@ TaxCategoriesController.class_eval do
   end
 
   def collection_actions
-       [:index]
+    [:index]
   end
 
   def member_action?
-      !collection_actions.include? params[:action].to_sym
-   end
-
-  def new_actions
-       [:new, :create]
+    !collection_actions.include? params[:action].to_sym
   end
 
-   private
+  def new_actions
+    [:new, :create]
+  end
+
+  private
   def check_http_authorization
-       if !params[:format].nil? && params[:format] == "json"
+        if !params[:format].nil? && params[:format] == "json"
       if params[:authentication_token].present?
         user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if user.present?
           #~ role=Spree::.find_by_id(user.id)
-        role=user.role
+            role=user.roles
             r=role.map(&:name)
          if user.roles.empty?&&r!='admin'
             error = error_response_method($e12)
@@ -404,8 +407,7 @@ TaxCategoriesController.class_eval do
         end
     end
   end
-	
-  
+
 end
 end
 end
