@@ -54,7 +54,6 @@ else
       clean_up_passwords(resource)
       render :new
     end
-      end
     end
 	  
   end
