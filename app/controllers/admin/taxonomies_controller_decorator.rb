@@ -53,20 +53,17 @@ TaxonomiesController.class_eval do
       end
     else
       invoke_callbacks(:create, :before)
-           if @object.save
-        if controller_name == "taxonomies"
-          @object.create_image(:attachment=>params[:taxon][:attachement])
-        end
-        invoke_callbacks(:create, :after)
-        flash[:notice] = flash_message_for(@object, :successfully_created)
-        respond_with(@object) do |format|
-          format.html { redirect_to location_after_save }
-          format.js   { render :layout => false }
-        end
-      else
-        invoke_callbacks(:create, :fails)
-        respond_with(@object)
+    if @object.save
+      invoke_callbacks(:create, :after)
+      flash.notice = flash_message_for(@object, :successfully_created)
+      respond_with(@object) do |format|
+        format.html { redirect_to location_after_save }
+        format.js   { render :layout => false }
       end
+    else
+      invoke_callbacks(:create, :fails)
+      respond_with(@object)
+    end
     end
   end
 #To update the existing record
