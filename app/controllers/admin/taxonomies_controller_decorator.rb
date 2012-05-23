@@ -82,22 +82,17 @@ TaxonomiesController.class_eval do
       end
     else
       invoke_callbacks(:update, :before)
-      if controller_name == "taxonomies"
-        @image_object=@object.image
-        @image_object.update_attributes(:attachment => params[:taxon][:attachement])
+    if @object.update_attributes(params[object_name])
+      invoke_callbacks(:update, :after)
+      flash.notice = flash_message_for(@object, :successfully_updated)
+      respond_with(@object) do |format|
+        format.html { redirect_to location_after_save }
+        format.js   { render :layout => false }
       end
-
-      if @object.update_attributes(params[object_name])
-        invoke_callbacks(:update, :after)
-        flash[:notice] = flash_message_for(@object, :successfully_updated)
-        respond_with(@object) do |format|
-          format.html { redirect_to location_after_save }
-          format.js   { render :layout => false }
-        end
-      else
-        invoke_callbacks(:update, :fails)
-        respond_with(@object)
-      end
+    else
+      invoke_callbacks(:update, :fails)
+      respond_with(@object)
+    end
     end
   end
   #To destroy existing record
