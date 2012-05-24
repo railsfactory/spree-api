@@ -14,24 +14,24 @@ Spree::OrdersController.class_eval do
   respond_to :json
   #To set current user
   def set_current_user
-  Spree::User.current = current_user
-end
-#To check user to access the order
+    Spree::User.current = current_user
+  end
+  #To check user to access the order
   #~ def check_authorization
-    #~ Spree::User.current = current_user
-     #~ session[:access_token] ||= params[:token]
-     #~ order = Spree::Order.find_by_number(params[:id]) || current_order
-    #~ if order
-      #~ p authorize! :edit, order, session[:access_token]
-    #~ else
-      #~ authorize!(:create, Order)
-    #~ end
+  #~ Spree::User.current = current_user
+  #~ session[:access_token] ||= params[:token]
+  #~ order = Spree::Order.find_by_number(params[:id]) || current_order
+  #~ if order
+  #~ p authorize! :edit, order, session[:access_token]
+  #~ else
+  #~ authorize!(:create, Order)
+  #~ end
   #~ end
   #To set and find current user
   def current_ability
     if !params[:format].nil? && params[:format] == "json"
       user= current_user || Spree::User.find_by_authentication_token(params[:authentication_token])
-    
+      
       @current_ability ||= Spree::Ability.new(user)
     else
       @current_ability ||= Spree::Ability.new(current_user)
@@ -43,7 +43,7 @@ end
       format.json { render :json => @collection.to_json(collection_serialization_options) }
     end
   end
-# To display particular order
+  # To display particular order
   def show
     if !params[:format].nil? && params[:format] == "json"
       respond_with(@object) do |format|
@@ -60,7 +60,7 @@ end
     @error["message"]=error["status_message"]
     return @error
   end
-#To update the order 
+  #To update the order 
   def update
     if !params[:format].nil? && params[:format] == "json"
       if !params[:line_item].nil?
@@ -72,13 +72,13 @@ end
             if !@variant.nil?
               @order = Spree::Order.find_by_param(params[:id])
               if @order.present?
-              @order.add_variant(@variant, quantity.to_i) if quantity.to_i > 0
-              @response = Spree::Order.find_by_id(@order.id)
-              render :json => @response.to_json, :status => 201
+                @order.add_variant(@variant, quantity.to_i) if quantity.to_i > 0
+                @response = Spree::Order.find_by_id(@order.id)
+                render :json => @response.to_json, :status => 201
               else
-               error=error_response_method($e2)
-              render:json=>error
-               end              
+                error=error_response_method($e2)
+                render:json=>error
+              end              
             else
               error=error_response_method($e2)
               render:json=>error
@@ -105,7 +105,7 @@ end
       end
     end
   end
-#To delete the order
+  #To delete the order
   def destroy
     @object=Spree::Order.find_by_id(params[:id])
     if !@object.nil?
@@ -120,137 +120,138 @@ end
     end
   end
   protected
-  def model_class
-    if !params[:format].nil? && params[:format] == "json"
-      "Spree::#{controller_name.classify}".constantize
-    end
-  end
-    
-  def object_name
-    if !params[:format].nil? && params[:format] == "json"
-      controller_name.singularize
-    end
-  end
-       #To load resource
-  def load_resource
-    if !params[:format].nil? && params[:format] == "json"
-      if member_action?
-        @object ||= load_resource_instance
-        instance_variable_set("@#{object_name}", @object)
-      else
-        @collection ||= collection
-        instance_variable_set("@#{controller_name}", @collection)
+
+    def model_class
+      if !params[:format].nil? && params[:format] == "json"
+        "Spree::#{controller_name.classify}".constantize
       end
     end
-  end
-  # To collect the data for index
-  def collection
-    if !params[:format].nil? && params[:format] == "json"
-      return @search unless @search.nil?
-      params[:search] = {} if params[:search].blank?
-      params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
-      
-      scope = parent.present? ? parent.send(controller_name) : model_class.scoped
-     
-      @search = scope
-      @search
-    end
-  end
-   #To load resource instance
-  def load_resource_instance
-    if !params[:format].nil? && params[:format] == "json"
-      if new_actions.include?(params[:action].to_sym)
-        build_resource
-      elsif params[:id]
-        find_resource
+
+    def object_name
+      if !params[:format].nil? && params[:format] == "json"
+        controller_name.singularize
       end
     end
-  end
-    #To find the parent record
-  def parent
-    if !params[:format].nil? && params[:format] == "json"
-      nil
-    end
-  end
-#To find the data or record during edit and update method
-  def find_resource
-    if !params[:format].nil? && params[:format] == "json"
-      begin
-        if parent.present?
-          parent.send(controller_name).find(params[:id])
+    #To load resource
+    def load_resource
+      if !params[:format].nil? && params[:format] == "json"
+        if member_action?
+          @object ||= load_resource_instance
+          instance_variable_set("@#{object_name}", @object)
         else
-          model_class.includes(eager_load_associations).find(params[:id])
+          @collection ||= collection
+          instance_variable_set("@#{controller_name}", @collection)
         end
-      rescue Exception => e
-        error = error_response_method($e2)
-        render :json => error
       end
     end
-  end
-    
-  def collection_serialization_options
-    if !params[:format].nil? && params[:format] == "json"
-      {}
-    end
-  end
+    # To collect the data for index
+    def collection
+      if !params[:format].nil? && params[:format] == "json"
+        return @search unless @search.nil?
+        params[:search] = {} if params[:search].blank?
+        params[:search][:meta_sort] = 'created_at.desc' if params[:search][:meta_sort].blank?
 
-  def eager_load_associations
-    if !params[:format].nil? && params[:format] == "json"
-      nil
-    end
-  end
-    
-  def collection_actions
-    if !params[:format].nil? && params[:format] == "json"
-      [:index]
-    end
-  end
+        scope = parent.present? ? parent.send(controller_name) : model_class.scoped
 
-  def member_action?
-    if !params[:format].nil? && params[:format] == "json"
-      !collection_actions.include? params[:action].to_sym
+        @search = scope
+        @search
+      end
     end
-  end
-
-  def new_actions
-    if !params[:format].nil? && params[:format] == "json"
-      [:new, :create]
-    end
-  end
-
-  private
-  def check_http_authorization
-     if !params[:format].nil? && params[:format] == "json"
-      if params[:authentication_token].present?
-        user=Spree::User.find_by_authentication_token(params[:authentication_token])
-        if user.present?
-          #~ role=Spree::.find_by_id(user.id)
-          if !user.roles
-            error = error_response_method($e12)
-        render :json => error
+    #To load resource instance
+    def load_resource_instance
+      if !params[:format].nil? && params[:format] == "json"
+        if new_actions.include?(params[:action].to_sym)
+          build_resource
+        elsif params[:id]
+          find_resource
         end
+      end
+    end
+    #To find the parent record
+    def parent
+      if !params[:format].nil? && params[:format] == "json"
+        nil
+      end
+    end
+    #To find the data or record during edit and update method
+    def find_resource
+      if !params[:format].nil? && params[:format] == "json"
+        begin
+          if parent.present?
+            parent.send(controller_name).find(params[:id])
           else
-              error = error_response_method($e13)
-        render :json => error
-      end 
-      else
-         error = error_response_method($e13)
-        render :json => error
+            model_class.includes(eager_load_associations).find(params[:id])
+          end
+        rescue Exception => e
+          error = error_response_method($e2)
+          render :json => error
         end
+      end
     end
-  end
-  #To find data
-  def find_resource
-    Spree::Order.find_by_param(params[:id])
-  end
 
-  def object_serialization_options
-    { :include => {
-        :bill_address => {:include => [:country, :state]},
-        :ship_address => {:include => [:country, :state]},
-        :shipments => {:include => [:shipping_method, :address]},
-        :line_items => {:include => [:variant]}
+    def collection_serialization_options
+      if !params[:format].nil? && params[:format] == "json"
+        {}
+      end
+    end
+
+    def eager_load_associations
+      if !params[:format].nil? && params[:format] == "json"
+        nil
+      end
+    end
+
+    def collection_actions
+      if !params[:format].nil? && params[:format] == "json"
+        [:index]
+      end
+    end
+
+    def member_action?
+      if !params[:format].nil? && params[:format] == "json"
+        !collection_actions.include? params[:action].to_sym
+      end
+    end
+
+    def new_actions
+      if !params[:format].nil? && params[:format] == "json"
+        [:new, :create]
+      end
+    end
+  private
+
+    def check_http_authorization
+      if !params[:format].nil? && params[:format] == "json"
+        if params[:authentication_token].present?
+          user=Spree::User.find_by_authentication_token(params[:authentication_token])
+          if user.present?
+            #~ role=Spree::.find_by_id(user.id)
+            if !user.roles
+              error = error_response_method($e12)
+              render :json => error
+            end
+          else
+            error = error_response_method($e13)
+            render :json => error
+          end 
+        else
+          error = error_response_method($e13)
+          render :json => error
+        end
+      end
+    end
+    #To find data
+    def find_resource
+      Spree::Order.find_by_param(params[:id])
+    end
+
+    def object_serialization_options
+      { :include => {
+          :bill_address => {:include => [:country, :state]},
+          :ship_address => {:include => [:country, :state]},
+          :shipments => {:include => [:shipping_method, :address]},
+          :line_items => {:include => [:variant]}
+        }
       }
-    }
-  end
+    end
 end

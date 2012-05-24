@@ -1,7 +1,7 @@
 Spree::UserRegistrationsController.class_eval do
   #include Spree::Base
   #~ helper :users, 'spree/base'
-   include Spree::Core::ControllerHelpers
+  include Spree::Core::ControllerHelpers
   helper 'spree/users', 'spree/base'
   ssl_required
   after_filter :associate_user, :only => :create
@@ -19,25 +19,25 @@ Spree::UserRegistrationsController.class_eval do
         if params[:user][:password]==""
           error=error_response_method($e30)
           render:json=>error
-else
-  if params[:user][:password_confirmation]==""
-          error=error_response_method($e31)
-          render:json=>error
-else
-        if params[:user][:password]==params[:user][:password_confirmation] && params[:user][:password]!=""&&params[:user][:password_confirmation]!=""
-          @user=Spree::User.new(params[:user])
-          if @user.save
-            render :json =>@user
-          else
-            error=error_response_method($e6)
-            render:json=>error
-          end
         else
-          error=error_response_method($e96)
-          render:json=>error
+          if params[:user][:password_confirmation]==""
+            error=error_response_method($e31)
+            render:json=>error
+          else
+            if params[:user][:password]==params[:user][:password_confirmation] && params[:user][:password]!=""&&params[:user][:password_confirmation]!=""
+              @user=Spree::User.new(params[:user])
+              if @user.save
+                render :json =>@user
+              else
+                error=error_response_method($e6)
+                render:json=>error
+              end
+            else
+              error=error_response_method($e96)
+              render:json=>error
+            end
+          end
         end
-        end
-      end
       else
         error=error_response_method($e19)
         render:json=>error
@@ -45,17 +45,17 @@ else
       
     else
       @user = build_resource(params[:user])
-    if resource.save
-      set_flash_message(:notice, :signed_up)
-      sign_in(:user, @user)
-      fire_event('spree.user.signup', :user => @user, :order => current_order(true))
-      sign_in_and_redirect(:user, @user)
-    else
-      clean_up_passwords(resource)
-      render :new
+      if resource.save
+        set_flash_message(:notice, :signed_up)
+        sign_in(:user, @user)
+        fire_event('spree.user.signup', :user => @user, :order => current_order(true))
+        sign_in_and_redirect(:user, @user)
+      else
+        clean_up_passwords(resource)
+        render :new
+      end
     end
-    end
-	  
+    
   end
   def check_permissions
     authorize!(:create, resource)

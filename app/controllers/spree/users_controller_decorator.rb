@@ -6,7 +6,7 @@ class UsersController
   #~ include Spree::CurrentOrder
   #~ ssl_required :new, :create, :destroy, :update
   #~ ssl_allowed :login_bar
-   #~ include Spree::Core::ControllerHelpers
+  #~ include Spree::Core::ControllerHelpers
   #~ helper 'spree/users', 'spree/base'
 
   #~ include Spree::Core::CurrentOrder
@@ -47,7 +47,6 @@ class UsersController
         render:json=>error
       end
     end
-	  
   end
   #To respond the error message
   def error_response_method(error)

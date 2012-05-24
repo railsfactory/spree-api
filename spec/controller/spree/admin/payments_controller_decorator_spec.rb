@@ -1,47 +1,62 @@
 require 'spec_helper' 
 
-describe   Spree::Admin::ShippingMethodsController,:type=>"controller" do
-	#include Devise::TestHelpers
-	describe " ZonesController" do
-	def valid_attributes
-		{
-		:name=>"sedin 2 way", :zone_id=>"1", :display_on=>"", :calculator_type=>"Spree::Calculator::FlatPercentItemTotal",:shipping_category_id=>"727197546"
-}
-end
-		
-			def mock_user(stubs={})
-        @mock_user ||= mock_model(Spree::User, stubs).as_null_object
-    end
-    before(:each) do
-				controller.stub!(:check_http_authorization).and_return(true)
-				p	pro=Spree::Zone.create(:name=>"railscfactory",:description=>"software concern")
-        request.env['warden'] = mock(Warden, :authenticate => mock_user,:authenticate! => mock_user)
-				@current_user = 1
-			end
-		describe "To get the index of the ShippingMethod controller" do
-       it "should be successful" do
-          get :index,:format=>:json
-					 response.code.should == "200"
-			 end
-			 it "should get the ShippingMethod" do
-					store = Spree::ShippingMethod.create! valid_attributes
-          get :show, {:id => store.to_param, :format => :json}
-          response.code.should == "200"
-       end
-		   it "should be successful create ShippingMethod" do
-			     post :create , :shipping_method => {:name=>"sedin 2 way", :zone_id=>"1", :display_on=>"", :calculator_type=>"Spree::Calculator::FlexiRate"}, :format => :json
-			     response.code.should == "201"
-		   end
-		   it "should be successful create ShippingMethod" do
-					store = Spree::ShippingMethod.create! valid_attributes
-					 put :update , :id=>store.to_param,:shipping_method => {:name=>"production"}, :format => :json
-			     response.code.should == "201"
-				 end
-			it "should delete the ShippingMethod" do
-				  store = Spree::ShippingMethod.create! valid_attributes
-      get :destroy, {:id => store.to_param,:format => :json}
+describe   Spree::Admin::PaymentsController,:type=>"controller" do
+  
+  def mock_user(stubs={})
+    @mock_user ||= mock_model(Spree::User, stubs).as_null_object
+  end
+  
+  before(:each) do
+    controller.stub!(:check_http_authorization).and_return(true)
+    request.env['warden'] = mock(Warden, :authenticate => mock_user,:authenticate! => mock_user)
+    @current_user = 1
+  end
+  
+  describe "GET index" do
+    it "To get the index of the Payment controller" do
+      get :index, :format=>:json
+      @user=Spree::User.create(:email => "email@person.com", :password => "secret", :password_confirmation => "secret")
+      @auth=@user.authentication_token="16qL-TsdhrJmHGWCC8bS"
+      @user.save
+      p @order=Spree::Order.create(:email=>@user.email)
+      @order.state="complete"
+      @order.payment_state="balance_due"
+      @order.save
+      current_order = Spree::Order.find_by_number(@order.id)
+      @order=current_order
+      #~ @order=Spree::Payment(:amount=>"100", :order_id=>@order.id, :source_id=>1, :source_type=>"Creditcard", :payment_method_id=>842616224, :state=> "completed", :response_code=>"sedin", :avs_response=> "rails")
       response.code.should == "200"
     end
-		  end
-			end 
-			end	
+  end
+  
+  describe "GET new" do
+    it "assign the order" do
+      get :new, :format=> :json
+      response.code.should == "200"
+    end
+  end
+
+  describe "GET fire" do
+    it "To capture the payment" do
+      @user=Spree::User.create(:email => "email@person.com", :password => "secret", :password_confirmation => "secret")
+      @auth=@user.authentication_token="16qL-TsdhrJmHGWCC8bS"
+      @user.save
+      @order=Spree::Order.create(:email=>@user.email)
+      p @order
+      #~ @payment=Spree::Payment.create(:amount=>100)
+      #~ p @payment
+      get :fire, {:id=>@order.id, :e=>"capture",:format=> :json}
+      response.code.should == "200"
+    end
+    it "To capture the payment" do
+      @user=Spree::User.create(:email => "email@person.com", :password => "secret", :password_confirmation => "secret")
+      @auth=@user.authentication_token="16qL-TsdhrJmHGWCC8bS"
+      @user.save
+      @order=Spree::Order.create(:email=>@user.email)
+      p @order
+      get :fire, {:e=>"capture",:format=> :json}
+      response.code.should == "200"
+    end
+  end
+
+end	
