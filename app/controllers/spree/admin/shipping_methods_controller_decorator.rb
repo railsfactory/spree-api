@@ -389,6 +389,7 @@ ShippingMethodsController.class_eval do
         @shipping_method.save
         params[:shipping_method].delete(:shipping_category_id)
         else
+          @shipping_method=ShippingMethod.new 
         @shipping_method.shipping_category = Spree::ShippingCategory.find_by_id(params[:shipping_method][:shipping_category_id])
         @shipping_method.save
         params[:shipping_method].delete(:shipping_category_id)

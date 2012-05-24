@@ -1,8 +1,8 @@
 Spree::CheckoutController.class_eval do
    before_filter :check_http_authorization
-	 before_filter :check_authorization
-  before_filter :check_registration, :except => [:registration, :update_registration]
   before_filter :load_order
+  before_filter :check_authorization
+  before_filter :check_registration, :except => [:registration, :update_registration]
  rescue_from Spree::Core::GatewayError, :with => :rescue_from_spree_gateway_error
   $e1={"status_code"=>"2038","status_message"=>"parameter errors"}
   $e2={"status_code"=>"2037","status_message"=>"Record not found"}
@@ -97,7 +97,7 @@ Spree::CheckoutController.class_eval do
         @order.state = params[:state] if params[:state]
         state_callback(:before)
         else
-        @order = Spree::Order.find_by_id(session[:order_id], :include => :adjustments)
+        @order = current_order ? current_order  : Spree::Order.find_by_id(session[:order_id], :include => :adjustments)
         redirect_to cart_path and return unless @order and @order.checkout_allowed?
         raise_insufficient_quantity and return if @order.insufficient_stock_lines.present?
         redirect_to cart_path and return if @order.completed?
@@ -108,16 +108,15 @@ Spree::CheckoutController.class_eval do
 		private
     def check_authorization
 			 if !params[:format].nil? && params[:format] == "json"
-      p session[:access_token]
-      current_order = ''
+           current_order = ''
         if session[:order_id] == nil
         current_user = Spree::User.find_by_authentication_token(params[:authentication_token])
         if current_user.present?
           current_order = Spree::Order.find_all_by_user_id(current_user.id).last
         end
       end
-      puts "session #{session}"
 			else
+        current_order = @order
 				authorize!(:edit, current_order, session[:access_token])
 			end
     end
