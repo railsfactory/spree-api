@@ -7,8 +7,7 @@ Gem::Specification.new do |s|
   s.email       = "spree@railsfactory.org"
   s.homepage    = "http://www.railsfactory.com"
   s.summary     = "spree_custom_api  actually consists of list of api's for Spree Version 1.1.0"
-  s.description = "spree_custom_api is a complete open source e-commerce solution built with Ruby on Rails. It was originally developed by RailsFactory Team.spree_custom_api  actually consists of list of api's for Spree Version 1.1.0. The list of available api's can be known from the spree_custom_api documentation.
- Url:- http://spree-apidoc.heroku.com"
+  s.description = "spree_custom_api is a complete open source e-commerce solution built with Ruby on Rails. It was originally developed by RailsFactory Team. Documentation for the existing api's can be viewed with the Url:- http://spree-apidoc.heroku.com"
 
   #s.files       = `git ls-files`.split("\n")
   #s.test_files  = `git ls-files -- {test,spec,features}/*`.split("\n")
