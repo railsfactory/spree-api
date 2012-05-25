@@ -1,15 +1,14 @@
 # encoding: UTF-8
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
-  s.name        = 'spree_custom_api'
+  s.name        = "spree_custom_api"
   s.version     = '1.1.0'
-  s.summary     = 'TODO: Add gem summary here'
-  s.description = 'TODO: Add (optional) gem description here'
-  s.required_ruby_version = '>= 1.8.7'
-
-   s.author    = 'RailsFactory'
-   s.email     = 'Spree@RailsFactory.org'
-  # s.homepage  = 'http://www.spreecommerce.com'
+  s.authors     = "RailsFactory"
+  s.email       = "spree@railsfactory.org"
+  s.homepage    = "http://www.railsfactory.com"
+  s.summary     = "spree_custom_api  actually consists of list of api's for Spree Version 1.1.0"
+  s.description = "spree_custom_api is a complete open source e-commerce solution built with Ruby on Rails. It was originally developed by RailsFactory Team.spree_custom_api  actually consists of list of api's for Spree Version 1.1.0. The list of available api's can be known from the spree_custom_api documentation.
+ Url:- http://spree-apidoc.heroku.com"
 
   #s.files       = `git ls-files`.split("\n")
   #s.test_files  = `git ls-files -- {test,spec,features}/*`.split("\n")
