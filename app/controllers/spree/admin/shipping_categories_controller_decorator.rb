@@ -111,7 +111,8 @@ module Spree
           if !@object.nil?
             @object.destroy
             if @object.destroy
-              render :text => 'Destroyed'
+            error=error_response_method($e4)
+            render:json=>error
             end
           else
             error=error_response_method($e2)
