@@ -13,6 +13,8 @@ Spree::CheckoutController.class_eval do
   def update
     if !params[:format].nil? && params[:format] == "json"
       begin
+        p object_params
+        p params
         if @order.update_attributes(object_params)
           fire_event('spree.checkout.update')
           final_order = []
@@ -83,9 +85,9 @@ Spree::CheckoutController.class_eval do
   def load_order
     if !params[:format].nil? && params[:format] == "json"
       if session[:order_id]==nil
-        current_user=Spree::User.find_by_authentication_token(params[:authentication_token])
+        p current_user=Spree::User.find_by_authentication_token(params[:authentication_token])
         if current_user.present?
-           current_order = Spree::Order.find_all_by_user_id(current_user.id).last
+          p current_order = Spree::Order.find_all_by_user_id(current_user.id).last
         end
       end
       @order = current_order
