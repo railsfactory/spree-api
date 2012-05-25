@@ -1,3 +1,3 @@
-class SpreeCustomApiHooks < Spree::ThemeSupport::HookListener
+class SpreeCustomApiHooks 
   # custom hooks go here
 end
