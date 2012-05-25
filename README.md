@@ -42,7 +42,8 @@ Changes in spree core:-
  
  Go to spree core/lib/spree/core/current_order.rb
 
- Replace the 
+ $ Replace the current_order method with
+ 
    def current_order(create_order_if_necessary = false,auth=nil)
       if !params[:format].nil? && params[:format] == "json" 
         if@current_order.nil?
