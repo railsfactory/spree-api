@@ -18,7 +18,7 @@ Installation Steps:-
 
  step 1: Add the gem to the gem file
 
-      gem "spree_custom_api", :git=>'git@github.com:railsfactory/spree-api.git',:branch=>'spree-1-1'
+      gem "spree_custom_api", :git=>'git@github.com:railsfactory/spree-api.git'
 
  step 2: bundle install
 
