@@ -1,4 +1,14 @@
 Spree::Core::CurrentOrder.module_eval do
+   # This should be overridden by an auth-related extension which would then have the
+      # opportunity to associate the new order with the # current user before saving.
+      def before_save_new_order
+      end
+
+      # This should be overridden by an auth-related extension which would then have the
+      # opporutnity to store tokens, etc. in the session # after saving.
+      def after_save_new_order
+      end
+
   # Associate the new order with the currently authenticated user before saving
   def current_order(create_order_if_necessary = false,auth=nil)
     if !params[:format].nil? && params[:format] == "json" 
